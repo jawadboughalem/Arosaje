@@ -10,6 +10,8 @@ import Messages from './screens/Messages';
 import Photos from './screens/Photos';
 import Conseils from './screens/Conseils';
 import Profil from './screens/Profil';
+import CameraPreview from './screens/CameraPreview';
+import Formulaire from './screens/Formulaire';
 
 const Tab = createBottomTabNavigator();
 
