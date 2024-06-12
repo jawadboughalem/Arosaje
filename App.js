@@ -4,7 +4,9 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { TouchableOpacity, StyleSheet, View } from 'react-native';
+import TabBarContext, { TabBarProvider } from './components/TabBarContext';
 
+import Header from './components/header';
 import Annonces from './screens/Annonces';
 import Messages from './screens/Messages';
 import Photos from './screens/Photos';
@@ -12,8 +14,6 @@ import Conseils from './screens/Conseils';
 import Profil from './screens/Profil';
 import CameraPreview from './screens/CameraPreview';
 import CreatePost from './screens/CreatePost';
-import Header from './components/header'
-import TabBarContext, { TabBarProvider } from './components/TabBarContext';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -91,7 +91,7 @@ const TabNavigator = () => {
           fontWeight: '500',
         },
         tabBarStyle: {
-          display: isTabBarVisible ? 'flex' : 'none', // Hide tab bar if false
+          display: isTabBarVisible ? 'flex' : 'none',
           position: 'absolute',
           height: 53,
           borderTopLeftRadius: 22,
