@@ -50,4 +50,8 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     paddingHorizontal: 10,
   },
+<<<<<<< HEAD
 });
+=======
+});
+>>>>>>> master
