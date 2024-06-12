@@ -1,65 +1,33 @@
-<<<<<<< HEAD
 import React, { useState, useRef } from 'react';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
 import { Button, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { MaterialIcons, Ionicons } from '@expo/vector-icons';
 
-export default function Photos() {
+export default function Photos({ navigation }) {
   const [permission, requestPermission] = useCameraPermissions();
   const [cameraType, setCameraType] = useState('back');
   const [flashMode, setFlashMode] = useState('off');
   const [capturedPhoto, setCapturedPhoto] = useState(null);
   const cameraRef = useRef(null);
-  const navigation = useNavigation();
-=======
-import { CameraView, useCameraPermissions } from 'expo-camera';
-import { useState, useRef } from 'react';
-import { StyleSheet, TouchableOpacity, View, Text, Button } from 'react-native';
-import { MaterialIcons, Ionicons } from '@expo/vector-icons';
-import * as ImagePicker from 'expo-image-picker';
-import { useNavigation } from '@react-navigation/native';
-
-export default function Photos({ navigation }) {
-  const [permission, requestPermission] = useCameraPermissions();
-  const [facing, setFacing] = useState('back');
-  const [flashMode, setFlashMode] = useState('off');
-  const [capturedPhoto, setCapturedPhoto] = useState(null);
-  const cameraRef = useRef(null);
->>>>>>> master
-
+  
   if (!permission) {
     return <View />;
   }
 
   if (!permission.granted) {
     return (
-<<<<<<< HEAD
-      <View style={styles.container}>
-        <Text style={{ textAlign: 'center' }}>Nous avons besoin de votre permission pour utiliser la caméra</Text>
-        <Button onPress={requestPermission} title="Accorder la permission" />
-=======
       <View style={styles.permissionContainer}>
-        <Text style={styles.permissionText}>Autoriser l'accès à la caméra ?</Text>
-        <Button onPress={requestPermission} title="Accorder l'accès" />
->>>>>>> master
+        <Text style={styles.permissionText}>Nous avons besoin de votre permission pour utiliser la caméra</Text>
+        <Button onPress={requestPermission} title="Accorder la permission" />
       </View>
     );
-  }
-
-<<<<<<< HEAD
-  const takePicture = async () => {
-    if (cameraRef.current) {
-      const photo = await cameraRef.current.takePhotoAsync();
-=======
-  function toggleCameraFacing() {
-    setFacing(current => (current === 'back' ? 'front' : 'back'));
   }
 
   const takePicture = async () => {
     if (cameraRef.current) {
       const photo = await cameraRef.current.takePictureAsync();
->>>>>>> master
       setCapturedPhoto(photo.uri);
       navigation.navigate('CameraPreview', { photo: photo.uri });
     }
@@ -79,52 +47,33 @@ export default function Photos({ navigation }) {
     }
   };
 
-<<<<<<< HEAD
   const toggleCameraFacing = () => {
     setCameraType(current => (current === 'back' ? 'front' : 'back'));
   };
 
   const toggleFlashMode = () => {
-=======
-  const FlashMode = () => {
->>>>>>> master
     setFlashMode(current => (current === 'off' ? 'on' : 'off'));
   };
 
   return (
     <View style={styles.container}>
-<<<<<<< HEAD
       <CameraView
         style={styles.camera}
         facing={cameraType}
         flash={flashMode}
         ref={cameraRef}
       >
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity style={styles.button} onPress={toggleCameraFacing}>
-            <Text style={styles.text}>Flip</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.button} onPress={toggleFlashMode}>
-            <Text style={styles.text}>Flash</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.button} onPress={takePicture}>
-            <Text style={styles.text}>Take</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.button} onPress={pickImage}>
-            <Text style={styles.text}>Gallery</Text>
-=======
-      <CameraView style={styles.camera} facing={facing} flashMode={flashMode} ref={cameraRef}>
         <View style={styles.topLeftContainer}>
           <TouchableOpacity style={styles.button} onPress={() => navigation.goBack()}>
             <Ionicons name="arrow-back-outline" size={32} color="white" />
           </TouchableOpacity>
         </View>
         <View style={styles.topRightContainer}>
-          <TouchableOpacity style={styles.button} onPress={FlashMode}>
+          <TouchableOpacity style={styles.button} onPress={toggleFlashMode}>
             <Ionicons name="flashlight-outline" size={32} color="white" />
           </TouchableOpacity>
           <TouchableOpacity style={[styles.button, styles.flipButton]} onPress={toggleCameraFacing}>
-          <Ionicons name="camera-reverse-outline" size={32} color="white" />
+            <Ionicons name="camera-reverse-outline" size={32} color="white" />
           </TouchableOpacity>
         </View>
         <View style={styles.centerContainer}>
@@ -135,7 +84,6 @@ export default function Photos({ navigation }) {
         <View style={styles.bottomRightContainer}>
           <TouchableOpacity style={styles.button} onPress={pickImage}>
             <Ionicons name="images-outline" size={32} color="white" />
->>>>>>> master
           </TouchableOpacity>
         </View>
       </CameraView>
@@ -147,27 +95,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-<<<<<<< HEAD
-  camera: {
-    flex: 1,
-  },
-  buttonContainer: {
-    flex: 1,
-    flexDirection: 'row',
-    backgroundColor: 'transparent',
-    margin: 20,
-  },
-  button: {
-    flex: 1,
-    alignSelf: 'flex-end',
-    alignItems: 'center',
-  },
-  text: {
-    fontSize: 18,
-    color: 'white',
-  },
-});
-=======
   permissionContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -215,4 +142,3 @@ const styles = StyleSheet.create({
     borderRadius: 50,
   },
 });
->>>>>>> master
