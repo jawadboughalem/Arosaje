@@ -1,0 +1,193 @@
+mouss
+mouss2646
+Invisible
+
+mouss — 07/06/2024 16:14
+-- SQLite
+
+
+CREATE TABLE photos (
+    idPhotos INTEGER PRIMARY KEY,
+    datePhotos INTEGER,
+    CheminAcces TEXT NOT NULL,
+    IdUtilisateurs INTEGER,
+    IdPlantes INTEGER,
+    FOREIGN KEY (idUtilisateurs) REFERENCES utilisateurs(idUtilisateurs),
+    FOREIGN KEY (idPlantes) REFERENCES Plantes(idPlantes)
+);
+
+CREATE TABLE utilisateurs (
+    idUtilisateurs INTEGER PRIMARY KEY,
+    nom VARCHAR(100),
+    prenom VARCHAR(100),
+    email VARCHAR(255),
+    Password VARCHAR(100),
+    photo VARCHAR(255),
+    Botaniste BOOLEAN,  -- boolÃ©en pour un  (0 ou 1) 
+    numero VARCHAR(15),
+    Adresse VARCHAR(255)
+);
+
+
+INSERT INTO utilisateurs (idUtilisateurs, nom, prenom, email, password, photo, botaniste, numero, adresse)
+VALUES (2, 'abd', 'mouss', 'a@gmail.com', '1234', 'fleur.jpg', '1', '0789541210', '28 rue de la paix');
+
+
+
+
+CREATE Table Messages(
+IdMessages integer primary key,
+IdUtilisateurs integer,
+Message VARCHAR(100),
+DateEnvoi TEXT,
+FOREIGN KEY (idUtilisateurs) REFERENCES utilisateurs(idUtilisateurs)
+);
+
+CREATE TABLE Postes (
+    IdPostes INTEGER PRIMARY KEY,
+    IdUtilisateurs INTEGER,
+    titre VARCHAR(100),
+    Description VARCHAR(255),
+    DatePoste VARCHAR(100),
+    Localisation VARCHAR(100),
+    FOREIGN KEY (IdUtilisateurs) REFERENCES utilisateurs(idUtilisateurs)
+);
+
+
+CREATE TABLE commentaires(
+Idcommentaire INTEGER PRIMARY KEY,
+IdUtilisateurs INTEGER,
+idPlantes INTEGER,
+texte VARCHAR(100),
+DateCommentaire VARCHAR(100),
+FOREIGN KEY (idUtilisateurs) REFERENCES utilisateurs(idUtilisateurs),
+ FOREIGN KEY (idPlantes) REFERENCES Plantes(idPlantes)
+);
+
+
+
+CREATE  TABLE Plantes (
+Idplantes integer primary key,
+IdUTilisateurs INTEGER,
+NomPlante VARCHAR(100),
+PhotoPlante VARCHAR(100),
+Description VARCHAR(100),
+FOREIGN KEY (idUtilisateurs) REFERENCES utilisateurs(idUtilisateurs)
+);
+
+CREATE TABLE Garde(
+    IdGarde INTEGER PRIMARY KEY,
+    idUtilisateurs INTEGER,
+    IdPlantes INTEGER,
+    DateDebut varchar(100),
+    DateFin varchar(100),
+    localisation TEXT,
+    FOREIGN KEY (idUtilisateurs) REFERENCES utilisateurs(idUtilisateurs),
+    FOREIGN KEY (idPlantes) REFERENCES Plantes(idPlantes)
+);
+Réduire
+message.txt
+3 Ko
+import db from './database';
+
+interface User {
+  idUtilisateurs?: number;
+  nom: string;
+  prenom: string;
+Afficher plus
+databaseOperation.txt
+9 Ko
+import * as SQLite from 'react-native-sqlite-storage';
+
+const db = SQLite.openDatabase(
+  {
+    name: 'Fleur',
+    location: 'default',
+Afficher plus
+database.ts.txt
+5 Ko
+﻿
+-- SQLite
+
+
+CREATE TABLE photos (
+    idPhotos INTEGER PRIMARY KEY,
+    datePhotos INTEGER,
+    CheminAcces TEXT NOT NULL,
+    IdUtilisateurs INTEGER,
+    IdPlantes INTEGER,
+    FOREIGN KEY (idUtilisateurs) REFERENCES utilisateurs(idUtilisateurs),
+    FOREIGN KEY (idPlantes) REFERENCES Plantes(idPlantes)
+);
+
+CREATE TABLE utilisateurs (
+    idUtilisateurs INTEGER PRIMARY KEY,
+    nom VARCHAR(100),
+    prenom VARCHAR(100),
+    email VARCHAR(255),
+    Password VARCHAR(100),
+    photo VARCHAR(255),
+    Botaniste BOOLEAN,  -- boolÃ©en pour un  (0 ou 1) 
+    numero VARCHAR(15),
+    Adresse VARCHAR(255)
+);
+
+
+INSERT INTO utilisateurs (idUtilisateurs, nom, prenom, email, password, photo, botaniste, numero, adresse)
+VALUES (2, 'abd', 'mouss', 'a@gmail.com', '1234', 'fleur.jpg', '1', '0789541210', '28 rue de la paix');
+
+
+
+
+CREATE Table Messages(
+IdMessages integer primary key,
+IdUtilisateurs integer,
+Message VARCHAR(100),
+DateEnvoi TEXT,
+FOREIGN KEY (idUtilisateurs) REFERENCES utilisateurs(idUtilisateurs)
+);
+
+CREATE TABLE Postes (
+    IdPostes INTEGER PRIMARY KEY,
+    IdUtilisateurs INTEGER,
+    titre VARCHAR(100),
+    Description VARCHAR(255),
+    DatePoste VARCHAR(100),
+    Localisation VARCHAR(100),
+    FOREIGN KEY (IdUtilisateurs) REFERENCES utilisateurs(idUtilisateurs)
+);
+
+
+CREATE TABLE commentaires(
+Idcommentaire INTEGER PRIMARY KEY,
+IdUtilisateurs INTEGER,
+idPlantes INTEGER,
+texte VARCHAR(100),
+DateCommentaire VARCHAR(100),
+FOREIGN KEY (idUtilisateurs) REFERENCES utilisateurs(idUtilisateurs),
+ FOREIGN KEY (idPlantes) REFERENCES Plantes(idPlantes)
+);
+
+
+
+CREATE  TABLE Plantes (
+Idplantes integer primary key,
+IdUTilisateurs INTEGER,
+NomPlante VARCHAR(100),
+PhotoPlante VARCHAR(100),
+Description VARCHAR(100),
+FOREIGN KEY (idUtilisateurs) REFERENCES utilisateurs(idUtilisateurs)
+);
+
+CREATE TABLE Garde(
+    IdGarde INTEGER PRIMARY KEY,
+    idUtilisateurs INTEGER,
+    IdPlantes INTEGER,
+    DateDebut varchar(100),
+    DateFin varchar(100),
+    localisation TEXT,
+    FOREIGN KEY (idUtilisateurs) REFERENCES utilisateurs(idUtilisateurs),
+    FOREIGN KEY (idPlantes) REFERENCES Plantes(idPlantes)
+);
+message.txt
+3 Ko
