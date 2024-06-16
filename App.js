@@ -13,6 +13,7 @@ import Photos from './screens/Photos';
 import Conseils from './screens/Conseils';
 import Profil from './screens/Profil';
 import CameraPreview from './screens/CameraPreview';
+import Formulaire from './screens/Formulaire';
 import CreatePost from './screens/CreatePost';
 
 const Tab = createBottomTabNavigator();
@@ -45,7 +46,7 @@ function PhotosStack() {
         name="CameraPreview"
         component={CameraPreview}
         options={{
-          header: () => <Header title="Aperçu de la caméra" />,
+          header: () => <Header title="Nouvelle plante" />,
           tabBarVisible: false,
         }}
         listeners={{
@@ -54,10 +55,10 @@ function PhotosStack() {
         }}
       />
       <Stack.Screen
-        name="CreatePost"
-        component={CreatePost}
+        name="Formulaire"
+        component={Formulaire}
         options={{
-          header: () => <Header title="Créer un post" />,
+          header: () => <Header title="Formulaire" />,
           tabBarVisible: false,
         }}
         listeners={{
