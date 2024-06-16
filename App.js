@@ -3,7 +3,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
-import { TouchableOpacity, StyleSheet, View } from 'react-native';
+import { TouchableOpacity, StyleSheet } from 'react-native';
 
 import Annonces from './screens/Annonces';
 import Messages from './screens/Messages';
@@ -12,7 +12,6 @@ import Conseils from './screens/Conseils';
 import Profil from './screens/Profil';
 import CameraPreview from './screens/CameraPreview';
 import CreatePost from './screens/CreatePost';
-import Header from './components/header'
 import TabBarContext, { TabBarProvider } from './components/TabBarContext';
 
 const Tab = createBottomTabNavigator();
@@ -33,7 +32,6 @@ function PhotosStack() {
         name="Photos"
         component={Photos}
         options={{
-          header: () => <Header title="Photos" />,
           tabBarVisible: false,
         }}
         listeners={{
@@ -45,7 +43,6 @@ function PhotosStack() {
         name="CameraPreview"
         component={CameraPreview}
         options={{
-          header: () => <Header title="Aperçu de la caméra" />,
           tabBarVisible: false,
         }}
         listeners={{
@@ -57,7 +54,6 @@ function PhotosStack() {
         name="CreatePost"
         component={CreatePost}
         options={{
-          header: () => <Header title="Créer un post" />,
           tabBarVisible: false,
         }}
         listeners={{
@@ -112,7 +108,6 @@ const TabNavigator = () => {
           tabBarIcon: ({ color, focused }) => (
             <Ionicons name={focused ? 'home' : 'home-outline'} size={28} color={color} />
           ),
-          header: () => <Header title="Annonces" />,
         }}
       />
       <Tab.Screen
@@ -123,7 +118,6 @@ const TabNavigator = () => {
           tabBarIcon: ({ color, focused }) => (
             <Ionicons name={focused ? 'mail' : 'mail-outline'} size={28} color={color} />
           ),
-          header: () => <Header title="Messages" />,
         }}
       />
       <Tab.Screen
@@ -151,7 +145,6 @@ const TabNavigator = () => {
           tabBarIcon: ({ color, focused }) => (
             <Ionicons name={focused ? 'leaf' : 'leaf-outline'} size={28} color={color} />
           ),
-          header: () => <Header title="Conseils" />,
         }}
       />
       <Tab.Screen
@@ -162,7 +155,6 @@ const TabNavigator = () => {
           tabBarIcon: ({ color, focused }) => (
             <Ionicons name={focused ? 'person' : 'person-outline'} size={28} color={color} />
           ),
-          header: () => <Header title="Profil" />,
         }}
       />
     </Tab.Navigator>
