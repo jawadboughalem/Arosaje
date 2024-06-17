@@ -16,7 +16,7 @@ const Header = ({ title }) => {
 const styles = StyleSheet.create({
   headerContainer: {
     position: 'absolute',
-    top: 30, // Ajustez cette valeur pour déplacer le header vers le bas
+    top: 30,
     left: 0,
     right: 0,
     zIndex: 1,

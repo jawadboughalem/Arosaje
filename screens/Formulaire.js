@@ -4,7 +4,7 @@ import { useRoute } from '@react-navigation/native';
 
 export default function Formulaire() {
   const route = useRoute();
-  const { photo } = route.params;
+  const { photo } = route.params || {};
   const [plantName, setPlantName] = useState('');
   const [description, setDescription] = useState('');
   const [location, setLocation] = useState('');
@@ -13,6 +13,7 @@ export default function Formulaire() {
 
   const handleSubmit = () => {
     console.log('Form submitted:', { plantName, description, location, startDate, endDate, photo });
+    // Add your form submission logic here
   };
 
   return (
