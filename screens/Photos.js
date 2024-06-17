@@ -1,8 +1,8 @@
 import React, { useState, useRef } from 'react';
+import { StyleSheet, Text, TouchableOpacity, View, Image } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
-import { Button, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { Button } from 'react-native';
 import { MaterialIcons, Ionicons } from '@expo/vector-icons';
 
 export default function Photos({ navigation }) {
@@ -10,8 +10,9 @@ export default function Photos({ navigation }) {
   const [cameraType, setCameraType] = useState('back');
   const [flashMode, setFlashMode] = useState('off');
   const [capturedPhoto, setCapturedPhoto] = useState(null);
+  const [loading, setLoading] = useState(false);
   const cameraRef = useRef(null);
-  
+
   if (!permission) {
     return <View />;
   }
@@ -26,24 +27,37 @@ export default function Photos({ navigation }) {
   }
 
   const takePicture = async () => {
-    if (cameraRef.current) {
-      const photo = await cameraRef.current.takePictureAsync();
-      setCapturedPhoto(photo.uri);
-      navigation.navigate('CameraPreview', { photo: photo.uri });
+    try {
+      if (cameraRef.current) {
+        setLoading(true);
+        const photo = await cameraRef.current.takePictureAsync();
+        setCapturedPhoto(photo.uri);
+        setLoading(false);
+        navigation.navigate('CameraPreview', { photo: photo.uri });
+      }
+    } catch (error) {
+      console.error("Erreur lors de la prise de photo:", error);
+      setLoading(false);
+      // Ajoutez des gestionnaires d'erreurs supplémentaires ici si nécessaire
     }
   };
 
   const pickImage = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 1,
-    });
+    try {
+      let result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 1,
+      });
 
-    if (!result.canceled) {
-      setCapturedPhoto(result.assets[0].uri);
-      navigation.navigate('CameraPreview', { photo: result.assets[0].uri });
+      if (!result.canceled) {
+        setCapturedPhoto(result.assets[0].uri);
+        navigation.navigate('CameraPreview', { photo: result.assets[0].uri });
+      }
+    } catch (error) {
+      console.error("Erreur lors de la sélection de l'image:", error);
+      // Ajoutez des gestionnaires d'erreurs supplémentaires ici si nécessaire
     }
   };
 
@@ -77,8 +91,19 @@ export default function Photos({ navigation }) {
           </TouchableOpacity>
         </View>
         <View style={styles.centerContainer}>
-          <TouchableOpacity style={styles.cameraButton} onPress={takePicture}>
-            <MaterialIcons name="camera-alt" size={50} color="white" />
+          <TouchableOpacity
+            style={[styles.cameraButton, loading && styles.disabledButton]}
+            onPress={loading ? null : takePicture}
+            disabled={loading}
+          >
+            {loading ? (
+              <Image
+                style={styles.loadingGif}
+                source={require('../assets/loading.gif')} // Chemin vers votre GIF
+              />
+            ) : (
+              <MaterialIcons name="camera-alt" size={50} color="white" />
+            )}
           </TouchableOpacity>
         </View>
         <View style={styles.bottomRightContainer}>
@@ -140,5 +165,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#5DB075',
     padding: 20,
     borderRadius: 50,
+  },
+  disabledButton: {
+    backgroundColor: '#9E9E9E',
+  },
+  loadingGif: {
+    width: 50,
+    height: 50,
   },
 });
