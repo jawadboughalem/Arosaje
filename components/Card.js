@@ -1,16 +1,16 @@
 import React from 'react';
-import { View, Text, StyleSheet, Image } from 'react-native';
-import { Ionicons } from '@expo/vector-icons'; // Importer les icônes nécessaires
+import { View, Text, Image, StyleSheet } from 'react-native';
 
-const Card = ({ photoUrl, authorName, authorIcon, date }) => {
+const Card = ({ plantImage, plantName, location, userName, userImage }) => {
   return (
     <View style={styles.card}>
-      <Image source={{ uri: photoUrl }} style={styles.photo} />
-      <View style={styles.content}>
-        <Text style={styles.authorName}>{authorName}</Text>
-        <View style={styles.authorInfo}>
-          <Ionicons name={authorIcon} size={24} color="black" />
-          <Text style={styles.date}>{date}</Text>
+      <Image source={{ uri: plantImage }} style={styles.plantImage} />
+      <View style={styles.infoContainer}>
+        <Text style={styles.plantName}>{plantName}</Text>
+        <Text style={styles.location}>{location}</Text>
+        <View style={styles.userContainer}>
+          <Image source={{ uri: userImage }} style={styles.userImage} />
+          <Text style={styles.userName}>{userName}</Text>
         </View>
       </View>
     </View>
@@ -20,38 +20,47 @@ const Card = ({ photoUrl, authorName, authorIcon, date }) => {
 const styles = StyleSheet.create({
   card: {
     flexDirection: 'row',
-    backgroundColor: '#ffffff',
-    borderRadius: 10,
-    marginBottom: 10,
     padding: 10,
-    alignItems: 'center',
+    margin: 10,
+    backgroundColor: '#fff',
+    borderRadius: 10,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
     elevation: 5,
   },
-  photo: {
+  plantImage: {
     width: 100,
     height: 100,
     borderRadius: 10,
-    marginRight: 10,
   },
-  content: {
+  infoContainer: {
     flex: 1,
+    marginLeft: 10,
+    justifyContent: 'center',
   },
-  authorName: {
+  plantName: {
     fontSize: 18,
     fontWeight: 'bold',
-    marginBottom: 5,
   },
-  authorInfo: {
+  location: {
+    fontSize: 16,
+    color: '#888',
+  },
+  userContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginTop: 10,
   },
-  date: {
-    marginLeft: 10,
-    color: '#666666',
+  userImage: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    marginRight: 10,
+  },
+  userName: {
+    fontSize: 16,
   },
 });
 

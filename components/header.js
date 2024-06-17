@@ -1,4 +1,3 @@
-// Header.js
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { BlurView } from 'expo-blur';

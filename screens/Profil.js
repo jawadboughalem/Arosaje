@@ -26,21 +26,6 @@ const ProfileScreen = () => {
         </View>
       </View>
 
-      <View style={styles.stats}>
-        <View style={styles.stat}>
-          <Text style={styles.statNumber}>122</Text>
-          <Text style={styles.statLabel}>followers</Text>
-        </View>
-        <View style={styles.stat}>
-          <Text style={styles.statNumber}>67</Text>
-          <Text style={styles.statLabel}>following</Text>
-        </View>
-        <View style={styles.stat}>
-          <Text style={styles.statNumber}>37K</Text>
-          <Text style={styles.statLabel}>likes</Text>
-        </View>
-      </View>
-
       <View style={styles.tabs}>
         <TouchableOpacity 
           style={[styles.tabButton, selectedTab === 'Photos' ? styles.selectedTabButton : null]}
@@ -124,28 +109,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 10,
   },
-  locationIcon: {
-    width: 15,
-    height: 15,
-    marginRight: 5,
-  },
-  locationText: {
-    fontSize: 14,
-  },
   stats: {
     flexDirection: 'row',
     justifyContent: 'space-around',
     padding: 20,
-  },
-  stat: {
-    alignItems: 'center',
-  },
-  statNumber: {
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  statLabel: {
-    fontSize: 14,
   },
   buttons: {
     flexDirection: 'row',

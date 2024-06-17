@@ -3,7 +3,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
-import { TouchableOpacity, StyleSheet, View } from 'react-native';
+import { TouchableOpacity, StyleSheet } from 'react-native';
 import TabBarContext, { TabBarProvider } from './components/TabBarContext';
 
 import Header from './components/header';
@@ -58,7 +58,7 @@ function PhotosStack() {
         name="Formulaire"
         component={Formulaire}
         options={{
-          header: () => <Header title="Formulaire" />,
+          header: () => <Header title="Nouveau post" />,
           tabBarVisible: false,
         }}
         listeners={{

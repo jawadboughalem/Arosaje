@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, TouchableOpacity, Text, Image, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import Header from '../components/header';
 
 const CameraPreview = ({ route }) => {
   const { photo } = route.params || {};
