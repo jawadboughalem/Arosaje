@@ -8,7 +8,6 @@ const CreatePost = ({ route }) => {
     <View style={styles.container}>
       <Text>Créer un post avec la photo:</Text>
       <Image source={{ uri: photo }} style={styles.image} />
-      {/* Ajoutez ici les champs et les boutons nécessaires pour créer un post */}
     </View>
   );
 };
