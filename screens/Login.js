@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, Platform } from 'react-native';
+import { StyleSheet, Text, View, TextInput, TouchableOpacity, Platform, AsyncStorage } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 export default function Login({ navigation }) {
@@ -7,9 +7,23 @@ export default function Login({ navigation }) {
   const [password, setPassword] = useState('');
 
   const handleLogin = () => {
-    // Logique de connexion ici
-    console.log('Email:', email);
-    console.log('Password:', password);
+    fetch('http://localhost:3000/api/auth/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email, password }),
+    })
+      .then(response => response.json())
+      .then(data => {
+        if (data.token) {
+          AsyncStorage.setItem('token', data.token);
+          navigation.navigate('Main');
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+      });
   };
 
   return (

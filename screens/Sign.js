@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { StyleSheet, Text, View, TextInput, TouchableOpacity, Platform } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function Sign({ navigation }) {
   const [name, setName] = useState('');
@@ -9,11 +10,23 @@ export default function Sign({ navigation }) {
   const [password, setPassword] = useState('');
 
   const handleSignUp = () => {
-    // Logique d'inscription ici
-    console.log('Name:', name);
-    console.log('Surname:', surname);
-    console.log('Email:', email);
-    console.log('Password:', password);
+    fetch('http://10.52.84.190:3000/api/auth/signup', { // Utilisez l'adresse IP correcte
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ name, surname, email, password }),
+    })
+      .then(response => response.json())
+      .then(data => {
+        if (data.token) {
+          AsyncStorage.setItem('token', data.token);
+          navigation.navigate('Main');
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+      });
   };
 
   return (
