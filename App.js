@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
@@ -6,6 +6,9 @@ import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { TouchableOpacity, StyleSheet } from 'react-native';
 import TabBarContext, { TabBarProvider } from './components/TabBarContext';
 
+import Bienvenue from './screens/Bienvenue';
+import Sign from './screens/Sign';
+import Login from './screens/Login';
 import Header from './components/header';
 import Annonces from './screens/Annonces';
 import Messages from './screens/Messages';
@@ -70,17 +73,7 @@ function PhotosStack() {
   );
 }
 
-export default function App() {
-  return (
-    <TabBarProvider>
-      <NavigationContainer>
-        <TabNavigator />
-      </NavigationContainer>
-    </TabBarProvider>
-  );
-}
-
-const TabNavigator = () => {
+const MainNavigator = () => {
   const { isTabBarVisible } = useContext(TabBarContext);
 
   return (
@@ -169,6 +162,34 @@ const TabNavigator = () => {
     </Tab.Navigator>
   );
 };
+
+export default function App() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    // Add logic to check if the user is logged in, e.g., check a token in AsyncStorage
+    // For now, we'll just set it to false to always show the welcome screen
+    setIsLoggedIn(false);
+  }, []);
+
+  return (
+    <TabBarProvider>
+      <NavigationContainer>
+        <Stack.Navigator screenOptions={{ headerShown: false }}>
+          {!isLoggedIn ? (
+            <>
+              <Stack.Screen name="Bienvenue" component={Bienvenue} />
+              <Stack.Screen name="Sign" component={Sign} />
+              <Stack.Screen name="Login" component={Login} />
+            </>
+          ) : (
+            <Stack.Screen name="Main" component={MainNavigator} />
+          )}
+        </Stack.Navigator>
+      </NavigationContainer>
+    </TabBarProvider>
+  );
+}
 
 const styles = StyleSheet.create({
   cameraButton: {
