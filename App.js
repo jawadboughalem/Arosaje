@@ -121,8 +121,8 @@ const MainNavigator = () => {
         }}
       />
       <Tab.Screen
-        name="PhotosStack"
-        component={PhotosStack}
+        name="Photos"
+        component={Photos}
         options={{
           tabBarLabel: () => null,
           tabBarIcon: ({ color, focused }) => null,
