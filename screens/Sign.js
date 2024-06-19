@@ -1,95 +1,123 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, Platform } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Platform, ScrollView, KeyboardAvoidingView, Switch, Alert } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export default function Sign({ navigation }) {
+export default function App({ navigation }) {
   const [name, setName] = useState('');
   const [surname, setSurname] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isBotanist, setIsBotanist] = useState(false);
+  const [errors, setErrors] = useState({});
 
   const handleSignUp = () => {
-    fetch('http://10.52.84.190:3000/api/auth/signup', { // Utilisez l'adresse IP correcte
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ name, surname, email, password }),
-    })
-      .then(response => response.json())
-      .then(data => {
-        if (data.token) {
-          AsyncStorage.setItem('token', data.token);
-          navigation.navigate('Main');
-        }
-      })
-      .catch(error => {
-        console.error('Error:', error);
+    const validationErrors = {};
+    if (!name) validationErrors.name = "Le nom est requis.";
+    if (!surname) validationErrors.surname = "Le prénom est requis.";
+    if (!email) validationErrors.email = "L'email est requis.";
+    if (!password) validationErrors.password = "Le mot de passe est requis.";
+    setErrors(validationErrors);
+
+    if (Object.keys(validationErrors).length === 0) {
+      // Handle the sign-up logic here
+      console.log({
+        name,
+        surname,
+        email,
+        password,
+        isBotanist,
       });
+      Alert.alert("Inscription réussie", "Votre compte a été créé avec succès.");
+      // Remettre les champs à zéro après inscription réussie
+      setName('');
+      setSurname('');
+      setEmail('');
+      setPassword('');
+      setIsBotanist(false);
+      setErrors({});
+    }
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>A’rosa- je</Text>
-        <MaterialCommunityIcons name="flower" size={100} color="black" style={styles.icon} />
-      </View>
-      <View style={styles.formContainer}>
-        <Text style={styles.formTitle}>Inscription</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Nom"
-          value={name}
-          onChangeText={setName}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Prénom"
-          value={surname}
-          onChangeText={setSurname}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Email"
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-          autoCapitalize="none"
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Mot de passe"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-          autoCapitalize="none"
-        />
-        <TouchableOpacity style={styles.button} onPress={handleSignUp}>
-          <Text style={styles.buttonText}>Inscription</Text>
-        </TouchableOpacity>
-        <Text style={styles.switchText}>
-          Vous avez déjà un compte?{' '}
-          <Text style={styles.switchLink} onPress={() => navigation.navigate('Login')}>
-            Se connecter
-          </Text>
-        </Text>
-      </View>
-    </View>
+    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <ScrollView contentContainerStyle={styles.scrollContainer}>
+        <View style={styles.container}>
+          <View style={styles.header}>
+            <Text style={styles.title}>A’rosa- je</Text>
+            <MaterialCommunityIcons name="flower" size={100} color="black" style={styles.icon} />
+          </View>
+          <View style={styles.formContainer}>
+            <Text style={styles.formTitle}>Inscription</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Nom"
+              value={name}
+              onChangeText={setName}
+            />
+            {errors.name && <Text style={styles.errorText}>{errors.name}</Text>}
+            <TextInput
+              style={styles.input}
+              placeholder="Prénom"
+              value={surname}
+              onChangeText={setSurname}
+            />
+            {errors.surname && <Text style={styles.errorText}>{errors.surname}</Text>}
+            <TextInput
+              style={styles.input}
+              placeholder="Email"
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+              autoCapitalize="none"
+            />
+            {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
+            <TextInput
+              style={styles.input}
+              placeholder="Mot de passe"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry
+              autoCapitalize="none"
+            />
+            {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
+            <View style={styles.switchContainer}>
+              <Text style={styles.switchLabel}>Êtes-vous un botaniste?</Text>
+              <Switch
+                value={isBotanist}
+                onValueChange={setIsBotanist}
+              />
+            </View>
+            <TouchableOpacity style={styles.button} onPress={handleSignUp}>
+              <Text style={styles.buttonText}>Inscription</Text>
+            </TouchableOpacity>
+            <Text style={styles.switchText}>
+              Vous avez déjà un compte?{' '}
+              <Text style={styles.switchLink} onPress={() => navigation.navigate('Login')}>
+                Se connecter
+              </Text>
+            </Text>
+          </View>
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
+  scrollContainer: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    backgroundColor: '#5DB075',
+  },
   container: {
     flex: 1,
-    backgroundColor: '#5DB075',
     alignItems: 'center',
     justifyContent: 'center',
   },
   header: {
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 90,
+    padding: 80,
   },
   title: {
     fontSize: 30,
@@ -101,21 +129,21 @@ const styles = StyleSheet.create({
     marginVertical: 10,
   },
   formContainer: {
-    flex: 1,
     width: '100%',
+    height: '60%',
     backgroundColor: 'white',
     alignItems: 'center',
     justifyContent: 'center',
     borderTopLeftRadius: 50,
     borderTopRightRadius: 50,
-    marginTop: -70,
+    marginTop: 0,
     padding: 20,
   },
   formTitle: {
     fontSize: 25,
     fontWeight: 'bold',
     color: 'black',
-    marginBottom: 20,
+    marginBottom: 10,
   },
   input: {
     width: '80%',
@@ -123,7 +151,22 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#ccc',
     borderRadius: 5,
+    marginBottom: 5,
+  },
+  errorText: {
+    color: 'red',
+    marginBottom: 2,
+    alignSelf: 'flex-start',
+    marginLeft: '10%',
+  },
+  switchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
     marginBottom: 20,
+  },
+  switchLabel: {
+    fontSize: 16,
+    marginRight: 10,
   },
   button: {
     backgroundColor: '#5DB075',
