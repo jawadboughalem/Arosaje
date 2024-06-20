@@ -2,7 +2,9 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Platform, ScrollView, KeyboardAvoidingView, Switch, Alert } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
+// Fonction principale de l'application
 export default function App({ navigation }) {
+  // États pour gérer les valeurs des champs du formulaire
   const [name, setName] = useState('');
   const [surname, setSurname] = useState('');
   const [email, setEmail] = useState('');
@@ -10,16 +12,22 @@ export default function App({ navigation }) {
   const [isBotanist, setIsBotanist] = useState(false);
   const [errors, setErrors] = useState({});
 
+  // Fonction de gestion de l'inscription
   const handleSignUp = () => {
     const validationErrors = {};
+    
+    // Vérification des champs obligatoires
     if (!name) validationErrors.name = "Le nom est requis.";
     if (!surname) validationErrors.surname = "Le prénom est requis.";
     if (!email) validationErrors.email = "L'email est requis.";
     if (!password) validationErrors.password = "Le mot de passe est requis.";
+    
+    // Mise à jour des erreurs d'entrée
     setErrors(validationErrors);
 
+    // Si pas d'erreurs, traiter l'inscription
     if (Object.keys(validationErrors).length === 0) {
-      // Handle the sign-up logic here
+      // Logique d'inscription ici
       console.log({
         name,
         surname,
@@ -27,8 +35,10 @@ export default function App({ navigation }) {
         password,
         isBotanist,
       });
+      // Afficher une alerte de succès
       Alert.alert("Inscription réussie", "Votre compte a été créé avec succès.");
-      // Remettre les champs à zéro après inscription réussie
+      
+      // Réinitialiser les champs du formulaire après une inscription réussie
       setName('');
       setSurname('');
       setEmail('');
@@ -39,6 +49,7 @@ export default function App({ navigation }) {
   };
 
   return (
+    // Vue pour éviter le clavier qui masque le contenu
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={styles.container}>
@@ -48,6 +59,8 @@ export default function App({ navigation }) {
           </View>
           <View style={styles.formContainer}>
             <Text style={styles.formTitle}>Inscription</Text>
+            
+            {/* Champ Nom */}
             <TextInput
               style={styles.input}
               placeholder="Nom"
@@ -55,6 +68,8 @@ export default function App({ navigation }) {
               onChangeText={setName}
             />
             {errors.name && <Text style={styles.errorText}>{errors.name}</Text>}
+            
+            {/* Champ Prénom */}
             <TextInput
               style={styles.input}
               placeholder="Prénom"
@@ -62,6 +77,8 @@ export default function App({ navigation }) {
               onChangeText={setSurname}
             />
             {errors.surname && <Text style={styles.errorText}>{errors.surname}</Text>}
+            
+            {/* Champ Email */}
             <TextInput
               style={styles.input}
               placeholder="Email"
@@ -71,6 +88,8 @@ export default function App({ navigation }) {
               autoCapitalize="none"
             />
             {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
+            
+            {/* Champ Mot de passe */}
             <TextInput
               style={styles.input}
               placeholder="Mot de passe"
@@ -80,6 +99,8 @@ export default function App({ navigation }) {
               autoCapitalize="none"
             />
             {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
+            
+            {/* Commutateur pour botaniste */}
             <View style={styles.switchContainer}>
               <Text style={styles.switchLabel}>Êtes-vous un botaniste?</Text>
               <Switch
@@ -87,9 +108,13 @@ export default function App({ navigation }) {
                 onValueChange={setIsBotanist}
               />
             </View>
+            
+            {/* Bouton d'inscription */}
             <TouchableOpacity style={styles.button} onPress={handleSignUp}>
               <Text style={styles.buttonText}>Inscription</Text>
             </TouchableOpacity>
+            
+            {/* Lien pour se connecter */}
             <Text style={styles.switchText}>
               Vous avez déjà un compte?{' '}
               <Text style={styles.switchLink} onPress={() => navigation.navigate('Login')}>
@@ -151,7 +176,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#ccc',
     borderRadius: 5,
-    marginBottom: 5,
+    marginBottom: 10,
   },
   errorText: {
     color: 'red',
