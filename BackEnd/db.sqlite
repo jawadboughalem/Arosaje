@@ -79,10 +79,7 @@ CREATE TABLE Garde(
     FOREIGN KEY (idUtilisateurs) REFERENCES utilisateurs(idUtilisateurs),
     FOREIGN KEY (idPlantes) REFERENCES Plantes(idPlantes)
 );
-Réduire
-message.txt
-3 Ko
-import db from './database';
+
 
 interface User {
   idUtilisateurs?: number;
@@ -127,8 +124,7 @@ CREATE TABLE utilisateurs (
 );
 
 
-INSERT INTO utilisateurs (idUtilisateurs, nom, prenom, email, password, photo, botaniste, numero, adresse)
-VALUES (2, 'abd', 'mouss', 'a@gmail.com', '1234', 'fleur.jpg', '1', '0789541210', '28 rue de la paix');
+
 
 
 
@@ -183,5 +179,4 @@ CREATE TABLE Garde(
     FOREIGN KEY (idUtilisateurs) REFERENCES utilisateurs(idUtilisateurs),
     FOREIGN KEY (idPlantes) REFERENCES Plantes(idPlantes)
 );
-message.txt
-3 Ko
+
