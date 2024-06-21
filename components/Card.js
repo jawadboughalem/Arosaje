@@ -29,6 +29,8 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 5,
     elevation: 5,
+    width: '90%', // Ajustez cette valeur selon vos besoins
+    alignSelf: 'center', // Pour centrer la carte horizontalement
   },
   plantImage: {
     width: 100,
