@@ -25,8 +25,6 @@ CREATE TABLE utilisateurs (
 );
 
 
-INSERT INTO utilisateurs (idUtilisateurs, nom, prenom, email, password, photo, botaniste, numero, adresse)
-VALUES (2, 'abd', 'mouss', 'a@gmail.com', '1234', 'fleur.jpg', '1', '0789541210', '28 rue de la paix');
 
 
 
