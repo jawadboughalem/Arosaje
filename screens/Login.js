@@ -1,69 +1,60 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Platform, ScrollView, KeyboardAvoidingView, Alert, AsyncStorage } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Platform, ScrollView, KeyboardAvoidingView, Alert } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+const { IPV4 } = require('../Backend//config/config');
 
-// Composant principal de la page de connexion
-export default function Login({ navigation }) {
-  // États pour gérer les valeurs des champs du formulaire
+export default function Login({ navigation, setIsLoggedIn }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState({});
 
-  // Fonction de gestion de la connexion
-  const handleLogin = () => {
+  const handleLogin = async () => {
     const validationErrors = {};
 
-    // Vérification des champs obligatoires
     if (!email) validationErrors.email = "L'email est requis.";
     if (!password) validationErrors.password = "Le mot de passe est requis.";
 
-    // Mise à jour des erreurs d'entrée
     setErrors(validationErrors);
 
-    // Si pas d'erreurs, procéder à la connexion
     if (Object.keys(validationErrors).length === 0) {
-      fetch('http://localhost:3000/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      })
-      .then(response => response.json())
-      .then(data => {
-        if (data.token) {
-          // Stocker le token dans AsyncStorage pour une session persistante
-          AsyncStorage.setItem('token', data.token);
-          // Afficher une alerte de succès
+      try {
+        const response = await fetch(`http://${IPV4}:3000/login`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ email, password }),
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          await AsyncStorage.setItem('token', data.token); // Sauvegarde du token dans AsyncStorage
+          setIsLoggedIn(true); // Met à jour l'état global d'authentification
           Alert.alert("Connexion réussie", "Vous êtes maintenant connecté.");
-          // Naviguer vers la page principale après une connexion réussie
-          navigation.navigate('Main');
+          navigation.navigate('Main'); // Navigue vers 'Main' après une connexion réussie
         } else {
-          // Afficher une alerte en cas de données incorrectes
-          Alert.alert("Erreur de connexion", "Email ou mot de passe incorrect.");
+          Alert.alert("Erreur de connexion", data.error || "Email ou mot de passe incorrect.");
         }
-      })
-      .catch(error => {
-        console.error('Error:', error);
-        // Afficher une alerte en cas d'erreur de connexion
+        
+      } catch (error) {
+        console.error('Network error:', error);
         Alert.alert("Erreur de connexion", "Une erreur s'est produite. Veuillez réessayer.");
-      });
+      }
     }
   };
 
   return (
-    // Vue pour éviter le clavier qui masque le contenu
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={styles.container}>
           <View style={styles.header}>
-            <Text style={styles.title}>A’rosa- je</Text>
+            <Text style={styles.title}>A’rosa-je</Text>
             <MaterialCommunityIcons name="flower" size={100} color="black" style={styles.icon} />
           </View>
           <View style={styles.formContainer}>
             <Text style={styles.formTitle}>Connexion</Text>
-            
-            {/* Champ Email */}
             <TextInput
               style={styles.input}
               placeholder="Email"
@@ -73,8 +64,6 @@ export default function Login({ navigation }) {
               autoCapitalize="none"
             />
             {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
-            
-            {/* Champ Mot de passe */}
             <TextInput
               style={styles.input}
               placeholder="Mot de passe"
@@ -84,13 +73,9 @@ export default function Login({ navigation }) {
               autoCapitalize="none"
             />
             {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
-            
-            {/* Bouton de connexion */}
             <TouchableOpacity style={styles.button} onPress={handleLogin}>
               <Text style={styles.buttonText}>Connexion</Text>
             </TouchableOpacity>
-            
-            {/* Lien pour s'inscrire */}
             <Text style={styles.switchText}>
               Vous n’avez pas de compte?{' '}
               <Text style={styles.switchLink} onPress={() => navigation.navigate('Sign')}>

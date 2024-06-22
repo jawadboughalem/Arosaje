@@ -3,7 +3,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
-import { TouchableOpacity, StyleSheet } from 'react-native';
+import { TouchableOpacity, StyleSheet, Platform } from 'react-native';
 import TabBarContext, { TabBarProvider } from './components/TabBarContext';
 
 import Bienvenue from './screens/Bienvenue';
@@ -17,6 +17,7 @@ import Conseils from './screens/Conseils';
 import Profil from './screens/Profil';
 import CameraPreview from './screens/CameraPreview';
 import Formulaire from './screens/Formulaire';
+
 import CreatePost from './screens/CreatePost';
 
 const Tab = createBottomTabNavigator();
@@ -74,11 +75,11 @@ function PhotosStack() {
 }
 
 export default function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(true);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-   //useEffect(() => {
-   //  setIsLoggedIn(false);
-   //}, []);
+  useEffect(() => {
+    setIsLoggedIn(false);
+  }, []);
 
   return (
     <TabBarProvider>
@@ -88,7 +89,9 @@ export default function App() {
             <>
               <Stack.Screen name="Bienvenue" component={Bienvenue} />
               <Stack.Screen name="Sign" component={Sign} />
-              <Stack.Screen name="Login" component={Login} />
+              <Stack.Screen name="Login">
+                {(props) => <Login {...props} setIsLoggedIn={setIsLoggedIn} />}
+              </Stack.Screen>
             </>
           ) : (
             <Stack.Screen name="Main" component={MainNavigator} />
@@ -99,7 +102,6 @@ export default function App() {
   );
 }
 
-
 const MainNavigator = () => {
   const { isTabBarVisible } = useContext(TabBarContext);
 
@@ -108,20 +110,21 @@ const MainNavigator = () => {
       screenOptions={{
         tabBarActiveTintColor: '#5DB075',
         tabBarLabelStyle: {
-          fontSize: 9,
+          fontSize: 11, // Augmenté pour meilleure visibilité
           fontWeight: '500',
+          paddingBottom: Platform.OS === 'ios' ? 5 : 0, // Ajout de padding pour iOS et Android
         },
         tabBarStyle: {
           display: isTabBarVisible ? 'flex' : 'none',
           position: 'absolute',
-          height: 53,
+          height: 60, // Augmenté pour meilleure visibilité
           borderTopLeftRadius: 22,
           borderTopRightRadius: 22,
           borderTopWidth: 0,
-          paddingBottom: 5,
           justifyContent: 'center',
           alignItems: 'center',
           backgroundColor: 'white',
+          paddingBottom: Platform.OS === 'ios' ? 10 : 15, // Ajout de padding pour iOS et Android
         },
       }}
     >
