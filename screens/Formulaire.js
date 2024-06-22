@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Button, StyleSheet, TextInput, View, Text, TouchableOpacity, ScrollView } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
+import { Ionicons } from '@expo/vector-icons';
 import Header from '../components/header';
 
 export default function Formulaire() {
@@ -18,8 +19,9 @@ export default function Formulaire() {
   };
 
   return (
+
     <View style={styles.wrapper}>
-      <Header title="Nouvelle plante" onBackPress={() => navigation.goBack()} />
+      <Header title="Nouveau post"/>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={styles.container}>
           <Text style={styles.label}>Nom plante :</Text>
@@ -93,7 +95,7 @@ const styles = StyleSheet.create({
     borderColor: 'gray',
     borderWidth: 1,
     borderRadius: 5,
-    marginBottom: 20,
+    marginBottom: 30,
     paddingHorizontal: 10,
   },
   textArea: {
