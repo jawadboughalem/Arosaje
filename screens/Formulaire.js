@@ -21,7 +21,7 @@ export default function Formulaire() {
   return (
 
     <View style={styles.wrapper}>
-      <Header title="Nouveau post"/>
+
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={styles.container}>
           <Text style={styles.label}>Nom plante :</Text>

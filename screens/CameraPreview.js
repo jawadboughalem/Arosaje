@@ -9,7 +9,7 @@ const CameraPreview = ({ route }) => {
 
   return (
     <View style={styles.container}>
-      <Header title="Nouvelle plante" onBackPress={() => navigation.goBack()} />
+
       {photo && <View style={styles.imageContainer}>
         <Image source={{ uri: photo }} style={styles.image} />
       </View>}
