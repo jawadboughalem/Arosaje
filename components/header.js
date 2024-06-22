@@ -5,7 +5,7 @@ import { BlurView } from 'expo-blur';
 const Header = ({ title }) => {
   return (
     <View style={styles.headerContainer}>
-      <BlurView intensity={95} tint="light" style={styles.header}>
+      <BlurView intensity={0} tint="light" style={styles.header}>
         <Text style={styles.headerTitle}>{title}</Text>
       </BlurView>
     </View>
@@ -19,6 +19,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     zIndex: 1,
+    paddingBottom: 10, // Ajoutez un padding en bas pour éviter l'interférence
   },
   header: {
     height: 60,

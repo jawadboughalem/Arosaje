@@ -1,73 +1,97 @@
-import React, { useState } from 'react';
-import { ScrollView, View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
+import React, { useState, useRef } from 'react';
+import { Animated, ScrollView, View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
+import Header from '../components/header'; // Assurez-vous d'importer le composant Header
 
 const ProfileScreen = () => {
   const [selectedTab, setSelectedTab] = useState('Photos');
+  const scrollY = useRef(new Animated.Value(0)).current;
+
+  const headerTranslateY = scrollY.interpolate({
+    inputRange: [0, 200],
+    outputRange: [0, -200],
+    extrapolate: 'clamp',
+  });
+
+  const headerOpacity = scrollY.interpolate({
+    inputRange: [0, 200],
+    outputRange: [1, 0],
+    extrapolate: 'clamp',
+  });
 
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.header}>
-        <Image 
-          style={styles.avatarIcon}
-          source={{ uri: 'https://img.icons8.com/ios-filled/50/000000/user.png' }}
-        />
-        <Image 
-          style={styles.profileImage}
-          source={{ uri: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/0b/Portrait_of_a_woman_with_a_red_hair.jpg/220px-Portrait_of_a_woman_with_a_red_hair.jpg' }} 
-        />
-        <Text style={styles.name}>Melissa Peters</Text>
-        <View style={styles.titleContainer}>
-          <Image source={{ uri: 'https://img.icons8.com/ios-filled/50/000000/flower.png' }} style={styles.titleIcon} />
-          <Text style={styles.title}>Botaniste</Text>
-        </View>
-        <View style={styles.location}>
-          <Image source={{ uri: 'https://img.icons8.com/ios-filled/50/000000/place-marker.png' }} style={styles.locationIcon} />
-          <Text style={styles.locationText}>Lagos, Nigeria</Text>
-        </View>
-      </View>
-
-      <View style={styles.tabs}>
-        <TouchableOpacity 
-          style={[styles.tabButton, selectedTab === 'Photos' ? styles.selectedTabButton : null]}
-          onPress={() => setSelectedTab('Photos')}
-        >
-          <Text style={styles.tabButtonText}>Mes plantes</Text>
-        </TouchableOpacity>
-        <TouchableOpacity 
-          style={[styles.tabButton, selectedTab === 'Likes' ? styles.selectedTabButton : null]}
-          onPress={() => setSelectedTab('Likes')}
-        >
-          <Text style={styles.tabButtonText}>Gardes</Text>
-        </TouchableOpacity>
-      </View>
-
-      <View style={styles.photos}>
-        {selectedTab === 'Photos' ? (
-          <>
-            <View style={styles.photo}>
-              <Image source={{ uri: 'https://via.placeholder.com/150' }} style={styles.photoImage} />
-            </View>
-            <View style={styles.photo}>
-              <Image source={{ uri: 'https://via.placeholder.com/150' }} style={styles.photoImage} />
-            </View>
-            <View style={styles.photo}>
-              <Image source={{ uri: 'https://via.placeholder.com/150' }} style={styles.photoImage} />
-            </View>
-            <View style={styles.photo}>
-              <Image source={{ uri: 'https://via.placeholder.com/150' }} style={styles.photoImage} />
-            </View>
-            <View style={styles.photo}>
-              <Image source={{ uri: 'https://via.placeholder.com/150' }} style={styles.photoImage} />
-            </View>
-            <View style={styles.photo}>
-              <Image source={{ uri: 'https://via.placeholder.com/150' }} style={styles.photoImage} />
-            </View>
-          </>
-        ) : (
-          <Text>Likes content goes here...</Text>
+    <View style={{ flex: 1 }}>
+      <Header title="Profil" />
+      <Animated.ScrollView
+        style={styles.container}
+        onScroll={Animated.event(
+          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+          { useNativeDriver: true }
         )}
-      </View>
-    </ScrollView>
+        scrollEventThrottle={16}
+      >
+        <Animated.View style={[styles.header, { transform: [{ translateY: headerTranslateY }], opacity: headerOpacity }]}>
+          <Image 
+            style={styles.avatarIcon}
+            source={{ uri: 'https://img.icons8.com/ios-filled/50/000000/user.png' }}
+          />
+          <Image 
+            style={styles.profileImage}
+            source={{ uri: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/0b/Portrait_of_a_woman_with_a_red_hair.jpg/220px-Portrait_of_a_woman_with_a_red_hair.jpg' }} 
+          />
+          <Text style={styles.name}>Melissa Peters</Text>
+          <View style={styles.titleContainer}>
+            <Image source={{ uri: 'https://img.icons8.com/ios-filled/50/000000/flower.png' }} style={styles.titleIcon} />
+            <Text style={styles.title}>Botaniste</Text>
+          </View>
+          <View style={styles.location}>
+            <Image source={{ uri: 'https://img.icons8.com/ios-filled/50/000000/place-marker.png' }} style={styles.locationIcon} />
+            <Text style={styles.locationText}>Lagos, Nigeria</Text>
+          </View>
+        </Animated.View>
+
+        <View style={styles.tabs}>
+          <TouchableOpacity 
+            style={[styles.tabButton, selectedTab === 'Photos' ? styles.selectedTabButton : null]}
+            onPress={() => setSelectedTab('Photos')}
+          >
+            <Text style={styles.tabButtonText}>Mes plantes</Text>
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={[styles.tabButton, selectedTab === 'Likes' ? styles.selectedTabButton : null]}
+            onPress={() => setSelectedTab('Likes')}
+          >
+            <Text style={styles.tabButtonText}>Gardes</Text>
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.photos}>
+          {selectedTab === 'Photos' ? (
+            <>
+              <View style={styles.photo}>
+                <Image source={{ uri: 'https://via.placeholder.com/150' }} style={styles.photoImage} />
+              </View>
+              <View style={styles.photo}>
+                <Image source={{ uri: 'https://via.placeholder.com/150' }} style={styles.photoImage} />
+              </View>
+              <View style={styles.photo}>
+                <Image source={{ uri: 'https://via.placeholder.com/150' }} style={styles.photoImage} />
+              </View>
+              <View style={styles.photo}>
+                <Image source={{ uri: 'https://via.placeholder.com/150' }} style={styles.photoImage} />
+              </View>
+              <View style={styles.photo}>
+                <Image source={{ uri: 'https://via.placeholder.com/150' }} style={styles.photoImage} />
+              </View>
+              <View style={styles.photo}>
+                <Image source={{ uri: 'https://via.placeholder.com/150' }} style={styles.photoImage} />
+              </View>
+            </>
+          ) : (
+            <Text>Likes content goes here...</Text>
+          )}
+        </View>
+      </Animated.ScrollView>
+    </View>
   );
 };
 
@@ -75,6 +99,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
+    paddingTop: 100, // Ajoutez un padding en haut pour compenser le Header
   },
   header: {
     alignItems: 'center',
