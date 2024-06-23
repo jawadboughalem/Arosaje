@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Platform, ScrollView, KeyboardAvoidingView, Switch, Alert } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+const { IPV4 } = require('../Backend/config/config.js');
 
 
 

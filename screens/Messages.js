@@ -1,14 +1,13 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, TouchableOpacity, Animated, TextInput, Keyboard, Image, Dimensions } from 'react-native';
+import React, { useState, useRef } from 'react';
+import { View, StyleSheet, TouchableOpacity, Animated, TextInput, Keyboard, Image, Text } from 'react-native';
 import Header from '../components/header';
-
 
 export default function Messages() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchText, setSearchText] = useState('');
-
-  // Animation value for search bar width
-  const searchWidth = new Animated.Value(0);
+  const [selectedTab, setSelectedTab] = useState('Messages');
+  const searchWidth = useRef(new Animated.Value(0)).current;
+  const textInputRef = useRef(null);
 
   const handleSearchPress = () => {
     setIsSearchOpen(true);
@@ -17,12 +16,14 @@ export default function Messages() {
     Animated.timing(searchWidth, {
       toValue: 1,
       duration: 300,
-      useNativeDriver: false, // width animation doesn't require native driver
-    }).start();
+      useNativeDriver: false,
+    }).start(() => {
+      textInputRef.current.focus(); // Focus the TextInput after the animation completes
+    });
   };
 
   const handleCloseSearch = () => {
-    Keyboard.dismiss(); // Dismiss the keyboard
+    Keyboard.dismiss();
     setIsSearchOpen(false);
     setSearchText('');
 
@@ -30,7 +31,7 @@ export default function Messages() {
     Animated.timing(searchWidth, {
       toValue: 0,
       duration: 300,
-      useNativeDriver: false, // width animation doesn't require native driver
+      useNativeDriver: false,
     }).start();
   };
 
@@ -44,18 +45,49 @@ export default function Messages() {
         />
       </TouchableOpacity>
 
-      <Animated.View style={[styles.searchBar, { width: searchWidth.interpolate({
-        inputRange: [0, 1],
-        outputRange: ['0%', '100%']
-      }) }]}>
+      <Animated.View style={[styles.searchBar, {
+        width: searchWidth.interpolate({
+          inputRange: [0, 1],
+          outputRange: ['30%', '69%'],
+        }),
+        opacity: searchWidth.interpolate({
+          inputRange: [0, 1],
+          outputRange: [0, 1],
+        }),
+      }]}>
         <TextInput
+          ref={textInputRef}
           style={styles.input}
           placeholder="Search..."
+          placeholderTextColor="#999"
           value={searchText}
           onChangeText={setSearchText}
           onSubmitEditing={handleCloseSearch}
         />
       </Animated.View>
+
+      <View style={styles.tabContainer}>
+        <TouchableOpacity
+          style={[styles.tabButton, selectedTab === 'Messages' && styles.selectedTab]}
+          onPress={() => setSelectedTab('Messages')}
+        >
+          <Text style={styles.tabText}>Messages</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.tabButton, selectedTab === 'Notifications' && styles.selectedTab]}
+          onPress={() => setSelectedTab('Notifications')}
+        >
+          <Text style={styles.tabText}>Notifications</Text>
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.content}>
+        {selectedTab === 'Messages' ? (
+          <Text style={styles.contentText}>Boîte de réception</Text>
+        ) : (
+          <Text style={styles.contentText}>Notifications</Text>
+        )}
+      </View>
     </View>
   );
 }
@@ -64,25 +96,62 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
-    paddingTop: 90, // Adjusted for header height
-    alignItems: 'center', // Center items horizontally
+    paddingTop: 68,
+    alignItems: 'center',
   },
   searchButton: {
     position: 'absolute',
-    top: 40,
-    right: 20,
+    top: 75,
+    right: 9,
     padding: 10,
-    zIndex: 2, // Higher than header to ensure it is on top
+    zIndex: 2,
   },
   searchBar: {
-    backgroundColor: '#ccc',
-    marginTop: 20,
+    backgroundColor: '#000',
+    marginTop: 10,
     paddingHorizontal: 20,
-    overflow: 'hidden',
-    width: '90%', // Adjusted width for responsive design
+    borderRadius: 25,
+    shadowColor: '#00BFFF', // Light blue shadow color
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    elevation: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: 50, // Ensure the height is defined
   },
   input: {
+    flex: 2,
     fontSize: 16,
     height: 40,
+    color: '#fff',
+  },
+  tabContainer: {
+    flexDirection: 'row',
+    marginTop: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ccc',
+  },
+  tabButton: {
+    flex: 1,
+    paddingVertical: 10,
+    alignItems: 'center',
+  },
+  selectedTab: {
+    borderBottomWidth: 2,
+    borderBottomColor: '#00FF00', // Green color for the underline
+  },
+  tabText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  content: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  contentText: {
+    fontSize: 20,
   },
 });
+

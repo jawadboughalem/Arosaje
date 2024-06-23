@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Platform, ScrollView, KeyboardAvoidingView, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-const { IPV4 } = require('../Backend//config/config');
+const { IPV4 } = require('../Backend/config/config.js');
 
 export default function Login({ navigation, setIsLoggedIn }) {
   const [email, setEmail] = useState('');

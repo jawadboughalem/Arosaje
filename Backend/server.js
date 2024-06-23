@@ -20,7 +20,7 @@ app.post('/signup', async (req, res) => {
     try {
         const hashedPassword = await bcrypt.hash(password, 10);
         const query = `INSERT INTO utilisateurs (nom, prenom, email, password, botaniste) VALUES (?, ?, ?, ?, ?)`;
-        db.run(query, [name, surname, email, hashedPassword, botanistValue], function(err) {
+        db.run(query, [name, surname, email, hashedPassword, botanistValue], function (err) {
             if (err) {
                 console.error('Erreur lors de l\'insertion dans la base de données:', err.message);
                 return res.status(500).json({ error: 'Erreur lors de l\'inscription' });
@@ -33,7 +33,6 @@ app.post('/signup', async (req, res) => {
     }
 });
 
-// Route pour la connexion
 // Route pour la connexion
 app.post('/login', async (req, res) => {
     const { email, password } = req.body;
@@ -59,7 +58,7 @@ app.post('/login', async (req, res) => {
                     return res.status(400).json({ error: 'Email ou mot de passe incorrect' });
                 }
 
-                const token = jwt.sign({ userId: row.id }, secretKey, { expiresIn: '1H' });
+                const token = jwt.sign({ userId: row.id }, secretKey, { expiresIn: '1h' });
 
                 console.log('Login successful for user:', row.id);
                 res.status(200).json({ token }); // Envoi du token JWT
@@ -69,36 +68,11 @@ app.post('/login', async (req, res) => {
                 return res.status(500).json({ error: 'Erreur lors de la comparaison du mot de passe' });
             }
         });
-
-
     } catch (error) {
         console.error('Error during login:', error.message);
         return res.status(500).json({ error: 'Erreur lors de la connexion' });
     }
-// Route pour récupérer les informations de l'utilisateur
-// Route pour récupérer les informations de l'utilisateur
-app.get('/user/:id', (req, res) => {
-    const userId = req.params.id;
-
-    const query = `SELECT nom, prenom FROM utilisateurs WHERE Code_Utilisateurs = ?`;
-    db.get(query, [userId], (err, row) => {
-        if (err) {
-            console.error('Erreur lors de la récupération des informations de l\'utilisateur:', err.message);
-            return res.status(500).json({ error: 'Erreur lors de la récupération des informations de l\'utilisateur' });
-        }
-
-        if (!row) {
-            return res.status(404).json({ error: 'Utilisateur non trouvé' });
-        }
-
-        res.status(200).json(row);
-    });
 });
-
-});
-
-
-
 
 app.listen(port, '0.0.0.0', () => {
     console.log(`Serveur démarré sur le port ${port}`);
