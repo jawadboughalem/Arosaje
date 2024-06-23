@@ -28,18 +28,12 @@ function PhotosStack() {
 
   return (
     <Stack.Navigator
-      screenOptions={{
-        headerShown: false,
-        gestureEnabled: true,
-        cardOverlayEnabled: true,
-      }}
     >
       <Stack.Screen
         name="Photos"
         component={Photos}
         options={{
-          header: () => <Header title="Photos" />,
-          tabBarVisible: false,
+          headerShown: false
         }}
         listeners={{
           focus: () => setIsTabBarVisible(false),
@@ -50,7 +44,8 @@ function PhotosStack() {
         name="CameraPreview"
         component={CameraPreview}
         options={{
-          header: () => <Header title="Nouvelle plante" />,
+          title: 'Nouvelle plante',
+          headerTitleAlign: 'center',
           tabBarVisible: false,
         }}
         listeners={{
@@ -62,7 +57,8 @@ function PhotosStack() {
         name="Formulaire"
         component={Formulaire}
         options={{
-          header: () => <Header title="Nouveau post" />,
+          title: 'Nouveau poste',
+          headerTitleAlign: 'center',
           tabBarVisible: false,
         }}
         listeners={{
@@ -78,7 +74,7 @@ export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
-    setIsLoggedIn(false);
+    setIsLoggedIn(true);
   }, []);
 
   return (
