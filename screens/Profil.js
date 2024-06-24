@@ -1,23 +1,31 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { useNavigation } from '@react-navigation/native';
+import ParametresProfil from './ParametresProfil'; 
 
 const ProfileScreen = () => {
-  const navigation = useNavigation();
+  const [showSettings, setShowSettings] = useState(false);
 
   const goToSettings = () => {
-    navigation.navigate('Annonces');
+    setShowSettings(true);
+  };
+
+  const goBack = () => {
+    setShowSettings(false);
   };
 
   return (
     <View style={styles.container}>
-      <View style={styles.iconContainer}>
-        <TouchableOpacity onPress={goToSettings} style={styles.settingsButton}>
-          <Icon name="settings-outline" size={30} color="#000" />
-        </TouchableOpacity>
-      </View>
-      {/* Ajoutez d'autres composants de profil ici */}
+      {!showSettings ? (
+        <View style={styles.iconContainer}>
+          <TouchableOpacity onPress={goToSettings} style={styles.settingsButton}>
+            <Icon name="settings-outline" size={30} color="#000" />
+          </TouchableOpacity>
+    
+        </View>
+      ) : (
+        <ParametresProfil onBack={goBack} />
+      )}
     </View>
   );
 };
@@ -26,7 +34,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
-    paddingTop: 100, // Ajustez cette valeur pour positionner l'icône plus bas
+    paddingTop: 100, 
   },
   iconContainer: {
     flexDirection: 'row',

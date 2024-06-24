@@ -1,9 +1,13 @@
 import React from 'react';
 import { View, Text, TextInput, Button, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import Icon from 'react-native-vector-icons/Ionicons';
 
-const ParametresProfil = () => {
+const ParametresProfil = ({ onBack }) => {
   return (
     <View style={styles.container}>
+      <TouchableOpacity onPress={onBack} style={styles.backButton}>
+        <Icon name="arrow-back" size={30} color="#000" />
+      </TouchableOpacity>
       <TouchableOpacity style={styles.profilePicContainer}>
         <Image source={{ uri: 'https://via.placeholder.com/100' }} style={styles.profilePic} />
         <Text style={styles.changePicText}>Changer la photo de profil</Text>
@@ -28,9 +32,15 @@ const styles = StyleSheet.create({
     padding: 16,
     backgroundColor: '#fff',
   },
+  backButton: {
+    position: 'absolute',
+    top: -8, // Ajustez cette valeur selon vos besoins
+    left: 16,
+  },
   profilePicContainer: {
     alignItems: 'center',
     marginBottom: 24,
+    marginTop: 40, // Espace pour l'icône de retour
   },
   profilePic: {
     width: 100,
