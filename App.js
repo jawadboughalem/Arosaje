@@ -2,8 +2,7 @@ import React, { useContext, useState, useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
-import { Ionicons, MaterialIcons } from '@expo/vector-icons';
-import { TouchableOpacity, StyleSheet, Platform } from 'react-native';
+import { Image, TouchableOpacity, StyleSheet, Platform } from 'react-native';
 import TabBarContext, { TabBarProvider } from './components/TabBarContext';
 
 import Bienvenue from './screens/Bienvenue';
@@ -18,8 +17,6 @@ import Profil from './screens/Profil';
 import CameraPreview from './screens/CameraPreview';
 import Formulaire from './screens/Formulaire';
 
-import CreatePost from './screens/CreatePost';
-
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 
@@ -28,12 +25,18 @@ function PhotosStack() {
 
   return (
     <Stack.Navigator
+      screenOptions={{
+        headerShown: false,
+        gestureEnabled: true,
+        cardOverlayEnabled: true,
+      }}
     >
       <Stack.Screen
         name="Photos"
         component={Photos}
         options={{
-          headerShown: false
+          header: () => <Header title="Photos" />,
+          tabBarVisible: false,
         }}
         listeners={{
           focus: () => setIsTabBarVisible(false),
@@ -44,8 +47,7 @@ function PhotosStack() {
         name="CameraPreview"
         component={CameraPreview}
         options={{
-          title: 'Nouvelle plante',
-          headerTitleAlign: 'center',
+          header: () => <Header title="Nouvelle plante" />,
           tabBarVisible: false,
         }}
         listeners={{
@@ -57,8 +59,7 @@ function PhotosStack() {
         name="Formulaire"
         component={Formulaire}
         options={{
-          title: 'Nouveau poste',
-          headerTitleAlign: 'center',
+          header: () => <Header title="Nouveau post" />,
           tabBarVisible: false,
         }}
         listeners={{
@@ -106,14 +107,15 @@ const MainNavigator = () => {
       screenOptions={{
         tabBarActiveTintColor: '#5DB075',
         tabBarLabelStyle: {
-          fontSize: 11, // Augmenté pour meilleure visibilité
+          fontSize: 12, // Augmenté pour meilleure visibilité
           fontWeight: '500',
-          paddingBottom: Platform.OS === 'ios' ? 5 : 0, // Ajout de padding pour iOS et Android
+          paddingBottom: Platform.OS === 'ios' ? 5 : 10, // Ajout de padding pour iOS et Android
         },
         tabBarStyle: {
           display: isTabBarVisible ? 'flex' : 'none',
           position: 'absolute',
-          height: 60, // Augmenté pour meilleure visibilité
+          height: 70, // Augmenté pour meilleure visibilité
+          bottom: 0, // Relever la barre de navigation
           borderTopLeftRadius: 22,
           borderTopRightRadius: 22,
           borderTopWidth: 0,
@@ -130,7 +132,10 @@ const MainNavigator = () => {
         options={{
           title: 'Annonces',
           tabBarIcon: ({ color, focused }) => (
-            <Ionicons name={focused ? 'home' : 'home-outline'} size={28} color={color} />
+            <Image
+              source={focused ? require('./assets/home.png') : require('./assets/home.png')}
+              style={{ width: 38, height: 38, tintColor: color }}
+            />
           ),
           header: () => <Header title="Annonces" />,
         }}
@@ -141,7 +146,10 @@ const MainNavigator = () => {
         options={{
           title: 'Messages',
           tabBarIcon: ({ color, focused }) => (
-            <Ionicons name={focused ? 'mail' : 'mail-outline'} size={28} color={color} />
+            <Image
+              source={focused ? require('./assets/message.png') : require('./assets/message.png')}
+              style={{ width: 55, height: 55, tintColor: color }}
+            />
           ),
           header: () => <Header title="Messages" />,
         }}
@@ -157,7 +165,7 @@ const MainNavigator = () => {
               style={styles.cameraButton}
               {...props}
             >
-              <MaterialIcons name="camera" size={49} color="#5DB075" />
+              <Image source={require('./assets/camera3.gif')} style={{ width: 60, height: 60, top: -12 }} />
             </TouchableOpacity>
           ),
           headerShown: false,
@@ -169,7 +177,10 @@ const MainNavigator = () => {
         options={{
           title: 'Conseils',
           tabBarIcon: ({ color, focused }) => (
-            <Ionicons name={focused ? 'leaf' : 'leaf-outline'} size={28} color={color} />
+            <Image
+              source={focused ? require('./assets/plante.png') : require('./assets/plante.png')}
+              style={{ width: 32, height: 38, tintColor: color }}
+            />
           ),
           header: () => <Header title="Conseils" />,
         }}
@@ -180,7 +191,10 @@ const MainNavigator = () => {
         options={{
           title: 'Profil',
           tabBarIcon: ({ color, focused }) => (
-            <Ionicons name={focused ? 'person' : 'person-outline'} size={28} color={color} />
+            <Image
+              source={focused ? require('./assets/profil.png') : require('./assets/profil.png')}
+              style={{ width: 60, height: 60, tintColor: color }}
+            />
           ),
           header: () => <Header title="Profil" />,
         }}
@@ -188,15 +202,14 @@ const MainNavigator = () => {
     </Tab.Navigator>
   );
 };
-
 const styles = StyleSheet.create({
   cameraButton: {
     position: 'absolute',
-    top: -35,
+    top: 0, // Ajustez cette valeur pour abaisser le bouton
     justifyContent: 'center',
     alignItems: 'center',
     height: 70,
-    width: 80,
+    width: 70,
     borderRadius: 35,
     backgroundColor: '#ffffff',
     borderWidth: 2,
@@ -208,3 +221,5 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
 });
+
+
