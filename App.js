@@ -104,22 +104,22 @@ const MainNavigator = () => {
       screenOptions={{
         tabBarActiveTintColor: '#5DB075',
         tabBarLabelStyle: {
-          fontSize: 12, // Augmenté pour meilleure visibilité
+          fontSize: 12,
           fontWeight: '500',
-          paddingBottom: Platform.OS === 'ios' ? 5 : 10, // Ajout de padding pour iOS et Android
+          paddingBottom: Platform.OS === 'ios' ? 5 : 5,
         },
         tabBarStyle: {
           display: isTabBarVisible ? 'flex' : 'none',
           position: 'absolute',
-          height: 70, // Augmenté pour meilleure visibilité
-          bottom: 0, // Relever la barre de navigation
+          height: 65,
+          bottom: 0,
           borderTopLeftRadius: 22,
           borderTopRightRadius: 22,
           borderTopWidth: 0,
           justifyContent: 'center',
           alignItems: 'center',
           backgroundColor: 'white',
-          paddingBottom: Platform.OS === 'ios' ? 10 : 15, // Ajout de padding pour iOS et Android
+          paddingBottom: Platform.OS === 'ios' ? 10 : 0,
         },
       }}
     >
@@ -131,7 +131,7 @@ const MainNavigator = () => {
           tabBarIcon: ({ color, focused }) => (
             <Image
               source={focused ? require('./assets/home.png') : require('./assets/home.png')}
-              style={{ width: 38, height: 38, tintColor: color }}
+              style={{ width: 40, height: 38, tintColor: color }}
             />
           ),
           header: () => <Header title="Annonces" />,
@@ -203,7 +203,7 @@ const MainNavigator = () => {
 const styles = StyleSheet.create({
   cameraButton: {
     position: 'absolute',
-    top: 0, // Ajustez cette valeur pour abaisser le bouton
+    top: 0,
     justifyContent: 'center',
     alignItems: 'center',
     height: 70,
