@@ -3,6 +3,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import { Image, TouchableOpacity, StyleSheet, Platform } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import TabBarContext, { TabBarProvider } from './components/TabBarContext';
 
 import Bienvenue from './screens/Bienvenue';
@@ -20,23 +21,17 @@ import Formulaire from './screens/Formulaire';
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 
-function PhotosStack() {
+function PhotosStack({ navigation }) {
   const { setIsTabBarVisible } = useContext(TabBarContext);
 
   return (
     <Stack.Navigator
-      screenOptions={{
-        headerShown: false,
-        gestureEnabled: true,
-        cardOverlayEnabled: true,
-      }}
     >
       <Stack.Screen
         name="Photos"
         component={Photos}
         options={{
-          header: () => <Header title="Photos" />,
-          tabBarVisible: false,
+          headerShown: false
         }}
         listeners={{
           focus: () => setIsTabBarVisible(false),
@@ -47,7 +42,8 @@ function PhotosStack() {
         name="CameraPreview"
         component={CameraPreview}
         options={{
-          header: () => <Header title="Nouvelle plante" />,
+          title: 'Nouvelle plante',
+          headerTitleAlign: 'center',
           tabBarVisible: false,
         }}
         listeners={{
@@ -59,7 +55,8 @@ function PhotosStack() {
         name="Formulaire"
         component={Formulaire}
         options={{
-          header: () => <Header title="Nouveau post" />,
+          title: 'Nouveau poste',
+          headerTitleAlign: 'center',
           tabBarVisible: false,
         }}
         listeners={{
@@ -202,6 +199,7 @@ const MainNavigator = () => {
     </Tab.Navigator>
   );
 };
+
 const styles = StyleSheet.create({
   cameraButton: {
     position: 'absolute',
@@ -221,5 +219,3 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
 });
-
-
