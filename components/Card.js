@@ -29,6 +29,8 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 5,
     elevation: 5,
+    width: '90%',
+    alignSelf: 'center',
   },
   plantImage: {
     width: 100,
