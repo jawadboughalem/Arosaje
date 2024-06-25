@@ -6,6 +6,7 @@ const db = new sqlite3.Database(dbPath);
 
 const initialize = () => {
   db.serialize(() => {
+    // J'encapsule toutes les instructions de création de table dans une transaction pour une meilleure cohérence
     db.run(`CREATE TABLE IF NOT EXISTS Utilisateurs (
         Code_Utilisateurs INTEGER PRIMARY KEY AUTOINCREMENT,
         nom TEXT NOT NULL,
@@ -30,7 +31,7 @@ const initialize = () => {
       Code_Messages INTEGER PRIMARY KEY,
       Code_Utilisateurs INTEGER,
       Message TEXT,
-      DateEnvoi TEXT,
+      DateEnvoi DATETIME,
       FOREIGN KEY (Code_Utilisateurs) REFERENCES Utilisateurs(Code_Utilisateurs)
     )`);
     db.run(`CREATE TABLE IF NOT EXISTS Postes (
@@ -38,40 +39,42 @@ const initialize = () => {
       Code_Utilisateurs INTEGER,
       titre TEXT,
       Description TEXT,
-      DatePoste TEXT,
+      DatePoste DATETIME,
       Localisation TEXT,
       FOREIGN KEY (Code_Utilisateurs) REFERENCES utilisateurs(Code_Utilisateurs)
-    )`);
+    );`)    
     db.run(`CREATE TABLE IF NOT EXISTS Commentaires (
       Code_Commentaire INTEGER PRIMARY KEY,
       Code_Utilisateurs INTEGER,
       Code_Plantes INTEGER,
       texte TEXT,
-      DateCommentaire TEXT,
+      DateCommentaire DATETIME,
       FOREIGN KEY (Code_Utilisateurs) REFERENCES utilisateurs(Code_Utilisateurs),
       FOREIGN KEY (Code_Plantes) REFERENCES Plantes(Code_Plantes)
-    )`);
+    );`)    
     db.run(`CREATE TABLE IF NOT EXISTS Plantes (
       Code_Plantes INTEGER PRIMARY KEY,
       Code_Utilisateurs INTEGER,
       NomPlante TEXT,
-      PhotoPlante TEXT,
+      PhotoPlante BLOB,
       Description TEXT,
+      FamillePlante TEXT,
       FOREIGN KEY (Code_Utilisateurs) REFERENCES Utilisateurs(Code_Utilisateurs)
-    )`);
+    );`)    
     db.run(`CREATE TABLE IF NOT EXISTS Gardes (
       Code_Garde INTEGER PRIMARY KEY,
       Code_Utilisateurs INTEGER,
       Code_Plantes INTEGER,
-      DateDebut TEXT,
-      DateFin TEXT,
+      DateDebut DATETIME,
+      DateFin DATETIME,
       localisation TEXT,
       FOREIGN KEY (Code_Utilisateurs) REFERENCES utilisateurs(Code_Utilisateurs),
       FOREIGN KEY (Code_Plantes) REFERENCES Plantes(Code_Plantes)
-    )`);
+    );`)    
   });
 };
 
+// J'exporte la connexion à la base de données et la fonction d'initialisation
 module.exports = {
   db,
   initialize,
