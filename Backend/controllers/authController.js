@@ -1,5 +1,6 @@
 const bcrypt = require('bcrypt');
 const { createUser, getUserByEmail } = require('../models/userModel');
+const { generateToken } = require('../utils/jwt'); // Assurez-vous que le chemin est correct
 
 const signup = async (req, res) => {
     const { name, surname, email, password, isBotanist } = req.body;
@@ -52,8 +53,11 @@ const login = async (req, res) => {
                     return res.status(400).json({ error: 'Email ou mot de passe incorrect' });
                 }
 
+                const token = generateToken(user.Code_Utilisateurs);
+                console.log('Token generated:', token);
+
                 console.log('Login successful for user:', user.Code_Utilisateurs);
-                res.status(200).json({ message: 'Connexion réussie' });
+                res.status(200).json({ token }); // Assurez-vous que le token est envoyé ici
 
             } catch (error) {
                 console.error('Error during password comparison:', error.message);

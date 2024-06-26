@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Platform, ScrollView, KeyboardAvoidingView, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-const { IPV4 } = require('../Backend//config/config');
+const { IPV4 } = require('../Backend/config/config');
 
 export default function Login({ navigation, setIsLoggedIn }) {
     const [email, setEmail] = useState('');
@@ -30,9 +30,15 @@ export default function Login({ navigation, setIsLoggedIn }) {
                 const data = await response.json();
 
                 if (response.ok) {
-                    setIsLoggedIn(true); // Met à jour l'état global d'authentification
-                    Alert.alert("Connexion réussie", "Vous êtes maintenant connecté.");
-                    navigation.navigate('Main'); // Navigue vers 'Main' après une connexion réussie
+                    const token = data.token;
+                    if (token) {
+                        await AsyncStorage.setItem('token', token); // Stockage du token
+                        setIsLoggedIn(true); // Met à jour l'état global d'authentification
+                        Alert.alert("Connexion réussie", "Vous êtes maintenant connecté.");
+                        navigation.navigate('Main'); // Navigue vers 'Main' après une connexion réussie
+                    } else {
+                        Alert.alert("Erreur de connexion", "Token non reçu.");
+                    }
                 } else {
                     Alert.alert("Erreur de connexion", data.error || "Email ou mot de passe incorrect.");
                 }
