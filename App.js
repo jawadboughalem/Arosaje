@@ -72,7 +72,7 @@ export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
-    setIsLoggedIn(false);
+    setIsLoggedIn(true);
   }, []);
 
   return (
