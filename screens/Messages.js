@@ -12,13 +12,12 @@ export default function Messages() {
   const handleSearchPress = () => {
     setIsSearchOpen(true);
 
-    // Start the search bar animation
     Animated.timing(searchWidth, {
       toValue: 1,
       duration: 300,
       useNativeDriver: false,
     }).start(() => {
-      textInputRef.current.focus(); // Focus the TextInput after the animation completes
+      textInputRef.current.focus();
     });
   };
 
@@ -27,7 +26,6 @@ export default function Messages() {
     setIsSearchOpen(false);
     setSearchText('');
 
-    // Reset the search bar animation
     Animated.timing(searchWidth, {
       toValue: 0,
       duration: 300,
@@ -38,13 +36,14 @@ export default function Messages() {
   return (
     <View style={styles.container}>
       <Header title="Messages" />
-      <TouchableOpacity style={styles.searchButton} onPress={handleSearchPress}>
-        <Image
-          source={require('../assets/loupe.png')}
-          style={{ width: 30, height: 30 }}
-        />
-      </TouchableOpacity>
-
+      {!isSearchOpen && (
+        <TouchableOpacity style={styles.searchButton} onPress={handleSearchPress}>
+          <Image
+            source={require('../assets/loupe.png')}
+            style={{ width: 30, height: 30 }}
+          />
+        </TouchableOpacity>
+      )}
       <Animated.View style={[styles.searchBar, {
         width: searchWidth.interpolate({
           inputRange: [0, 1],
@@ -58,7 +57,7 @@ export default function Messages() {
         <TextInput
           ref={textInputRef}
           style={styles.input}
-          placeholder="Search..."
+          placeholder="Recherche..."
           placeholderTextColor="#999"
           value={searchText}
           onChangeText={setSearchText}
@@ -101,24 +100,24 @@ const styles = StyleSheet.create({
   },
   searchButton: {
     position: 'absolute',
-    top: 75,
-    right: 9,
+    top: 95,
+    right: 160,
     padding: 10,
     zIndex: 2,
   },
   searchBar: {
     backgroundColor: '#000',
-    marginTop: 10,
+    marginTop: 30,
     paddingHorizontal: 20,
     borderRadius: 25,
-    shadowColor: '#00BFFF', // Light blue shadow color
+    shadowColor: '#00BFFF',
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.1,
     shadowRadius: 10,
     elevation: 10,
     flexDirection: 'row',
     alignItems: 'center',
-    height: 50, // Ensure the height is defined
+    height: 40,
   },
   input: {
     flex: 2,
@@ -128,7 +127,7 @@ const styles = StyleSheet.create({
   },
   tabContainer: {
     flexDirection: 'row',
-    marginTop: 20,
+    marginTop: 10,
     borderBottomWidth: 1,
     borderBottomColor: '#ccc',
   },
@@ -139,7 +138,7 @@ const styles = StyleSheet.create({
   },
   selectedTab: {
     borderBottomWidth: 2,
-    borderBottomColor: '#00FF00', // Green color for the underline
+    borderBottomColor: '#00FF00',
   },
   tabText: {
     fontSize: 16,
@@ -154,4 +153,3 @@ const styles = StyleSheet.create({
     fontSize: 20,
   },
 });
-
