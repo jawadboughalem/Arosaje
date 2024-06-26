@@ -12,48 +12,47 @@ export default function Sign({ navigation }) {
     const [errors, setErrors] = useState({});
 
     const handleSignUp = async () => {
-      const validationErrors = {};
-      if (!name.trim()) validationErrors.name = "Le nom est requis.";
-      if (!surname.trim()) validationErrors.surname = "Le prénom est requis.";
-      if (!email.trim()) validationErrors.email = "L'email est requis.";
-      if (!password.trim()) validationErrors.password = "Le mot de passe est requis.";
-      setErrors(validationErrors);
-  
-      if (Object.keys(validationErrors).length === 0) {
-          try {
-            const response = await fetch(`http://${IPV4}:3000/login`, {
-                  method: 'POST',
-                  headers: {
-                      'Content-Type': 'application/json',
-                  },
-                  body: JSON.stringify({
-                      name,
-                      surname,
-                      email,
-                      password,
-                      isBotanist,
-                  }),
-              });
-              if (!response.ok) {
-                  console.error('Erreur lors de l\'inscription:', response.statusText);
-                  throw new Error('Erreur lors de l\'inscription');
-              }
-              const data = await response.json();
-              console.log('Inscription réussie. ID utilisateur:', data.userId);
-              Alert.alert("Inscription réussie", "Votre compte a été créé avec succès.");
-              setName('');
-              setSurname('');
-              setEmail('');
-              setPassword('');
-              setIsBotanist(false);
-              setErrors({});
-          } catch (error) {
-              console.error('Erreur lors de l\'inscription:', error);
-              Alert.alert("Erreur", "Une erreur s'est produite lors de l'inscription.");
-          }
-      }
-  };
-  
+        const validationErrors = {};
+        if (!name.trim()) validationErrors.name = "Le nom est requis.";
+        if (!surname.trim()) validationErrors.surname = "Le prénom est requis.";
+        if (!email.trim()) validationErrors.email = "L'email est requis.";
+        if (!password.trim()) validationErrors.password = "Le mot de passe est requis.";
+        setErrors(validationErrors);
+
+        if (Object.keys(validationErrors).length === 0) {
+            try {
+                const response = await fetch(`http://${IPV4}:3000/auth/signup`, { // Mise à jour de l'URL ici
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        name,
+                        surname,
+                        email,
+                        password,
+                        isBotanist,
+                    }),
+                });
+                if (!response.ok) {
+                    console.error('Erreur lors de l\'inscription:', response.statusText);
+                    throw new Error('Erreur lors de l\'inscription');
+                }
+                const data = await response.json();
+                console.log('Inscription réussie. ID utilisateur:', data.userId);
+                Alert.alert("Inscription réussie", "Votre compte a été créé avec succès.");
+                setName('');
+                setSurname('');
+                setEmail('');
+                setPassword('');
+                setIsBotanist(false);
+                setErrors({});
+            } catch (error) {
+                console.error('Erreur lors de l\'inscription:', error);
+                Alert.alert("Erreur", "Une erreur s'est produite lors de l'inscription.");
+            }
+        }
+    };
 
     return (
         <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
