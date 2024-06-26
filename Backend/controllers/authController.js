@@ -1,24 +1,28 @@
 const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
 const { createUser, getUserByEmail } = require('../models/userModel');
-const { secretKey } = require('../config/config');
 
 const signup = async (req, res) => {
     const { name, surname, email, password, isBotanist } = req.body;
     const botanistValue = isBotanist ? 1 : 0;
 
+    console.log('Starting signup process');
+    console.log(`Received data: name=${name}, surname=${surname}, email=${email}, botanist=${botanistValue}`);
+
     try {
         const hashedPassword = await bcrypt.hash(password, 10);
+        console.log('Password hashed successfully');
+        
         createUser(name, surname, email, hashedPassword, botanistValue, (err, userId) => {
             if (err) {
-                console.error('Erreur lors de l\'insertion dans la base de données:', err.message);
-                return res.status(500).json({ error: 'Erreur lors de l\'inscription' });
+                console.error('Database insertion error:', err.message);
+                return res.status(500).json({ error: 'Erreur lors de l\'insertion dans la base de données', details: err.message });
             }
+            console.log('User created successfully with ID:', userId);
             res.status(200).json({ message: 'Inscription réussie', userId });
         });
     } catch (err) {
-        console.error('Erreur lors de l\'inscription:', err.message);
-        res.status(500).json({ error: 'Erreur lors de l\'inscription' });
+        console.error('Error during signup:', err.message);
+        res.status(500).json({ error: 'Erreur lors de l\'inscription', details: err.message });
     }
 };
 
@@ -30,13 +34,16 @@ const login = async (req, res) => {
         getUserByEmail(email, async (err, user) => {
             if (err) {
                 console.error('Database error:', err.message);
-                return res.status(500).json({ error: 'Erreur lors de la connexion à la base de données' });
+                return res.status(500).json({ error: 'Erreur lors de la connexion à la base de données', details: err.message });
             }
 
             if (!user) {
                 console.warn('No user found for email:', email);
                 return res.status(400).json({ error: 'Email ou mot de passe incorrect' });
             }
+
+            console.log('User found:', user);
+            console.log('Comparing passwords:', password, user.password);
 
             try {
                 const isPasswordValid = await bcrypt.compare(password, user.password);
@@ -45,20 +52,18 @@ const login = async (req, res) => {
                     return res.status(400).json({ error: 'Email ou mot de passe incorrect' });
                 }
 
-                const token = jwt.sign({ userId: user.Code_Utilisateurs }, secretKey, { expiresIn: '30s' });
-
                 console.log('Login successful for user:', user.Code_Utilisateurs);
-                res.status(200).json({ token });
+                res.status(200).json({ message: 'Connexion réussie' });
 
             } catch (error) {
                 console.error('Error during password comparison:', error.message);
-                return res.status(500).json({ error: 'Erreur lors de la comparaison du mot de passe' });
+                return res.status(500).json({ error: 'Erreur lors de la comparaison du mot de passe', details: error.message });
             }
         });
 
     } catch (error) {
         console.error('Error during login:', error.message);
-        return res.status(500).json({ error: 'Erreur lors de la connexion' });
+        return res.status(500).json({ error: 'Erreur lors de la connexion', details: error.message });
     }
 };
 
