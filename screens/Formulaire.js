@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
-import { Button, StyleSheet, TextInput, View, Text, TouchableOpacity, ScrollView } from 'react-native';
+import { StyleSheet, TextInput, View, Text, TouchableOpacity, ScrollView } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
-import { Ionicons } from '@expo/vector-icons';
 import Header from '../components/header';
 
 export default function Formulaire() {
@@ -14,14 +13,39 @@ export default function Formulaire() {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
 
-  const handleSubmit = () => {
-    console.log('Form submitted:', { plantName, description, location, startDate, endDate, photo });
+  const handleSubmit = async () => {
+    const data = {
+      plantName,
+      description,
+      location,
+      startDate,
+      endDate,
+      photo,
+      userName: 'John Doe',  // Exemple d'utilisateur fictif
+      userImage: 'https://example.com/user.jpg'  // Exemple d'image utilisateur fictive
+    };
+
+    try {
+      const response = await fetch('http://your-backend-url.com/auth/annonces', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (response.ok) {
+        navigation.navigate('Annonces');
+      } else {
+        console.error('Erreur lors de la soumission du formulaire');
+      }
+    } catch (error) {
+      console.error('Erreur réseau:', error);
+    }
   };
 
   return (
-
     <View style={styles.wrapper}>
-
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={styles.container}>
           <Text style={styles.label}>Nom plante :</Text>
