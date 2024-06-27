@@ -1,8 +1,7 @@
-
 import React from 'react';
 import { View, Image, StyleSheet } from 'react-native';
 
-const Card = ({ imageUrl }) => {
+const CardProfil = ({ imageUrl }) => {
   return (
     <View style={styles.photo}>
       <Image source={{ uri: imageUrl }} style={styles.photoImage} />
@@ -23,4 +22,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Card;
+export default CardProfil;
