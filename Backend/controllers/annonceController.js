@@ -1,7 +1,8 @@
 const annonceModel = require('../models/annonceModel');
 
-exports.addAnnonce = (req, res) => {
+const addAnnonce = (req, res) => {
   const annonce = req.body;
+  annonce.userId = req.userId; // Assuming userId is added by middleware
   annonceModel.createAnnonce(annonce, (err, id) => {
     if (err) {
       console.error('Database error:', err.message);
@@ -11,7 +12,7 @@ exports.addAnnonce = (req, res) => {
   });
 };
 
-exports.getAllAnnonces = (req, res) => {
+const getAllAnnonces = (req, res) => {
   annonceModel.getAllAnnonces((err, rows) => {
     if (err) {
       console.error('Database error:', err.message);
@@ -19,4 +20,9 @@ exports.getAllAnnonces = (req, res) => {
     }
     res.status(200).json(rows);
   });
+};
+
+module.exports = {
+  addAnnonce,
+  getAllAnnonces,
 };
