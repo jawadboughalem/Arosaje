@@ -17,10 +17,7 @@ app.use(bodyParser.json());
 app.use('/auth', authRoutes);
 app.use('/annonces', annonceRoutes);
 
-// Exemple de route protégée
-app.get('/protected', authenticateToken, (req, res) => {
-    res.status(200).json({ message: 'Accès autorisé', userId: req.userId });
-});
+
 
 
 app.listen(port, '0.0.0.0', () => {
