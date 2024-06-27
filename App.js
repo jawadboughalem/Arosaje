@@ -2,10 +2,11 @@ import React, { useContext, useState, useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
-import { Image, TouchableOpacity, StyleSheet, Platform } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import TabBarContext, { TabBarProvider } from './components/TabBarContext';
+import { Image, TouchableOpacity, StyleSheet, Platform, Alert } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import jwt_decode from 'jwt-decode';
 
+import TabBarContext, { TabBarProvider } from './components/TabBarContext';
 import Bienvenue from './screens/Bienvenue';
 import Sign from './screens/Sign';
 import Login from './screens/Login';
@@ -25,14 +26,11 @@ function PhotosStack({ navigation }) {
   const { setIsTabBarVisible } = useContext(TabBarContext);
 
   return (
-    <Stack.Navigator
-    >
+    <Stack.Navigator>
       <Stack.Screen
         name="Photos"
         component={Photos}
-        options={{
-          headerShown: false
-        }}
+        options={{ headerShown: false }}
         listeners={{
           focus: () => setIsTabBarVisible(false),
           blur: () => setIsTabBarVisible(true),
@@ -65,34 +63,6 @@ function PhotosStack({ navigation }) {
         }}
       />
     </Stack.Navigator>
-  );
-}
-
-export default function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-
-  useEffect(() => {
-    setIsLoggedIn(true);
-  }, []);
-
-  return (
-    <TabBarProvider>
-      <NavigationContainer>
-        <Stack.Navigator screenOptions={{ headerShown: false }}>
-          {!isLoggedIn ? (
-            <>
-              <Stack.Screen name="Bienvenue" component={Bienvenue} />
-              <Stack.Screen name="Sign" component={Sign} />
-              <Stack.Screen name="Login">
-                {(props) => <Login {...props} setIsLoggedIn={setIsLoggedIn} />}
-              </Stack.Screen>
-            </>
-          ) : (
-            <Stack.Screen name="Main" component={MainNavigator} />
-          )}
-        </Stack.Navigator>
-      </NavigationContainer>
-    </TabBarProvider>
   );
 }
 
@@ -130,7 +100,7 @@ const MainNavigator = () => {
           title: 'Annonces',
           tabBarIcon: ({ color, focused }) => (
             <Image
-              source={focused ? require('./assets/home.png') : require('./assets/home.png')}
+              source={require('./assets/home.png')}
               style={{ width: 40, height: 38, tintColor: color }}
             />
           ),
@@ -144,7 +114,7 @@ const MainNavigator = () => {
           title: 'Messages',
           tabBarIcon: ({ color, focused }) => (
             <Image
-              source={focused ? require('./assets/message.png') : require('./assets/message.png')}
+              source={require('./assets/message.png')}
               style={{ width: 55, height: 55, tintColor: color }}
             />
           ),
@@ -175,7 +145,7 @@ const MainNavigator = () => {
           title: 'Conseils',
           tabBarIcon: ({ color, focused }) => (
             <Image
-              source={focused ? require('./assets/plante.png') : require('./assets/plante.png')}
+              source={require('./assets/plante.png')}
               style={{ width: 32, height: 38, tintColor: color }}
             />
           ),
@@ -189,7 +159,7 @@ const MainNavigator = () => {
           title: 'Profil',
           tabBarIcon: ({ color, focused }) => (
             <Image
-              source={focused ? require('./assets/profil.png') : require('./assets/profil.png')}
+              source={require('./assets/profil.png')}
               style={{ width: 60, height: 60, tintColor: color }}
             />
           ),
@@ -199,6 +169,73 @@ const MainNavigator = () => {
     </Tab.Navigator>
   );
 };
+
+export default function App() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const checkToken = async () => {
+      try {
+        const token = await AsyncStorage.getItem('token');
+        if (token) {
+          const decodedToken = jwt_decode(token);
+          const currentTime = Date.now() / 1000;
+          if (decodedToken.exp > currentTime) {
+            setIsLoggedIn(true);
+          } else {
+            await AsyncStorage.removeItem('token');
+            setIsLoggedIn(false);
+            Alert.alert("Session expirée", "Veuillez vous reconnecter.");
+          }
+        }
+      } catch (error) {
+        console.error('Erreur lors de la vérification du jeton :', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    checkToken();
+
+    const interval = setInterval(() => {
+      checkToken();
+    }, 20000); // Vérifie toutes les 20 secondes
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const handleLogout = async () => {
+    await AsyncStorage.removeItem('token');
+    setIsLoggedIn(false);
+  };
+
+  if (isLoading) {
+    return null; // ou une vue de chargement si vous préférez
+  }
+
+  return (
+    <TabBarProvider>
+      <NavigationContainer>
+        <Stack.Navigator screenOptions={{ headerShown: false }}>
+          {!isLoggedIn ? (
+            <>
+              <Stack.Screen name="Bienvenue" component={Bienvenue} />
+              <Stack.Screen name="Sign" component={Sign} />
+              <Stack.Screen name="Login">
+                {(props) => <Login {...props} setIsLoggedIn={setIsLoggedIn} />}
+              </Stack.Screen>
+            </>
+          ) : (
+            <Stack.Screen name="Main">
+              {(props) => <MainNavigator {...props} handleLogout={handleLogout} />}
+            </Stack.Screen>
+          )}
+        </Stack.Navigator>
+      </NavigationContainer>
+    </TabBarProvider>
+  );
+}
 
 const styles = StyleSheet.create({
   cameraButton: {
