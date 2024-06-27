@@ -5,7 +5,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { IPV4 } = require('../Backend/config/config');
 
-export default function Formulaire() {
+const Formulaire = () => {
   const route = useRoute();
   const navigation = useNavigation();
   const { photo } = route.params || {};
@@ -32,6 +32,16 @@ export default function Formulaire() {
 
     fetchToken();
   }, []);
+
+  const handleDateChange = (text, setDate) => {
+    // Automatically add slashes to the date input
+    const formattedText = text.replace(/^(\d{2})(\d{2})?(\d{4})?$/, (match, p1, p2, p3) => {
+      if (p3) return `${p1}/${p2}/${p3}`;
+      else if (p2) return `${p1}/${p2}`;
+      else return p1;
+    });
+    setDate(formattedText);
+  };
 
   const handleSubmit = async () => {
     const data = {
@@ -104,19 +114,21 @@ export default function Formulaire() {
           />
           <Text style={styles.label}>Période de garde :</Text>
           <View style={styles.dateContainer}>
-            <Text>du</Text>
+            <Text style={styles.dateLabel}>du</Text>
             <TextInput
               style={styles.dateInput}
               placeholder="JJ/MM/AAAA"
               value={startDate}
-              onChangeText={setStartDate}
+              onChangeText={(text) => handleDateChange(text, setStartDate)}
+              keyboardType="numeric"
             />
-            <Text>au</Text>
+            <Text style={styles.dateLabel}>au</Text>
             <TextInput
               style={styles.dateInput}
               placeholder="JJ/MM/AAAA"
               value={endDate}
-              onChangeText={setEndDate}
+              onChangeText={(text) => handleDateChange(text, setEndDate)}
+              keyboardType="numeric"
             />
           </View>
           <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
@@ -126,7 +138,7 @@ export default function Formulaire() {
       </ScrollView>
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   wrapper: {
@@ -135,47 +147,58 @@ const styles = StyleSheet.create({
   },
   scrollContainer: {
     flexGrow: 1,
-    justifyContent: 'center',
     padding: 20,
+    justifyContent: 'center',
   },
   container: {
     flex: 1,
-    justifyContent: 'center',
   },
   label: {
-    fontSize: 16,
-    marginBottom: 5,
+    fontSize: 18,
+    marginBottom: 8,
+    color: '#333',
+    fontWeight: '500',
   },
   input: {
-    height: 40,
-    borderColor: 'gray',
+    height: 50,
+    borderColor: '#ccc',
     borderWidth: 1,
-    borderRadius: 5,
-    marginBottom: 30,
-    paddingHorizontal: 10,
+    borderRadius: 10,
+    marginBottom: 20,
+    paddingHorizontal: 15,
+    backgroundColor: '#f9f9f9',
+    fontSize: 16,
   },
   textArea: {
-    height: 80,
+    height: 100,
   },
   dateContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 20,
   },
+  dateLabel: {
+    fontSize: 16,
+    color: '#333',
+    fontWeight: '500',
+  },
   dateInput: {
-    height: 40,
-    borderColor: 'gray',
+    height: 50,
+    borderColor: '#ccc',
     borderWidth: 1,
-    borderRadius: 5,
+    borderRadius: 10,
     marginHorizontal: 10,
     flex: 1,
-    paddingHorizontal: 10,
+    paddingHorizontal: 15,
+    backgroundColor: '#f9f9f9',
+    fontSize: 16,
   },
   submitButton: {
     backgroundColor: '#5DB075',
-    padding: 15,
+    paddingVertical: 15,
     borderRadius: 10,
     alignItems: 'center',
+    marginTop: 20,
   },
   submitButtonText: {
     color: 'white',
@@ -183,3 +206,5 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 });
+
+export default Formulaire;
