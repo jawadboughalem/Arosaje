@@ -1,8 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, TextInput, StyleSheet, TouchableOpacity, Animated, Image, Keyboard } from 'react-native';
+import React, { useState, useRef } from 'react';
+import { View, TextInput, StyleSheet, TouchableOpacity, Animated, Image, Keyboard } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-const { IPV4 } = require('../Backend/config/config');
 
 const CardsPage = () => {
     const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -10,33 +8,6 @@ const CardsPage = () => {
     const navigation = useNavigation();
     const searchWidth = useRef(new Animated.Value(0)).current;
     const textInputRef = useRef(null);
-
-    useEffect(() => {
-        const fetchUserInfo = async () => {
-            const token = await AsyncStorage.getItem('token');
-            if (token) {
-                try {
-                    const response = await fetch(`http://${IPV4}:3000/user-info`, {
-                        method: 'GET',
-                        headers: {
-                            'Authorization': `Bearer ${token}`,
-                        },
-                    });
-
-                    if (response.ok) {
-                        const data = await response.json();
-                        setUserInfo(data);
-                    } else {
-                        console.error('Error fetching user info:', response.statusText);
-                    }
-                } catch (error) {
-                    console.error('Network error:', error);
-                }
-            }
-        };
-
-        fetchUserInfo();
-    }, []);
 
     const handleSearchPress = () => {
         setIsSearchOpen(true);
@@ -98,6 +69,9 @@ const CardsPage = () => {
                         onChangeText={setSearchText}
                         onSubmitEditing={handleSearch}
                     />
+                    <TouchableOpacity onPress={handleCloseSearch}>
+                        <Text style={{ color: '#fff', paddingHorizontal: 10 }}>X</Text>
+                    </TouchableOpacity>
                 </Animated.View>
             </View>
         </View>
