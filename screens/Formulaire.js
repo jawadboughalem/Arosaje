@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StyleSheet, TextInput, View, Text, TouchableOpacity, ScrollView } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
-import Header from '../components/header';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const { IPV4 } = require('../Backend/config/config');
 
 export default function Formulaire() {
   const route = useRoute();
@@ -12,6 +14,24 @@ export default function Formulaire() {
   const [location, setLocation] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
+  const [token, setToken] = useState(null);
+
+  useEffect(() => {
+    const fetchToken = async () => {
+      try {
+        const storedToken = await AsyncStorage.getItem('token');
+        if (storedToken) {
+          setToken(storedToken);
+        } else {
+          console.error('No token found');
+        }
+      } catch (error) {
+        console.error('Error retrieving token:', error);
+      }
+    };
+
+    fetchToken();
+  }, []);
 
   const handleSubmit = async () => {
     const data = {
@@ -21,23 +41,35 @@ export default function Formulaire() {
       startDate,
       endDate,
       photo,
-      userName: 'John Doe',  // Exemple d'utilisateur fictif
-      userImage: 'https://example.com/user.jpg'  // Exemple d'image utilisateur fictive
     };
 
     try {
-      const response = await fetch('http://your-backend-url.com/auth/annonces', {
+      if (!token) {
+        console.error('No token available for submission');
+        return;
+      }
+
+      console.log('Submitting data:', data);
+      console.log('Using token:', token);
+
+      const response = await fetch(`http://${IPV4}:3000/annonces/addannonce`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify(data),
       });
 
+      console.log('Response status:', response.status);
+
       if (response.ok) {
+        const responseData = await response.json();
+        console.log('Response data:', responseData);
         navigation.navigate('Annonces');
       } else {
-        console.error('Erreur lors de la soumission du formulaire');
+        const errorData = await response.json();
+        console.error('Erreur lors de la soumission du formulaire:', errorData);
       }
     } catch (error) {
       console.error('Erreur réseau:', error);

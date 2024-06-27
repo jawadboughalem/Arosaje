@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { View, TextInput, StyleSheet, TouchableOpacity, Animated, Image, Keyboard } from 'react-native';
+import { View, Text, TextInput, StyleSheet, TouchableOpacity, Animated, Image, Keyboard } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 
 const CardsPage = () => {

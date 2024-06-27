@@ -1,11 +1,10 @@
 const express = require('express');
+const { addAnnonce, getAllAnnonces } = require('../controllers/annonceController');
+const authenticateToken = require('../middlewares/authMiddleware');
+
 const router = express.Router();
-const annonceController = require('../controllers/annonceController');
 
-// Route pour ajouter une annonce
-router.post('/', annonceController.addAnnonce);
-
-// Route pour récupérer toutes les annonces
-router.get('/', annonceController.getAllAnnonces);
+router.post('/addannonce', authenticateToken, addAnnonce);
+router.get('/all', authenticateToken, getAllAnnonces);
 
 module.exports = router;
