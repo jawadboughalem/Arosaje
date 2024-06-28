@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, TextInput, View, Text, TouchableOpacity, ScrollView, Alert } from 'react-native';
+import { StyleSheet, TextInput, View, Text, TouchableOpacity, ScrollView, Alert, ImageBackground } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
@@ -155,85 +155,91 @@ const Formulaire = () => {
   };
 
   return (
-    <View style={styles.wrapper}>
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
-        <View style={styles.container}>
-          <Text style={styles.label}>Nom de la plante :</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Ex: Monstera Deliciosa"
-            placeholderTextColor="#666"
-            value={nomPlante}
-            onChangeText={setNomPlante}
-          />
-          <Text style={styles.label}>Descriptif :</Text>
-          <TextInput
-            style={[styles.input, styles.textArea]}
-            placeholder="Ex: J'ai besoin de quelqu'un pour garder ma plante pendant mes vacances merci 😊."
-            placeholderTextColor="#666"
-            value={description}
-            onChangeText={setDescription}
-            multiline
-          />
-          <Text style={styles.label}>Ville :</Text>
-          <View style={styles.locationContainer}>
+    <ImageBackground source={require('../assets/form.png')} style={styles.background}>
+      <View style={styles.wrapper}>
+        <ScrollView contentContainerStyle={styles.scrollContainer}>
+          <View style={styles.container}>
+            <Text style={styles.label}>Nom de la plante :</Text>
             <TextInput
-              style={[styles.input, styles.locationInput]}
-              placeholder="Ex: Paris, Île-de-France"
+              style={styles.input}
+              placeholder="Ex: Monstera Deliciosa"
               placeholderTextColor="#666"
-              value={localisation}
-              onChangeText={setLocalisation}
+              value={nomPlante}
+              onChangeText={setNomPlante}
             />
-            <TouchableOpacity onPress={handleLocationPress} style={styles.locationIcon}>
-              <Icon name="location-on" size={30} marginBottom = {20} color="#333" />
+            <Text style={styles.label}>Descriptif :</Text>
+            <TextInput
+              style={[styles.input, styles.textArea]}
+              placeholder="Ex: J'ai besoin de quelqu'un pour garder ma plante pendant mes vacances."
+              placeholderTextColor="#666"
+              value={description}
+              onChangeText={setDescription}
+              multiline
+            />
+            <Text style={styles.label}>Ville :</Text>
+            <View style={styles.locationContainer}>
+              <TextInput
+                style={[styles.input, styles.locationInput]}
+                placeholder="Ex: Paris, Île-de-France"
+                placeholderTextColor="#666"
+                value={localisation}
+                onChangeText={setLocalisation}
+              />
+              <TouchableOpacity onPress={handleLocationPress} style={styles.locationIcon}>
+                <Icon name="location-on" size={30} color="#333" />
+              </TouchableOpacity>
+            </View>
+            <Text style={styles.label}>Code Postal :</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Ex: 75001"
+              placeholderTextColor="#666"
+              value={codePostal}
+              onChangeText={(text) => setCodePostal(text.replace(/[^0-9]/g, ''))}
+              maxLength={5}
+              keyboardType="numeric"
+            />
+            <Text style={styles.label}>Période de garde :</Text>
+            <View style={styles.dateContainer}>
+              <Text style={styles.dateLabel}>du</Text>
+              <TouchableOpacity onPress={showDateDebutPicker}>
+                <Text style={styles.dateInput}>{formatDate(dateDebut)}</Text>
+              </TouchableOpacity>
+              <DateTimePickerModal
+                isVisible={isDateDebutPickerVisible}
+                mode="date"
+                onConfirm={handleDateDebutConfirm}
+                onCancel={hideDateDebutPicker}
+              />
+              <Text style={styles.dateLabel}>au</Text>
+              <TouchableOpacity onPress={showDateFinPicker}>
+                <Text style={styles.dateInput}>{formatDate(dateFin)}</Text>
+              </TouchableOpacity>
+              <DateTimePickerModal
+                isVisible={isDateFinPickerVisible}
+                mode="date"
+                onConfirm={handleDateFinConfirm}
+                onCancel={hideDateFinPicker}
+              />
+            </View>
+            <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
+              <Text style={styles.submitButtonText}>Poster</Text>
             </TouchableOpacity>
           </View>
-          <Text style={styles.label}>Code Postal :</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Ex: 75001"
-            placeholderTextColor="#666"
-            value={codePostal}
-            onChangeText={(text) => setCodePostal(text.replace(/[^0-9]/g, ''))}
-            maxLength={5}
-            keyboardType="numeric"
-          />
-          <Text style={styles.label}>Période de garde :</Text>
-          <View style={styles.dateContainer}>
-            <Text style={styles.dateLabel}>du</Text>
-            <TouchableOpacity onPress={showDateDebutPicker}>
-              <Text style={styles.dateInput}>{formatDate(dateDebut)}</Text>
-            </TouchableOpacity>
-            <DateTimePickerModal
-              isVisible={isDateDebutPickerVisible}
-              mode="date"
-              onConfirm={handleDateDebutConfirm}
-              onCancel={hideDateDebutPicker}
-            />
-            <Text style={styles.dateLabel}>au</Text>
-            <TouchableOpacity onPress={showDateFinPicker}>
-              <Text style={styles.dateInput}>{formatDate(dateFin)}</Text>
-            </TouchableOpacity>
-            <DateTimePickerModal
-              isVisible={isDateFinPickerVisible}
-              mode="date"
-              onConfirm={handleDateFinConfirm}
-              onCancel={hideDateFinPicker}
-            />
-          </View>
-          <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
-            <Text style={styles.submitButtonText}>Poster</Text>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
-    </View>
+        </ScrollView>
+      </View>
+    </ImageBackground>
   );
 };
 
 const styles = StyleSheet.create({
+  background: {
+    flex: 1,
+    justifyContent: 'center',
+  },
   wrapper: {
     flex: 1,
-    backgroundColor: 'white',
+    backgroundColor: 'rgba(255, 255, 255, 0.4)', // semi-transparent white to reduce the intensity of the background image
   },
   scrollContainer: {
     flexGrow: 1,
@@ -304,7 +310,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   submitButtonText: {
-    color: 'white',
+    color: 'black',
     fontSize: 18,
     fontWeight: 'bold',
   },
