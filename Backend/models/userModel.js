@@ -1,20 +1,13 @@
 const { db } = require('../config/db');
 
-const createUser = (name, surname, email, hashedPassword, botanistValue, callback) => {
-    const query = `INSERT INTO Utilisateurs (nom, prenom, email, password, botaniste) VALUES (?, ?, ?, ?, ?)`;
-    db.run(query, [name, surname, email, hashedPassword, botanistValue], function (err) {
-        callback(err, this.lastID);
-    });
+const getUserInfoFromDb = (userId, callback) => {
+  const query = `SELECT nom, prenom FROM Utilisateurs WHERE Code_Utilisateurs = ?`;
+  db.get(query, [userId], (err, row) => {
+    if (err) {
+      return callback(err, null);
+    }
+    callback(null, row);
+  });
 };
 
-const getUserByEmail = (email, callback) => {
-    const query = `SELECT * FROM Utilisateurs WHERE email = ?`;
-    db.get(query, [email], (err, row) => {
-        callback(err, row);
-    });
-};
-
-module.exports = {
-    createUser,
-    getUserByEmail
-};
+module.exports = { getUserInfoFromDb };
