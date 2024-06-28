@@ -1,11 +1,52 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, TouchableOpacity, Text, ScrollView } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, StyleSheet, TouchableOpacity, Text, ScrollView, Alert } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import ParametresProfil from './ParametresProfil';
+
+const { IPV4 } = require('../Backend/config/config');
 
 const ProfileScreen = () => {
   const [showSettings, setShowSettings] = useState(false);
   const [activeTab, setActiveTab] = useState('mesPlantes');
+  const [userInfo, setUserInfo] = useState({ nom: '', prenom: '' });
+
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      const token = await AsyncStorage.getItem('token');
+      if (token) {
+        try {
+          const response = await fetch(`http://${IPV4}:3000/user/user-info`, {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+            },
+          });
+
+          console.log('Statut de la réponse:', response.status);
+          const responseBody = await response.text(); // Loggez la réponse brute pour voir ce que le serveur renvoie
+          console.log('Contenu de la réponse:', responseBody);
+
+          if (response.ok) {
+            const data = JSON.parse(responseBody);
+            console.log('Données de la réponse:', data);
+            setUserInfo(data);
+          } else {
+            console.error('Erreur lors de la récupération des informations utilisateur:', responseBody);
+            Alert.alert('Erreur', 'Impossible de récupérer les informations utilisateur.');
+          }
+        } catch (error) {
+          console.error('Erreur réseau:', error);
+          Alert.alert('Erreur', 'Problème de réseau.');
+        }
+      } else {
+        console.error('Aucun token disponible pour la récupération des informations utilisateur');
+        Alert.alert('Erreur', 'Aucun token disponible.');
+      }
+    };
+
+    fetchUserInfo();
+  }, []);
 
   const goToSettings = () => {
     setShowSettings(true);
@@ -41,6 +82,9 @@ const ProfileScreen = () => {
             <TouchableOpacity onPress={goToSettings} style={styles.settingsButton}>
               <Icon name="settings-outline" size={30} color="#000" />
             </TouchableOpacity>
+          </View>
+          <View style={styles.headerContainer}>
+            <Text style={styles.headerText}>Bonjour, {userInfo.prenom} </Text>
           </View>
           <View style={styles.tabContainer}>
             <TouchableOpacity
@@ -92,13 +136,21 @@ const styles = StyleSheet.create({
   settingsButton: {
     padding: 10,
   },
+  headerContainer: {
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  headerText: {
+    fontSize: 24,
+    fontWeight: 'bold',
+  },
   tabContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#fff',
     borderRadius: 50,
-    marginVertical: 50,
+    marginVertical: 20,
     paddingHorizontal: 30,
   },
   tabButton: {

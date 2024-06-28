@@ -239,7 +239,7 @@ const styles = StyleSheet.create({
   },
   wrapper: {
     flex: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.4)', // semi-transparent white to reduce the intensity of the background image
+    backgroundColor: 'rgba(255, 255, 255, 0.8)', // semi-transparent white to reduce the intensity of the background image
   },
   scrollContainer: {
     flexGrow: 1,
