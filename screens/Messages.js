@@ -33,6 +33,9 @@ export default function Messages() {
     }).start();
   };
 
+  const isInboxEmpty = true; // Remplacez ceci par la logique réelle pour vérifier si la boîte de réception est vide
+  const isNotificationsEmpty = true; // Remplacez ceci par la logique réelle pour vérifier si les notifications sont vides
+
   return (
     <View style={styles.container}>
       <Header title="Messages" />
@@ -82,9 +85,23 @@ export default function Messages() {
 
       <View style={styles.content}>
         {selectedTab === 'Messages' ? (
-          <Text style={styles.contentText}>Boîte de réception</Text>
+          isInboxEmpty ? (
+            <Image
+              source={require('../assets/annimation-message.gif')}
+              style={styles.gif}
+            />
+          ) : (
+            <Text style={styles.contentText}>Boîte de réception</Text>
+          )
         ) : (
-          <Text style={styles.contentText}>Notifications</Text>
+          isNotificationsEmpty ? (
+            <Image
+              source={require('../assets/norification.gif')}
+              style={styles.gif}
+            />
+          ) : (
+            <Text style={styles.contentText}>Notifications</Text>
+          )
         )}
       </View>
     </View>
@@ -151,5 +168,10 @@ const styles = StyleSheet.create({
   },
   contentText: {
     fontSize: 20,
+  },
+  gif: {
+    width: 100,
+    height: 100,
+    marginTop: -70,
   },
 });
