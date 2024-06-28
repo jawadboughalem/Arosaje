@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, TextInput, View, Text, TouchableOpacity, ScrollView } from 'react-native';
+import { StyleSheet, TextInput, View, Text, TouchableOpacity, ScrollView, Alert } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import DateTimePickerModal from 'react-native-modal-datetime-picker';
+import * as Location from 'expo-location';
+import Icon from 'react-native-vector-icons/MaterialIcons';
 
 const { IPV4 } = require('../Backend/config/config');
 
@@ -9,11 +12,14 @@ const Formulaire = () => {
   const route = useRoute();
   const navigation = useNavigation();
   const { photo } = route.params || {};
-  const [plantName, setPlantName] = useState('');
+  const [nomPlante, setNomPlante] = useState('');
   const [description, setDescription] = useState('');
-  const [location, setLocation] = useState('');
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
+  const [localisation, setLocalisation] = useState('');
+  const [codePostal, setCodePostal] = useState('');
+  const [dateDebut, setDateDebut] = useState(new Date());
+  const [dateFin, setDateFin] = useState(new Date());
+  const [isDateDebutPickerVisible, setDateDebutPickerVisibility] = useState(false);
+  const [isDateFinPickerVisible, setDateFinPickerVisibility] = useState(false);
   const [token, setToken] = useState(null);
 
   useEffect(() => {
@@ -23,44 +29,106 @@ const Formulaire = () => {
         if (storedToken) {
           setToken(storedToken);
         } else {
-          console.error('No token found');
+          console.error('Aucun token trouvé');
         }
       } catch (error) {
-        console.error('Error retrieving token:', error);
+        console.error('Erreur lors de la récupération du token:', error);
       }
     };
 
     fetchToken();
   }, []);
 
-  const handleDateChange = (text, setDate) => {
-    // Automatically add slashes to the date input
-    const formattedText = text.replace(/^(\d{2})(\d{2})?(\d{4})?$/, (match, p1, p2, p3) => {
-      if (p3) return `${p1}/${p2}/${p3}`;
-      else if (p2) return `${p1}/${p2}`;
-      else return p1;
-    });
-    setDate(formattedText);
+  const showDateDebutPicker = () => {
+    setDateDebutPickerVisibility(true);
+  };
+
+  const hideDateDebutPicker = () => {
+    setDateDebutPickerVisibility(false);
+  };
+
+  const handleDateDebutConfirm = (date) => {
+    setDateDebut(date);
+    hideDateDebutPicker();
+  };
+
+  const showDateFinPicker = () => {
+    setDateFinPickerVisibility(true);
+  };
+
+  const hideDateFinPicker = () => {
+    setDateFinPickerVisibility(false);
+  };
+
+  const handleDateFinConfirm = (date) => {
+    setDateFin(date);
+    hideDateFinPicker();
+  };
+
+  const formatDate = (date) => {
+    return date.toLocaleDateString('fr-FR', { month: 'long', day: 'numeric' });
+  };
+
+  const formatDateForSaving = (date) => {
+    const month = date.getMonth() + 1; // getMonth() retourne les mois de 0 à 11
+    const day = date.getDate();
+    return `${month < 10 ? `0${month}` : month}-${day < 10 ? `0${day}` : day}`;
+  };
+
+  const handleLocationPress = async () => {
+    let { status } = await Location.requestForegroundPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permission refusée', 'La permission de localisation est nécessaire pour récupérer votre ville.');
+      return;
+    }
+
+    try {
+      let location = await Location.getCurrentPositionAsync({});
+      const { latitude, longitude } = location.coords;
+      console.log(`Latitude: ${latitude}, Longitude: ${longitude}`);
+
+      const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
+      const data = await response.json();
+      console.log('Réponse de l\'API:', data);
+
+      if (data && data.address) {
+        const village = data.address.village || '';
+        const department = data.address.county || '';
+        const postalCode = data.address.postcode || '';
+        if (village && department && postalCode) {
+          setLocalisation(`${village.toUpperCase()}, ${department}`);
+          setCodePostal(postalCode);
+        } else {
+          Alert.alert('Erreur', 'Impossible de récupérer le village, le département ou le code postal.');
+        }
+      } else {
+        Alert.alert('Erreur', 'Impossible de récupérer les informations de localisation.');
+      }
+    } catch (error) {
+      console.error('Erreur lors de la récupération de la localisation:', error);
+      Alert.alert('Erreur', 'Impossible de récupérer les informations de localisation.');
+    }
   };
 
   const handleSubmit = async () => {
+    const fullLocalisation = `${localisation}, ${codePostal}`;
     const data = {
-      plantName,
+      nomPlante,
       description,
-      location,
-      startDate,
-      endDate,
+      localisation: fullLocalisation,
+      dateDebut: formatDateForSaving(dateDebut),
+      dateFin: formatDateForSaving(dateFin),
       photo,
     };
 
     try {
       if (!token) {
-        console.error('No token available for submission');
+        console.error('Aucun token disponible pour la soumission');
         return;
       }
 
-      console.log('Submitting data:', data);
-      console.log('Using token:', token);
+      console.log('Données soumises:', data);
+      console.log('Utilisation du token:', token);
 
       const response = await fetch(`http://${IPV4}:3000/annonces/addannonce`, {
         method: 'POST',
@@ -71,11 +139,11 @@ const Formulaire = () => {
         body: JSON.stringify(data),
       });
 
-      console.log('Response status:', response.status);
+      console.log('Statut de la réponse:', response.status);
 
       if (response.ok) {
         const responseData = await response.json();
-        console.log('Response data:', responseData);
+        console.log('Données de la réponse:', responseData);
         navigation.navigate('Annonces');
       } else {
         const errorData = await response.json();
@@ -90,45 +158,67 @@ const Formulaire = () => {
     <View style={styles.wrapper}>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={styles.container}>
-          <Text style={styles.label}>Nom plante :</Text>
+          <Text style={styles.label}>Nom de la plante :</Text>
           <TextInput
             style={styles.input}
-            placeholder="Nom plante"
-            value={plantName}
-            onChangeText={setPlantName}
+            placeholder="Ex: Monstera Deliciosa"
+            placeholderTextColor="#666"
+            value={nomPlante}
+            onChangeText={setNomPlante}
           />
           <Text style={styles.label}>Descriptif :</Text>
           <TextInput
             style={[styles.input, styles.textArea]}
-            placeholder="Descriptif"
+            placeholder="Ex: J'ai besoin de quelqu'un pour garder ma plante pendant mes vacances merci 😊."
+            placeholderTextColor="#666"
             value={description}
             onChangeText={setDescription}
             multiline
           />
-          <Text style={styles.label}>Localisation :</Text>
+          <Text style={styles.label}>Ville :</Text>
+          <View style={styles.locationContainer}>
+            <TextInput
+              style={[styles.input, styles.locationInput]}
+              placeholder="Ex: Paris, Île-de-France"
+              placeholderTextColor="#666"
+              value={localisation}
+              onChangeText={setLocalisation}
+            />
+            <TouchableOpacity onPress={handleLocationPress} style={styles.locationIcon}>
+              <Icon name="location-on" size={30} marginBottom = {20} color="#333" />
+            </TouchableOpacity>
+          </View>
+          <Text style={styles.label}>Code Postal :</Text>
           <TextInput
             style={styles.input}
-            placeholder="Localisation"
-            value={location}
-            onChangeText={setLocation}
+            placeholder="Ex: 75001"
+            placeholderTextColor="#666"
+            value={codePostal}
+            onChangeText={(text) => setCodePostal(text.replace(/[^0-9]/g, ''))}
+            maxLength={5}
+            keyboardType="numeric"
           />
           <Text style={styles.label}>Période de garde :</Text>
           <View style={styles.dateContainer}>
             <Text style={styles.dateLabel}>du</Text>
-            <TextInput
-              style={styles.dateInput}
-              placeholder="JJ/MM/AAAA"
-              value={startDate}
-              onChangeText={(text) => handleDateChange(text, setStartDate)}
-              keyboardType="numeric"
+            <TouchableOpacity onPress={showDateDebutPicker}>
+              <Text style={styles.dateInput}>{formatDate(dateDebut)}</Text>
+            </TouchableOpacity>
+            <DateTimePickerModal
+              isVisible={isDateDebutPickerVisible}
+              mode="date"
+              onConfirm={handleDateDebutConfirm}
+              onCancel={hideDateDebutPicker}
             />
             <Text style={styles.dateLabel}>au</Text>
-            <TextInput
-              style={styles.dateInput}
-              placeholder="JJ/MM/AAAA"
-              value={endDate}
-              onChangeText={(text) => handleDateChange(text, setEndDate)}
-              keyboardType="numeric"
+            <TouchableOpacity onPress={showDateFinPicker}>
+              <Text style={styles.dateInput}>{formatDate(dateFin)}</Text>
+            </TouchableOpacity>
+            <DateTimePickerModal
+              isVisible={isDateFinPickerVisible}
+              mode="date"
+              onConfirm={handleDateFinConfirm}
+              onCancel={hideDateFinPicker}
             />
           </View>
           <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
@@ -172,6 +262,17 @@ const styles = StyleSheet.create({
   textArea: {
     height: 100,
   },
+  locationContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  locationInput: {
+    flex: 1,
+  },
+  locationIcon: {
+    marginLeft: 10,
+  },
   dateContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -192,6 +293,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     backgroundColor: '#f9f9f9',
     fontSize: 16,
+    textAlign: 'center',
+    lineHeight: 50, // Align text vertically center
   },
   submitButton: {
     backgroundColor: '#5DB075',
