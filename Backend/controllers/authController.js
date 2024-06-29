@@ -1,5 +1,5 @@
 const bcrypt = require('bcrypt');
-const { createUser, getUserByEmail } = require('../models/userModel');
+const { createUser, getUserByEmail } = require('../models/authModel');
 const { generateToken } = require('../utils/jwt'); // Assurez-vous que le chemin est correct
 
 const signup = async (req, res) => {
