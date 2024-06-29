@@ -84,7 +84,7 @@ const ProfileScreen = () => {
             </TouchableOpacity>
           </View>
           <View style={styles.headerContainer}>
-            <Text style={styles.headerText}>Bonjour, {userInfo.prenom} </Text>
+            <Text style={styles.headerText}>Bon retour, {userInfo.prenom} </Text>
           </View>
           <View style={styles.tabContainer}>
             <TouchableOpacity
@@ -141,8 +141,9 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   headerText: {
-    fontSize: 24,
+    fontSize: 19,
     fontWeight: 'bold',
+    marginTop: -11,
   },
   tabContainer: {
     flexDirection: 'row',

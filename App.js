@@ -18,6 +18,7 @@ import Conseils from './screens/Conseils';
 import Profil from './screens/Profil';
 import CameraPreview from './screens/CameraPreview';
 import Formulaire from './screens/Formulaire';
+import FormulaireBotaniste from './screens/FormulaireBotaniste'; // Assurez-vous que le chemin est correct
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -60,6 +61,26 @@ function PhotosStack({ navigation }) {
         listeners={{
           focus: () => setIsTabBarVisible(false),
           blur: () => setIsTabBarVisible(true),
+        }}
+      />
+    </Stack.Navigator>
+  );
+}
+
+function ConseilsStack() {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen
+        name="Conseils"
+        component={Conseils}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="FormulaireBotaniste"
+        component={FormulaireBotaniste}
+        options={{
+          title: 'Formulaire Botaniste',
+          headerTitleAlign: 'center',
         }}
       />
     </Stack.Navigator>
@@ -139,8 +160,8 @@ const MainNavigator = () => {
         }}
       />
       <Tab.Screen
-        name="Conseils"
-        component={Conseils}
+        name="ConseilsStack"
+        component={ConseilsStack}
         options={{
           title: 'Conseils',
           tabBarIcon: ({ color, focused }) => (
