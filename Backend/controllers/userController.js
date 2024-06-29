@@ -1,5 +1,5 @@
 // controllers/userController.js
-const { getUserInfoFromDb } = require('../models/userallModel');
+const { getUserInfoFromDb } = require('../models/userModel');
 
 const getUserInfo = (req, res) => {
   const userId = req.userId;
