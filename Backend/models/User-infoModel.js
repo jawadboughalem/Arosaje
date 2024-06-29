@@ -1,4 +1,3 @@
-
 // user1Model.js
 const { db } = require('../config/db');
 
