@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, StyleSheet, TouchableOpacity, Image, ScrollView, Alert } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
-import AsyncStorage from '@react-native-async-storage/async-storage';  // Mise à jour de l'importation
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useNavigation } from '@react-navigation/native'; // Importez useNavigation
 const { IPV4 } = require('../Backend/config/config');
 
 const ParametresProfil = ({ onBack }) => {
@@ -9,7 +10,8 @@ const ParametresProfil = ({ onBack }) => {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [token, setToken] = useState(null);
-  const [hasProfilePic, setHasProfilePic] = useState(false); // Ajout de l'état pour hasProfilePic
+  const [hasProfilePic, setHasProfilePic] = useState(false);
+  const navigation = useNavigation(); // Utilisez useNavigation
 
   useEffect(() => {
     const fetchToken = async () => {
@@ -69,6 +71,19 @@ const ParametresProfil = ({ onBack }) => {
     }
   };
 
+  const handleLogout = async () => {
+    try {
+      await AsyncStorage.removeItem('token');
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'Bienvenue' }],
+      });
+    } catch (error) {
+      console.error('Error during logout:', error);
+      Alert.alert('Error during logout');
+    }
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -120,7 +135,7 @@ const ParametresProfil = ({ onBack }) => {
         <TouchableOpacity style={styles.saveButton} onPress={handleChangePassword}>
           <Text style={styles.saveButtonText}>Enregistrer les modifications</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.logoutButton} onPress={() => {}}>
+        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
           <Text style={styles.logoutButtonText}>Déconnexion</Text>
         </TouchableOpacity>
       </ScrollView>
