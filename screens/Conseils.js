@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Image, ImageBackground } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 
 const backgroundImage = require('../assets/form.png');
 
 const { IPV4 } = require('../Backend/config/config');
 
-const Conseils = () => {
+const Conseils = ({ route }) => {
   const [isBotanist, setIsBotanist] = useState(false);
   const [themes, setThemes] = useState([
     { id: 1, name: 'Entretien Général', conseils: [] },
@@ -28,7 +28,7 @@ const Conseils = () => {
         if (status === '1') {
           setIsBotanist(true);
         } else {
-          setIsBotanist(false);
+          setIsBotanist(true);
         }
       } catch (error) {
         console.error('Error retrieving botanist status:', error);
@@ -37,6 +37,27 @@ const Conseils = () => {
 
     checkBotanistStatus();
   }, []);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      if (route.params?.newConseil) {
+        const { newConseil } = route.params;
+        setThemes((prevThemes) =>
+          prevThemes.map((theme) =>
+            theme.id === newConseil.themeId
+              ? {
+                  ...theme,
+                  conseils: [
+                    ...theme.conseils,
+                    { text: newConseil.description, plantName: newConseil.nomPlante, imageUrl: '' },
+                  ],
+                }
+              : theme
+          )
+        );
+      }
+    }, [route.params])
+  );
 
   return (
     <View style={styles.wrapper}>
@@ -76,13 +97,16 @@ const Conseils = () => {
                 .conseils.map((conseil, index) => (
                   <View key={index} style={styles.conseilCard}>
                     <Image source={{ uri: conseil.imageUrl }} style={styles.conseilImage} />
-                    <Text style={styles.conseilText}>{conseil.text}</Text>
+                    <View style={styles.conseilTextContainer}>
+                      <Text style={styles.conseilTitle}>{conseil.plantName}</Text>
+                      <Text style={styles.conseilText}>{conseil.text}</Text>
+                    </View>
                   </View>
                 ))}
             </View>
           </ScrollView>
           {isBotanist && (
-            <TouchableOpacity style={styles.addButton} onPress={() => navigation.navigate('FormulaireBotaniste')}>
+            <TouchableOpacity style={styles.addButton} onPress={() => navigation.navigate('FormulaireBotaniste', { themes })}>
               <Text style={styles.addButtonText}>+</Text>
             </TouchableOpacity>
           )}
@@ -168,10 +192,17 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginRight: 10,
   },
+  conseilTextContainer: {
+    flex: 1,
+  },
+  conseilTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#333',
+  },
   conseilText: {
     fontSize: 16,
     color: '#333',
-    flex: 1,
   },
   addButton: {
     position: 'absolute',

@@ -78,10 +78,7 @@ function ConseilsStack() {
       <Stack.Screen
         name="FormulaireBotaniste"
         component={FormulaireBotaniste}
-        options={{
-          title: 'Formulaire Botaniste',
-          headerTitleAlign: 'center',
-        }}
+        options={{ headerShown: false }}
       />
     </Stack.Navigator>
   );

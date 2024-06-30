@@ -1,56 +1,150 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, TextInput, View, Text, TouchableOpacity, ImageBackground, KeyboardAvoidingView, Platform } from 'react-native';
+import { useRoute, useNavigation } from '@react-navigation/native';
+import { Picker } from '@react-native-picker/picker';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
-const FormulaireBotaniste = () => {
-  const [plantName, setPlantName] = useState('');
-  const [description, setDescription] = useState('');
+const { IPV4 } = require('../Backend/config/config');
+
+const Formulaire = () => {
+  const route = useRoute();
   const navigation = useNavigation();
+  const [nomPlante, setNomPlante] = useState('');
+  const [description, setDescription] = useState('');
+  const [selectedTheme, setSelectedTheme] = useState('');
+  const [themes, setThemes] = useState(route.params.themes || []);
+  const [token, setToken] = useState(null);
 
-  const handleSubmit = () => {
-    // Logique pour soumettre le formulaire
-    // Par exemple, vous pouvez envoyer les données à un serveur ou les stocker localement
-    console.log('Nom de la plante:', plantName);
-    console.log('Description:', description);
+  useEffect(() => {
+    const fetchToken = async () => {
+      try {
+        const storedToken = await AsyncStorage.getItem('token');
+        if (storedToken) {
+          setToken(storedToken);
+        } else {
+          console.error('Aucun token trouvé');
+        }
+      } catch (error) {
+        console.error('Erreur lors de la récupération du token:', error);
+      }
+    };
 
-    // Retour à la page des conseils après soumission
-    navigation.goBack();
+    fetchToken();
+  }, []);
+
+  const handleSubmit = async () => {
+    const data = {
+      nomPlante,
+      description,
+      themeId: selectedTheme,
+    };
+
+    try {
+      if (!token) {
+        console.error('Aucun token disponible pour la soumission');
+        return;
+      }
+
+      console.log('Données soumises:', data);
+      console.log('Utilisation du token:', token);
+
+      const response = await fetch(`http://${IPV4}:3000/annonces/addannonce`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(data),
+      });
+
+      console.log('Statut de la réponse:', response.status);
+
+      if (response.ok) {
+        const responseData = await response.json();
+        console.log('Données de la réponse:', responseData);
+        navigation.navigate('Conseils', { newConseil: data });
+      } else {
+        const errorData = await response.json();
+        console.error('Erreur lors de la soumission du formulaire:', errorData);
+      }
+    } catch (error) {
+      console.error('Erreur réseau:', error);
+    }
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.label}>Nom de la plante :</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Nom de la plante"
-        value={plantName}
-        onChangeText={setPlantName}
-      />
-      <Text style={styles.label}>Descriptif du conseil :</Text>
-      <TextInput
-        style={[styles.input, styles.textArea]}
-        placeholder="Descriptif du conseil"
-        value={description}
-        onChangeText={setDescription}
-        multiline
-      />
-      <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
-        <Text style={styles.submitButtonText}>Soumettre</Text>
-      </TouchableOpacity>
-    </View>
+    <ImageBackground source={require('../assets/form.png')} style={styles.background}>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : null}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+      >
+        <KeyboardAwareScrollView
+          contentContainerStyle={styles.scrollContainer}
+          extraScrollHeight={20}
+          enableOnAndroid={true}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View style={styles.container}>
+            <Text style={styles.label}>Nom de la plante :</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Ex: Monstera Deliciosa"
+              placeholderTextColor="#666"
+              value={nomPlante}
+              onChangeText={setNomPlante}
+            />
+            <Text style={styles.label}>Thème :</Text>
+            <View style={styles.pickerContainer}>
+              <Picker
+                selectedValue={selectedTheme}
+                style={styles.picker}
+                onValueChange={(itemValue) => setSelectedTheme(itemValue)}
+              >
+                {themes.map((theme) => (
+                  <Picker.Item key={theme.id} label={theme.name} value={theme.id} />
+                ))}
+              </Picker>
+            </View>
+            <Text style={styles.label}>Descriptif du conseil :</Text>
+            <TextInput
+              style={[styles.input, styles.textArea]}
+              placeholder="Descriptif du conseil"
+              placeholderTextColor="#666"
+              value={description}
+              onChangeText={setDescription}
+              multiline
+            />
+            <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
+              <Text style={styles.submitButtonText}>Soumettre</Text>
+            </TouchableOpacity>
+          </View>
+        </KeyboardAwareScrollView>
+      </KeyboardAvoidingView>
+    </ImageBackground>
   );
 };
 
 const styles = StyleSheet.create({
+  background: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+  scrollContainer: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    padding: 20,
+  },
   container: {
     flex: 1,
-    padding: 20,
-    backgroundColor: 'white',
+    justifyContent: 'center',
   },
   label: {
-    fontSize: 16,
-    marginBottom: 5,
+    fontSize: 15,
+    marginBottom: 15,
     color: '#333',
+    fontWeight: '500',
   },
   input: {
     height: 50,
@@ -65,22 +159,29 @@ const styles = StyleSheet.create({
   textArea: {
     height: 100,
   },
+  pickerContainer: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 10,
+    marginBottom: 20,
+    backgroundColor: '#fff',
+  },
+  picker: {
+    height: 50,
+    width: '100%',
+  },
   submitButton: {
     backgroundColor: '#5DB075',
     paddingVertical: 15,
     borderRadius: 10,
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 3,
+    marginTop: 20,
   },
   submitButtonText: {
-    color: 'white',
-    fontSize: 16,
+    color: 'black',
+    fontSize: 18,
     fontWeight: 'bold',
   },
 });
 
-export default FormulaireBotaniste;
+export default Formulaire;
