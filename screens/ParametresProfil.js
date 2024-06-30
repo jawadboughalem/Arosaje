@@ -1,9 +1,73 @@
-import React from 'react';
-import { View, Text, TextInput, StyleSheet, TouchableOpacity, Image, ScrollView } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TextInput, StyleSheet, TouchableOpacity, Image, ScrollView, Alert } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
+import AsyncStorage from '@react-native-async-storage/async-storage';  // Mise à jour de l'importation
+const { IPV4 } = require('../Backend/config/config');
 
 const ParametresProfil = ({ onBack }) => {
-  const hasProfilePic = false; // Supposez qu'il s'agit de l'état de la photo de profil de l'utilisateur
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [token, setToken] = useState(null);
+  const [hasProfilePic, setHasProfilePic] = useState(false); // Ajout de l'état pour hasProfilePic
+
+  useEffect(() => {
+    const fetchToken = async () => {
+      try {
+        const storedToken = await AsyncStorage.getItem('token');
+        if (storedToken) {
+          setToken(storedToken);
+        } else {
+          Alert.alert('Token not found');
+        }
+      } catch (error) {
+        console.error('Error fetching token:', error);
+        Alert.alert('Error fetching token');
+      }
+    };
+
+    fetchToken();
+  }, []);
+
+  const handleChangePassword = async () => {
+    if (newPassword !== confirmPassword) {
+      Alert.alert("Les nouveaux mots de passe ne correspondent pas");
+      return;
+    }
+
+    if (!token) {
+      Alert.alert('Token not found. Please try again.');
+      return;
+    }
+
+    console.log('Envoi de la requête avec le token:', token);
+
+    try {
+      const response = await fetch(`http://${IPV4}:3000/user/change-password`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          currentPassword,
+          newPassword,
+        }),
+      });
+
+      const data = await response.json();
+      if (data.error) {
+        console.error('Error response:', data.error);
+        Alert.alert(data.error);
+      } else {
+        console.log('Success response:', data.message);
+        Alert.alert(data.message);
+      }
+    } catch (error) {
+      console.error('Erreur:', error);
+      Alert.alert('Une erreur est survenue. Veuillez réessayer.');
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -25,17 +89,35 @@ const ParametresProfil = ({ onBack }) => {
         </View>
         <View style={styles.inputContainer}>
           <Text style={styles.label}>Mot de passe actuel :</Text>
-          <TextInput style={styles.input} placeholder="Entrez votre mot de passe actuel" secureTextEntry />
+          <TextInput
+            style={styles.input}
+            placeholder="Entrez votre mot de passe actuel"
+            secureTextEntry
+            value={currentPassword}
+            onChangeText={setCurrentPassword}
+          />
         </View>
         <View style={styles.inputContainer}>
           <Text style={styles.label}>Nouveau mot de passe :</Text>
-          <TextInput style={styles.input} placeholder="Entrez votre nouveau mot de passe" secureTextEntry />
+          <TextInput
+            style={styles.input}
+            placeholder="Entrez votre nouveau mot de passe"
+            secureTextEntry
+            value={newPassword}
+            onChangeText={setNewPassword}
+          />
         </View>
         <View style={styles.inputContainer}>
           <Text style={styles.label}>Confirmer le nouveau mot de passe :</Text>
-          <TextInput style={styles.input} placeholder="Confirmez votre nouveau mot de passe" secureTextEntry />
+          <TextInput
+            style={styles.input}
+            placeholder="Confirmez votre nouveau mot de passe"
+            secureTextEntry
+            value={confirmPassword}
+            onChangeText={setConfirmPassword}
+          />
         </View>
-        <TouchableOpacity style={styles.saveButton} onPress={() => {}}>
+        <TouchableOpacity style={styles.saveButton} onPress={handleChangePassword}>
           <Text style={styles.saveButtonText}>Enregistrer les modifications</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.logoutButton} onPress={() => {}}>
