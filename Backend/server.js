@@ -8,7 +8,7 @@ const authRoutes = require('./routes/authRoutes');
 const annonceRoutes = require('./routes/annonceRoutes');
 const userRoutes = require('./routes/userRoutes');
 const conseilRoutes = require('./routes/conseilRoutes');
-const changedRoutes = require('./routes/changedRoutes');  // Importation des routes de conseils
+
 
 const app = express();
 const port = 3000;
@@ -28,7 +28,7 @@ app.use(bodyParser.json());
 app.use('/auth', authRoutes);
 app.use('/annonces', annonceRoutes);
 app.use('/user', userRoutes);
-app.use('/changed', changedRoutes);
+
 app.use('/api', conseilRoutes); // Ajout des routes de conseils
 
 

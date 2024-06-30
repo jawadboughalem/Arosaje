@@ -1,5 +1,5 @@
 // userController.js
-const { getUserById, updateUserPassword }= require('../models/UserModel');
+const { getUserById, updateUserPassword , getUserInfoFromDb }= require('../models/UserModel');
 const bcrypt = require('bcrypt');
 
 
@@ -68,7 +68,6 @@ const changePassword = (req, res) => {
     });
   });
 };
-
 
 
 
