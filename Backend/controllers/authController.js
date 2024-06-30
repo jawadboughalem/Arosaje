@@ -71,7 +71,14 @@ const login = async (req, res) => {
     }
 };
 
+const logout = (req, res) => {
+    // Pour invalider le token, vous pouvez implémenter une logique ici.
+    // Par exemple, ajouter le token à une blacklist ou tout autre mécanisme.
+    res.status(200).json({ message: 'Déconnexion réussie' });
+  };
+
 module.exports = {
     signup,
-    login
+    login,
+    logout
 };

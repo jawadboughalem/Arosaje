@@ -84,7 +84,7 @@ function ConseilsStack() {
   );
 }
 
-const MainNavigator = () => {
+const MainNavigator = ({ handleLogout }) => {
   const { isTabBarVisible } = useContext(TabBarContext);
 
   return (
