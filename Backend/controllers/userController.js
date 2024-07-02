@@ -1,5 +1,5 @@
 // userController.js
-const { getUserById, updateUserPassword , getUserInfoFromDb }= require('../models/UserModel');
+const { getUserById, updateUserPassword , getUserInfoFromDb }= require('../models/userModel');
 const bcrypt = require('bcrypt');
 
 
