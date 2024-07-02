@@ -44,10 +44,10 @@ const login = async (req, res) => {
             }
 
             console.log('User found:', user);
-            console.log('Comparing passwords:', password, user.Password);
+            console.log('Comparing passwords:', password, user.password);
 
             try {
-                const isPasswordValid = await bcrypt.compare(password, user.Password);
+                const isPasswordValid = await bcrypt.compare(password, user.password);
                 if (!isPasswordValid) {
                     console.warn('Incorrect password for email:', email);
                     return res.status(400).json({ error: 'Email ou mot de passe incorrect' });

@@ -6,16 +6,16 @@ const db = new sqlite3.Database(dbPath);
 
 const initialize = () => {
   db.serialize(() => {
-    db.run(`CREATE TABLE IF NOT EXISTS Utilisateurs (
-        Code_Utilisateurs INTEGER PRIMARY KEY AUTOINCREMENT,
-        Nom TEXT NOT NULL,
-        Prenom TEXT NOT NULL,
-        Email TEXT UNIQUE NOT NULL,
-        Password TEXT NOT NULL,
-        Photo TEXT,
-        Botaniste INTEGER NOT NULL CHECK (Botaniste IN (0, 1)),
-        Numero TEXT,
-        Adresse TEXT
+  db.run(`CREATE TABLE IF NOT EXISTS Utilisateurs (
+      Code_Utilisateurs INTEGER PRIMARY KEY AUTOINCREMENT,
+      nom TEXT NOT NULL,
+      prenom TEXT NOT NULL,
+      email TEXT UNIQUE NOT NULL,
+      password TEXT NOT NULL,
+      photo TEXT,
+      botaniste INTEGER NOT NULL CHECK (botaniste IN (0, 1)),
+      numero TEXT,
+      adresse TEXT
     )`);
 
     db.run(`CREATE TABLE IF NOT EXISTS Photos (
