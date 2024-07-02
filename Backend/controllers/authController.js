@@ -44,10 +44,10 @@ const login = async (req, res) => {
             }
 
             console.log('User found:', user);
-            console.log('Comparing passwords:', password, user.password);
+            console.log('Comparing passwords:', password, user.Password);
 
             try {
-                const isPasswordValid = await bcrypt.compare(password, user.password);
+                const isPasswordValid = await bcrypt.compare(password, user.Password);
                 if (!isPasswordValid) {
                     console.warn('Incorrect password for email:', email);
                     return res.status(400).json({ error: 'Email ou mot de passe incorrect' });
@@ -57,7 +57,7 @@ const login = async (req, res) => {
                 console.log('Token generated:', token);
 
                 console.log('Login successful for user:', user.Code_Utilisateurs);
-                res.status(200).json({ token }); // Assurez-vous que le token est envoyé ici
+                res.status(200).json({ token });
 
             } catch (error) {
                 console.error('Error during password comparison:', error.message);
@@ -72,10 +72,9 @@ const login = async (req, res) => {
 };
 
 const logout = (req, res) => {
-    // Pour invalider le token, vous pouvez implémenter une logique ici.
-    // Par exemple, ajouter le token à une blacklist ou tout autre mécanisme.
+    // Pour la logique d'invalidation du token
     res.status(200).json({ message: 'Déconnexion réussie' });
-  };
+};
 
 module.exports = {
     signup,
