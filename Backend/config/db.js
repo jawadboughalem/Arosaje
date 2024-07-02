@@ -6,7 +6,7 @@ const db = new sqlite3.Database(dbPath);
 
 const initialize = () => {
   db.serialize(() => {
-  db.run(`CREATE TABLE IF NOT EXISTS Utilisateurs (
+  db.run(`CREATE TABLE IF NOT EXISTS utilisateurs (
       Code_Utilisateurs INTEGER PRIMARY KEY AUTOINCREMENT,
       nom TEXT NOT NULL,
       prenom TEXT NOT NULL,
