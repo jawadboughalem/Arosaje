@@ -6,7 +6,6 @@ const db = new sqlite3.Database(dbPath);
 
 const initialize = () => {
   db.serialize(() => {
-    // J'encapsule toutes les instructions de création de table dans une transaction pour une meilleure cohérence
     db.run(`CREATE TABLE IF NOT EXISTS Utilisateurs (
         Code_Utilisateurs INTEGER PRIMARY KEY AUTOINCREMENT,
         Nom TEXT NOT NULL,
@@ -82,7 +81,6 @@ const initialize = () => {
   });
 };
 
-// J'exporte la connexion à la base de données et la fonction d'initialisation
 module.exports = {
   db,
   initialize,
