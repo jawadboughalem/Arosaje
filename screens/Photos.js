@@ -1,9 +1,10 @@
 import React, { useState, useRef } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View, Image } from 'react-native';
+import { StyleSheet, Text, Pressable, View, Image } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
 import { Button } from 'react-native';
-import { MaterialIcons, Ionicons } from '@expo/vector-icons';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import LottieView from 'lottie-react-native';
 
 export default function Photos({ navigation }) {
   const [permission, requestPermission] = useCameraPermissions();
@@ -11,6 +12,8 @@ export default function Photos({ navigation }) {
   const [flashMode, setFlashMode] = useState('off');
   const [capturedPhoto, setCapturedPhoto] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [isTakingPicture, setIsTakingPicture] = useState(false);
+  const [isFlashOn, setIsFlashOn] = useState(false); // Nouvel état pour le flash
   const cameraRef = useRef(null);
 
   if (!permission) {
@@ -29,15 +32,18 @@ export default function Photos({ navigation }) {
   const takePicture = async () => {
     try {
       if (cameraRef.current) {
+        setIsTakingPicture(true);
         setLoading(true);
         const photo = await cameraRef.current.takePictureAsync();
         setCapturedPhoto(photo.uri);
         setLoading(false);
+        setIsTakingPicture(false);
         navigation.navigate('CameraPreview', { photo: photo.uri });
       }
     } catch (error) {
       console.error("Erreur lors de la prise de photo:", error);
       setLoading(false);
+      setIsTakingPicture(false);
       // Ajoutez des gestionnaires d'erreurs supplémentaires ici si nécessaire
     }
   };
@@ -51,7 +57,7 @@ export default function Photos({ navigation }) {
         quality: 1,
       });
 
-      if (!result.canceled) {
+      if (!result.cancelled) {
         setCapturedPhoto(result.assets[0].uri);
         navigation.navigate('CameraPreview', { photo: result.assets[0].uri });
       }
@@ -61,12 +67,9 @@ export default function Photos({ navigation }) {
     }
   };
 
-  const toggleCameraFacing = () => {
-    setCameraType(current => (current === 'back' ? 'front' : 'back'));
-  };
-
   const toggleFlashMode = () => {
     setFlashMode(current => (current === 'off' ? 'on' : 'off'));
+    setIsFlashOn(prev => !prev); // Met à jour l'état du flash
   };
 
   return (
@@ -78,39 +81,67 @@ export default function Photos({ navigation }) {
         ref={cameraRef}
       >
         <View style={styles.topLeftContainer}>
-          <TouchableOpacity style={styles.button} onPress={() => navigation.goBack()}>
+          <Pressable style={({ pressed }) => [styles.button, pressed && styles.pressedButton]} onPress={() => navigation.goBack()}>
             <Ionicons name="arrow-back-outline" size={32} color="white" />
-          </TouchableOpacity>
+          </Pressable>
         </View>
         <View style={styles.topRightContainer}>
-          <TouchableOpacity style={styles.button} onPress={toggleFlashMode}>
-            <Ionicons name="flashlight-outline" size={32} color="white" />
-          </TouchableOpacity>
-          <TouchableOpacity style={[styles.button, styles.flipButton]} onPress={toggleCameraFacing}>
-            <Ionicons name="camera-reverse-outline" size={32} color="white" />
-          </TouchableOpacity>
+          <Pressable style={({ pressed }) => [styles.button, pressed && styles.pressedButton]} onPress={toggleFlashMode}>
+            <MaterialCommunityIcons name="flash-outline" size={32} color="white" />
+            {/* Indicateur "A" jaune à côté de l'icône de flash */}
+            {isFlashOn && (
+              <View style={styles.flashIndicator}>
+                <Text style={styles.flashIndicatorText}>A</Text>
+              </View>
+            )}
+          </Pressable>
         </View>
         <View style={styles.centerContainer}>
-          <TouchableOpacity
-            style={[styles.cameraButton, loading && styles.disabledButton]}
+          <Pressable
+            style={({ pressed }) => [
+              styles.cameraButton,
+              loading && styles.disabledButton,
+              pressed && styles.pressedButton,
+            ]}
             onPress={loading ? null : takePicture}
             disabled={loading}
           >
             {loading ? (
-              <Image
-                style={styles.loadingGif}
-                source={require('../assets/loading.gif')} // Chemin vers votre GIF
+              <LottieView
+                source={require('../assets/loading.json')} // Chemin vers votre fichier JSON
+                autoPlay
+                loop
+                style={styles.lottieAnimation}
               />
             ) : (
-              <MaterialIcons name="camera-alt" size={50} color="white" />
+              <View style={styles.imageContainer}>
+                {isTakingPicture ? (
+                  <LottieView
+                    source={require('../assets/loading.json')} // Chemin vers votre fichier JSON
+                    autoPlay
+                    loop
+                    style={styles.lottieAnimation}
+                  />
+                ) : (
+                  <Image
+                    style={styles.cameraImage}
+                    source={require('../assets/plantecamera.png')} // Chemin vers votre image
+                  />
+                )}
+              </View>
             )}
-          </TouchableOpacity>
+          </Pressable>
         </View>
         <View style={styles.bottomRightContainer}>
-          <TouchableOpacity style={styles.button} onPress={pickImage}>
+          <Pressable style={({ pressed }) => [styles.button, pressed && styles.pressedButton]} onPress={pickImage}>
             <Ionicons name="images-outline" size={32} color="white" />
-          </TouchableOpacity>
+          </Pressable>
         </View>
+        {/* Les coins et les autres éléments visuels restent inchangés */}
+        <View style={styles.cornerTopLeft}></View>
+        <View style={styles.cornerTopRight}></View>
+        <View style={styles.cornerBottomLeft}></View>
+        <View style={styles.cornerBottomRight}></View>
       </CameraView>
     </View>
   );
@@ -142,9 +173,6 @@ const styles = StyleSheet.create({
     top: 50,
     right: 20,
   },
-  flipButton: {
-    marginTop: 20,
-  },
   centerContainer: {
     position: 'absolute',
     bottom: 40,
@@ -157,20 +185,91 @@ const styles = StyleSheet.create({
     right: 20,
   },
   button: {
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0)',
     padding: 10,
     borderRadius: 50,
   },
+  pressedButton: {
+    // Supprimer le style qui ajoute le cercle vert
+  },
   cameraButton: {
-    backgroundColor: '#5DB075',
-    padding: 20,
     borderRadius: 50,
   },
   disabledButton: {
-    backgroundColor: '#9E9E9E',
+    // Ajouter des styles si besoin
   },
-  loadingGif: {
-    width: 50,
-    height: 50,
+  lottieAnimation: {
+    width: 80,
+    height: 80,
+  },
+  imageContainer: {
+    borderWidth: 3,
+    borderColor: 'white',
+    borderRadius: 50,
+    padding: 5,
+  },
+  cameraImage: {
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+  },
+  flashIndicator: {
+    position: 'absolute',
+    right: 40, // Ajuster la position à droite de l'icône de flash
+    backgroundColor: 'yellow',
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  flashIndicatorText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: 'black',
+  },
+  cornerTopLeft: {
+    position: 'absolute',
+    top: '30%',
+    left: '15%',
+    width: 60,
+    height: 60,
+    borderTopWidth: 3,
+    borderLeftWidth: 3,
+    borderColor: 'white',
+    borderTopLeftRadius: 30,
+  },
+  cornerTopRight: {
+    position: 'absolute',
+    top: '30%',
+    right: '15%',
+    width: 60,
+    height: 60,
+    borderTopWidth: 3,
+    borderRightWidth: 3,
+    borderColor: 'white',
+    borderTopRightRadius: 30,
+  },
+  cornerBottomLeft: {
+    position: 'absolute',
+    bottom: '35%',
+    left: '15%',
+    width: 60,
+    height: 60,
+    borderBottomWidth: 3,
+    borderLeftWidth: 3,
+    borderColor: 'white',
+    borderBottomLeftRadius: 30,
+  },
+  cornerBottomRight: {
+    position: 'absolute',
+    bottom: '35%',
+    right: '15%',
+    width: 60,
+    height: 60,
+    borderBottomWidth: 3,
+    borderRightWidth: 3,
+    borderColor: 'white',
+    borderBottomRightRadius: 30,
   },
 });
