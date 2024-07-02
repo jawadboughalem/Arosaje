@@ -1,7 +1,8 @@
 import React, { useContext } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
-import { Image, TouchableOpacity, StyleSheet, Platform } from 'react-native';
+import { TouchableOpacity, StyleSheet, Platform } from 'react-native';
+import { Ionicons } from '@expo/vector-icons'; // Importez vos icônes ici
 
 import TabBarContext from './components/TabBarContext';
 import Annonces from './screens/Annonces';
@@ -83,7 +84,7 @@ const MainNavigator = ({ handleLogout }) => {
 
   return (
     <Tab.Navigator
-      screenOptions={{
+      screenOptions={({ route }) => ({
         tabBarActiveTintColor: '#5DB075',
         tabBarLabelStyle: {
           fontSize: 12,
@@ -95,27 +96,35 @@ const MainNavigator = ({ handleLogout }) => {
           position: 'absolute',
           height: 65,
           bottom: 0,
-          borderTopLeftRadius: 22,
-          borderTopRightRadius: 22,
           borderTopWidth: 0,
-          justifyContent: 'center',
-          alignItems: 'center',
           backgroundColor: 'white',
           paddingBottom: Platform.OS === 'ios' ? 10 : 0,
         },
-      }}
+        tabBarIcon: ({ color, focused }) => {
+          let iconName;
+
+          if (route.name === 'Annonces') {
+            iconName = focused ? 'home' : 'home-outline';
+          } else if (route.name === 'Messages') {
+            iconName = focused ? 'chatbox' : 'chatbox-outline';
+          } else if (route.name === 'PhotosStack') {
+            return null; // Hide icon for PhotosStack
+          } else if (route.name === 'ConseilsStack') {
+            iconName = focused ? 'leaf' : 'leaf-outline';
+          } else if (route.name === 'Profil') {
+            iconName = focused ? 'person' : 'person-outline';
+          }
+
+          // Return Ionicons component with iconName and color
+          return <Ionicons name={iconName} size={24} color={color} />;
+        },
+      })}
     >
       <Tab.Screen
         name="Annonces"
         component={Annonces}
         options={{
           title: 'Annonces',
-          tabBarIcon: ({ color, focused }) => (
-            <Image
-              source={require('./assets/home.png')}
-              style={{ width: 40, height: 38, tintColor: color }}
-            />
-          ),
           header: () => <Header title="Annonces" />,
         }}
       />
@@ -124,12 +133,6 @@ const MainNavigator = ({ handleLogout }) => {
         component={Messages}
         options={{
           title: 'Messages',
-          tabBarIcon: ({ color, focused }) => (
-            <Image
-              source={require('./assets/message.png')}
-              style={{ width: 55, height: 55, tintColor: color }}
-            />
-          ),
           header: () => <Header title="Messages" />,
         }}
       />
@@ -138,13 +141,9 @@ const MainNavigator = ({ handleLogout }) => {
         component={PhotosStack}
         options={{
           tabBarLabel: () => null,
-          tabBarIcon: ({ color, focused }) => null,
           tabBarButton: (props) => (
-            <TouchableOpacity
-              style={styles.cameraButton}
-              {...props}
-            >
-              <Image source={require('./assets/camera3.gif')} style={{ width: 60, height: 60, top: -12 }} />
+            <TouchableOpacity style={styles.cameraButton} {...props}>
+              <Ionicons name="camera" size={32} color="#5DB075" />
             </TouchableOpacity>
           ),
           headerShown: false,
@@ -155,12 +154,6 @@ const MainNavigator = ({ handleLogout }) => {
         component={ConseilsStack}
         options={{
           title: 'Conseils',
-          tabBarIcon: ({ color, focused }) => (
-            <Image
-              source={require('./assets/plante.png')}
-              style={{ width: 32, height: 38, tintColor: color }}
-            />
-          ),
           header: () => <Header title="Conseils" />,
         }}
       />
@@ -169,12 +162,6 @@ const MainNavigator = ({ handleLogout }) => {
         component={Profil}
         options={{
           title: 'Profil',
-          tabBarIcon: ({ color, focused }) => (
-            <Image
-              source={require('./assets/profil.png')}
-              style={{ width: 60, height: 60, tintColor: color }}
-            />
-          ),
           header: () => <Header title="Profil" />,
         }}
       />
@@ -187,12 +174,10 @@ export default MainNavigator;
 const styles = StyleSheet.create({
   cameraButton: {
     position: 'absolute',
-    top: 0,
     justifyContent: 'center',
     alignItems: 'center',
-    height: 70,
-    width: 70,
-    borderRadius: 35,
+    height: 56,
+    width: 56,
     backgroundColor: '#ffffff',
     borderWidth: 2,
     borderColor: '#5DB075',
