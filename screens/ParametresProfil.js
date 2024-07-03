@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, StyleSheet, TouchableOpacity, Image, ScrollView, Alert } from 'react-native';
+import { View, Text, TextInput, StyleSheet, TouchableOpacity, Image, ScrollView, Alert, Switch } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useNavigation } from '@react-navigation/native'; // Importez useNavigation
+import { useNavigation } from '@react-navigation/native';
 const { IPV4 } = require('../Backend/config/config');
 
 const ParametresProfil = ({ onBack }) => {
@@ -11,7 +11,9 @@ const ParametresProfil = ({ onBack }) => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [token, setToken] = useState(null);
   const [hasProfilePic, setHasProfilePic] = useState(false);
-  const navigation = useNavigation(); // Utilisez useNavigation
+  const [language, setLanguage] = useState('fr');
+  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+  const navigation = useNavigation();
 
   useEffect(() => {
     const fetchToken = async () => {
@@ -71,6 +73,40 @@ const ParametresProfil = ({ onBack }) => {
     }
   };
 
+  const handleDeleteAccount = async () => {
+    if (!token) {
+      Alert.alert('Token not found. Please try again.');
+      return;
+    }
+
+    try {
+      const response = await fetch(`http://${IPV4}:3000/user/delete-account`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      const data = await response.json();
+      if (data.error) {
+        console.error('Error response:', data.error);
+        Alert.alert(data.error);
+      } else {
+        console.log('Success response:', data.message);
+        Alert.alert(data.message);
+        await AsyncStorage.removeItem('token');
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'Bienvenue' }],
+        });
+      }
+    } catch (error) {
+      console.error('Erreur:', error);
+      Alert.alert('Une erreur est survenue. Veuillez réessayer.');
+    }
+  };
+
   const handleLogout = async () => {
     try {
       await AsyncStorage.removeItem('token');
@@ -88,56 +124,86 @@ const ParametresProfil = ({ onBack }) => {
     <View style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={onBack} style={styles.backButton}>
-          <Icon name="arrow-back" size={30} color="#000" />
+          <Icon name="arrow-back" size={24} color="#000" />
         </TouchableOpacity>
       </View>
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
-        <View style={styles.profilePicContainer}>
-          {hasProfilePic ? (
-            <Image source={{ uri: 'https://via.placeholder.com/100' }} style={styles.profilePic} />
-          ) : (
-            <View style={styles.defaultProfilePic}>
-              <Icon name="person-circle-outline" size={100} color="#ccc" />
-            </View>
-          )}
-          <Text style={styles.changePicText}>Changer la photo de profil</Text>
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Informations personnelles</Text>
+          <View style={styles.profilePicContainer}>
+            {hasProfilePic ? (
+              <Image source={{ uri: 'https://via.placeholder.com/100' }} style={styles.profilePic} />
+            ) : (
+              <View style={styles.defaultProfilePic}>
+                <Icon name="person-circle-outline" size={80} color="#ccc" />
+              </View>
+            )}
+            <Text style={styles.changePicText}>Changer la photo de profil</Text>
+          </View>
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>Mot de passe actuel :</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Entrez votre mot de passe actuel"
+              secureTextEntry
+              value={currentPassword}
+              onChangeText={setCurrentPassword}
+            />
+          </View>
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>Nouveau mot de passe :</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Entrez votre nouveau mot de passe"
+              secureTextEntry
+              value={newPassword}
+              onChangeText={setNewPassword}
+            />
+          </View>
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>Confirmer le nouveau mot de passe :</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Confirmez votre nouveau mot de passe"
+              secureTextEntry
+              value={confirmPassword}
+              onChangeText={setConfirmPassword}
+            />
+          </View>
+          <TouchableOpacity style={styles.saveButton} onPress={handleChangePassword}>
+            <Text style={styles.saveButtonText}>Enregistrer les modifications</Text>
+          </TouchableOpacity>
         </View>
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Mot de passe actuel :</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Entrez votre mot de passe actuel"
-            secureTextEntry
-            value={currentPassword}
-            onChangeText={setCurrentPassword}
-          />
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Préférences utilisateur</Text>
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>Langue préférée :</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Entrez votre langue préférée"
+              value={language}
+              onChangeText={setLanguage}
+            />
+          </View>
+          <View style={styles.switchContainer}>
+            <Text style={styles.label}>Activer les notifications :</Text>
+            <Switch
+              value={notificationsEnabled}
+              onValueChange={setNotificationsEnabled}
+            />
+          </View>
         </View>
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Nouveau mot de passe :</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Entrez votre nouveau mot de passe"
-            secureTextEntry
-            value={newPassword}
-            onChangeText={setNewPassword}
-          />
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Paramètres de compte</Text>
+          <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+            <Text style={styles.logoutButtonText}>Déconnexion</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.deleteButton} onPress={handleDeleteAccount}>
+            <Text style={styles.deleteButtonText}>Supprimer le compte</Text>
+          </TouchableOpacity>
         </View>
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Confirmer le nouveau mot de passe :</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Confirmez votre nouveau mot de passe"
-            secureTextEntry
-            value={confirmPassword}
-            onChangeText={setConfirmPassword}
-          />
-        </View>
-        <TouchableOpacity style={styles.saveButton} onPress={handleChangePassword}>
-          <Text style={styles.saveButtonText}>Enregistrer les modifications</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-          <Text style={styles.logoutButtonText}>Déconnexion</Text>
-        </TouchableOpacity>
       </ScrollView>
     </View>
   );
@@ -146,84 +212,123 @@ const ParametresProfil = ({ onBack }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#f7f7f7',
   },
   header: {
-    height: 70,
+    height: 60,
     justifyContent: 'center',
     paddingHorizontal: 10,
+    borderBottomColor: '#ddd',
+    borderBottomWidth: 1,
     backgroundColor: '#fff',
-    borderBottomColor: '#ccc',
   },
   backButton: {
     position: 'absolute',
-    top: 30,
+    top: 20,
     left: 16,
   },
   scrollViewContent: {
     padding: 20,
+    paddingBottom: 80,
+  },
+  section: {
+    marginBottom: 20,
+    backgroundColor: '#fff',
+    padding: 15,
+    borderRadius: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.3,
+    shadowRadius: 2,
+    elevation: 3,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 15,
+    color: '#333',
   },
   profilePicContainer: {
     alignItems: 'center',
-    marginBottom: 10,
-    marginTop: -10,
+    marginBottom: 20,
   },
   profilePic: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
+    width: 80,
+    height: 80,
+    borderRadius: 40,
     borderColor: '#ccc',
+    borderWidth: 1,
   },
   defaultProfilePic: {
     justifyContent: 'center',
     alignItems: 'center',
-    width: 100,
-    height: 100,
-    borderRadius: 50,
+    width: 80,
+    height: 80,
+    borderRadius: 40,
     backgroundColor: '#e0e0e0',
   },
   changePicText: {
-    marginTop: 5,
-    color: '#4CAF50',
-    fontSize: 16,
+    marginTop: 10,
+    color: '#077B17',
+    fontSize: 14,
     fontWeight: '500',
   },
   inputContainer: {
-    marginBottom: 10,
+    marginBottom: 15,
   },
   label: {
-    marginBottom: 8,
-    fontSize: 16,
-    color: '#333',
+    marginBottom: 5,
+    fontSize: 12,
+    color: '#000000',
   },
   input: {
     borderWidth: 1,
     borderColor: '#ccc',
     padding: 10,
-    borderRadius: 30,
+    borderRadius: 8,
     backgroundColor: '#fff',
+    fontSize: 14,
+  },
+  switchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 20,
   },
   saveButton: {
-    backgroundColor: '#4CAF50',
-    paddingVertical: 15,
-    borderRadius: 50,
+    backgroundColor: '#077B17',
+    paddingVertical: 12,
+    borderRadius: 25,
     alignItems: 'center',
-    marginBottom: 20,
+    marginTop: 10,
   },
   saveButtonText: {
     color: '#fff',
-    fontSize: 15,
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  deleteButton: {
+    backgroundColor: '#B92915',
+    paddingVertical: 12,
+    borderRadius: 25,
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  deleteButtonText: {
+    color: '#fff',
+    fontSize: 14,
     fontWeight: '500',
   },
   logoutButton: {
-    backgroundColor: '#ff4d4d',
-    paddingVertical: 10,
-    borderRadius: 50,
+    backgroundColor: '#B92915',
+    paddingVertical: 12,
+    borderRadius: 25,
     alignItems: 'center',
+    marginBottom: 10,
   },
   logoutButtonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '500',
   },
 });

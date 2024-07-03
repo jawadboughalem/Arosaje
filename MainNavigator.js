@@ -1,8 +1,8 @@
 import React, { useContext } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
-import { TouchableOpacity, StyleSheet, Platform } from 'react-native';
-import { Ionicons } from '@expo/vector-icons'; // Importez vos icônes ici
+import { TouchableOpacity, StyleSheet, Platform, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 
 import TabBarContext from './components/TabBarContext';
 import Annonces from './screens/Annonces';
@@ -83,104 +83,120 @@ const MainNavigator = ({ handleLogout }) => {
   const { isTabBarVisible } = useContext(TabBarContext);
 
   return (
-    <Tab.Navigator
-      screenOptions={({ route }) => ({
-        tabBarActiveTintColor: '#5DB075',
-        tabBarLabelStyle: {
-          fontSize: 12,
-          fontWeight: '500',
-          paddingBottom: Platform.OS === 'ios' ? 5 : 5,
-        },
-        tabBarStyle: {
-          display: isTabBarVisible ? 'flex' : 'none',
-          position: 'absolute',
-          height: 65,
-          bottom: 0,
-          borderTopWidth: 0,
-          backgroundColor: 'white',
-          paddingBottom: Platform.OS === 'ios' ? 10 : 0,
-        },
-        tabBarIcon: ({ color, focused }) => {
-          let iconName;
+    <View style={{ flex: 1 }}>
+      <Tab.Navigator
+        screenOptions={({ route }) => ({
+          tabBarActiveTintColor: '#077B17',
+          tabBarInactiveTintColor: 'black',
+          tabBarLabelStyle: {
+            fontSize: 12,
+            fontWeight: '450',
+            paddingBottom: Platform.OS === 'ios' ? 5 : 5,
+            color: 'black',
+          },
+          tabBarStyle: {
+            display: isTabBarVisible ? 'flex' : 'none',
+            position: 'absolute',
+            height: 60,
+            bottom: 0,
+            borderTopWidth: 0,
+            backgroundColor: 'white',
+            paddingBottom: Platform.OS === 'ios' ? 10 : 0,
+          },
+          tabBarIcon: ({ color, focused }) => {
+            let iconName;
 
-          if (route.name === 'Annonces') {
-            iconName = focused ? 'home' : 'home-outline';
-          } else if (route.name === 'Messages') {
-            iconName = focused ? 'chatbox' : 'chatbox-outline';
-          } else if (route.name === 'PhotosStack') {
-            return null; // Hide icon for PhotosStack
-          } else if (route.name === 'ConseilsStack') {
-            iconName = focused ? 'leaf' : 'leaf-outline';
-          } else if (route.name === 'Profil') {
-            iconName = focused ? 'person' : 'person-outline';
-          }
-
-          // Return Ionicons component with iconName and color
-          return <Ionicons name={iconName} size={24} color={color} />;
-        },
-      })}
-    >
-      <Tab.Screen
-        name="Annonces"
-        component={Annonces}
-        options={{
-          title: 'Annonces',
-          header: () => <Header title="Annonces" />,
-        }}
-      />
-      <Tab.Screen
-        name="Messages"
-        component={Messages}
-        options={{
-          title: 'Messages',
-          header: () => <Header title="Messages" />,
-        }}
-      />
-      <Tab.Screen
-        name="PhotosStack"
-        component={PhotosStack}
-        options={{
-          tabBarLabel: () => null,
-          tabBarButton: (props) => (
-            <TouchableOpacity style={styles.cameraButton} {...props}>
-              <Ionicons name="camera" size={32} color="#5DB075" />
-            </TouchableOpacity>
-          ),
-          headerShown: false,
-        }}
-      />
-      <Tab.Screen
-        name="ConseilsStack"
-        component={ConseilsStack}
-        options={{
-          title: 'Conseils',
-          header: () => <Header title="Conseils" />,
-        }}
-      />
-      <Tab.Screen
-        name="Profil"
-        component={Profil}
-        options={{
-          title: 'Profil',
-          header: () => <Header title="Profil" />,
-        }}
-      />
-    </Tab.Navigator>
+            if (route.name === 'Annonces') {
+              iconName = focused ? 'home' : 'home-outline';
+            } else if (route.name === 'Messages') {
+              iconName = focused ? 'chatbox' : 'chatbox-outline';
+            } else if (route.name === 'PhotosStack') {
+              return null;
+            } else if (route.name === 'ConseilsStack') {
+              iconName = focused ? 'leaf' : 'leaf-outline';
+            } else if (route.name === 'Profil') {
+              iconName = focused ? 'person' : 'person-outline';
+            }
+            return <Ionicons name={iconName} size={22} color={color} style={styles.tabBarIcon} />;
+          },
+        })}
+      >
+        <Tab.Screen
+          name="Annonces"
+          component={Annonces}
+          options={{
+            title: 'Annonces',
+            header: () => <Header title="Annonces" />,
+          }}
+        />
+        <Tab.Screen
+          name="Messages"
+          component={Messages}
+          options={{
+            title: 'Messages',
+            header: () => <Header title="Messages" />,
+          }}
+        />
+        <Tab.Screen
+          name="PhotosStack"
+          component={PhotosStack}
+          options={{
+            tabBarLabel: () => null,
+            tabBarButton: (props) => (
+              <View style={styles.floatingCameraButtonContainer}>
+                <TouchableOpacity {...props} style={styles.floatingCameraButton}>
+                  <Ionicons name="camera" size={32} color="#077B17" />
+                </TouchableOpacity>
+              </View>
+            ),
+            headerShown: false,
+          }}
+        />
+        <Tab.Screen
+          name="ConseilsStack"
+          component={ConseilsStack}
+          options={{
+            title: 'Conseils',
+            header: () => <Header title="Conseils" />,
+          }}
+        />
+        <Tab.Screen
+          name="Profil"
+          component={Profil}
+          options={{
+            title: 'Profil',
+            header: () => <Header title="Profil" />,
+          }}
+        />
+      </Tab.Navigator>
+    </View>
   );
 };
 
 export default MainNavigator;
 
 const styles = StyleSheet.create({
-  cameraButton: {
-    position: 'absolute',
+  tabBarIcon: {
+    marginHorizontal: 10,
+  },
+  floatingCameraButtonContainer: {
+    bottom: 20,
+    left: '50%',
+    transform: [{ translateX: -28 }],
+    height: 56,
+    width: 56,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  floatingCameraButton: {
     justifyContent: 'center',
     alignItems: 'center',
     height: 56,
     width: 56,
-    backgroundColor: '#ffffff',
+    backgroundColor: '#fff',
     borderWidth: 2,
-    borderColor: '#5DB075',
+    borderColor: '#077B17',
+    borderRadius: 28,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
