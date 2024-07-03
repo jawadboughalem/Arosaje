@@ -3,8 +3,6 @@ import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Image, ImageBackg
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 
-const backgroundImage = require('../assets/form.png');
-
 const { IPV4 } = require('../Backend/config/config');
 
 const Conseils = ({ route }) => {
@@ -61,11 +59,6 @@ const Conseils = ({ route }) => {
 
   return (
     <View style={styles.wrapper}>
-      <ImageBackground
-        source={backgroundImage}
-        style={styles.backgroundImage}
-        imageStyle={styles.backgroundImageStyle}
-      >
         <View style={styles.overlay}>
           <View style={styles.themesContainer}>
             <ScrollView horizontal contentContainerStyle={styles.themesScrollContainer} showsHorizontalScrollIndicator={false}>
@@ -111,7 +104,6 @@ const Conseils = ({ route }) => {
             </TouchableOpacity>
           )}
         </View>
-      </ImageBackground>
     </View>
   );
 };
@@ -120,16 +112,9 @@ const styles = StyleSheet.create({
   wrapper: {
     flex: 1,
   },
-  backgroundImage: {
-    flex: 1,
-    resizeMode: 'cover',
-  },
-  backgroundImageStyle: {
-    resizeMode: 'cover',
-  },
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: '#fff',
   },
   themesContainer: {
     height: 50,
@@ -155,7 +140,7 @@ const styles = StyleSheet.create({
     minWidth: 100,
   },
   selectedThemeButton: {
-    backgroundColor: '#5DB075',
+    backgroundColor: '#077B17',
   },
   themeButtonText: {
     fontSize: 16,
@@ -208,7 +193,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 100,
     right: 20,
-    backgroundColor: '#5DB075',
+    backgroundColor: '#077B17',
     width: 60,
     height: 60,
     borderRadius: 30,
