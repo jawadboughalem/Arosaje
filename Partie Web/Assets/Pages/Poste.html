@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arosaje - Publication de Fleur</title>
+    <!-- Linking Google Font Link For Icons -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <link rel="stylesheet" href="../styles/Acceuil.css" />
+    <link rel="stylesheet" href="https://unicons.iconscout.com/release/v4.0.0/css/line.css" />
+    <style>
+        .content h1 {
+            margin-bottom: 20px; 
+            text-align: center;
+
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            padding: 20px;
+        }
+        .content form {
+            max-width: 600px;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin: auto;
+        }
+        .content form label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 8px;
+        }
+        .content form input[type="text"], .content form textarea {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .content form input[type="file"] {
+            margin-bottom: 15px;
+        }
+        .content form button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .content form button:hover {
+            background-color: #45a049;
+        }
+    </style>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+          document.getElementById('Accueil').onclick = function() {
+            window.location.href = 'accueil.html';
+          };
+        });
+        
+      </script>
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <img src="../Images/Arosage.png" alt="logo" />
+      <h2>Aros'aje</h2>
+    </div>
+    <ul class="sidebar-links">
+      <h4>
+        <span>Menue Principale</span>
+        <div class="menu-separator"></div>
+      </h4>
+      <li>
+        <a href="Accueil.html">
+          <span class="material-symbols-outlined">local_florist</span>Accueil</a>
+      </li>
+      <li>
+        <a href="#">
+          <span class="material-symbols-outlined">chat</span>Message</a>
+      </li>
+      <li>
+        <a href="poste.html" id="garde-button">
+          <span class="material-symbols-outlined">emoji_people</span>Garde</a>
+      </li>
+      
+      <h4>
+        <span>Menue profile</span>
+        <div class="menu-separator"></div>
+      </h4>
+      <li>
+        <a href="#"><span class="material-symbols-outlined">account_circle</span>Profile</a>
+      </li>
+      <li>
+        <a href="#"><span class="material-symbols-outlined">settings</span>Réglage</a>
+      </li>
+      <li>
+        <a href="#"><span class="material-symbols-outlined">logout</span>Deconnexion</a>
+      </li>
+    </ul>
+    <div class="user-account">
+      <div class="user-profile">
+        <img src="../Images/2318271-icone-de-profil-utilisateur-vectoriel.jpg" alt="Profile Image" />
+        <div class="user-detail">
+          <h3>Eva Murphy</h3>
+          <span class="material-symbols-outlined">spa</span>
+          <span>Botaniste</span>
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="content">
+    <h1>Publier un  Postt</h1>
+    <form id="postForm" enctype="multipart/form-data">
+        <label for="nom">Nom de la fleur :</label>
+        <input type="text" id="nom" name="nom" required>
+
+        <label for="description">Description :</label>
+        <textarea id="description" name="description" rows="4" required></textarea>
+
+        <label for="image">Sélectionner une image :</label>
+        <input type="file" id="image" name="image" accept="image/*" required>
+
+        <button type="submit">Publier</button>
+    </form>
+  </div>
+
+  <script>
+    document.getElementById('postForm').addEventListener('submit', function(event) {
+        event.preventDefault(); // Empêche la soumission par défaut du formulaire
+
+        // Ici, vous pouvez ajouter le code pour envoyer les données du formulaire à un serveur backend,
+        // ou pour traiter les données localement si vous le souhaitez.
+
+        // Exemple de traitement local (affichage des données pour cet exemple) :
+        let formData = new FormData(this);
+        console.log('Données du formulaire :');
+        for (let pair of formData.entries()) {
+            console.log(pair[0] + ': ' + pair[1]);
+        }
+
+        // Vous pouvez ajouter ici du code pour envoyer les données à un serveur backend avec fetch ou XMLHttpRequest.
+        // Par exemple :
+        /*
+        fetch('url_de_votre_backend', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Réponse du serveur :', data);
+            // Ajouter ici la logique pour gérer la réponse du serveur si nécessaire
+        })
+        .catch(error => console.error('Erreur lors de l\'envoi du formulaire :', error));
+        */
+    });
+  </script>
+</body>
+</html>
