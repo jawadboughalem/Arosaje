@@ -1,13 +1,14 @@
-
 const { db } = require('../config/db');
 
 const createAnnonce = (annonce, callback) => {
-  const { plantName, description, location, startDate, endDate, photo, userId } = annonce;
+  const { nomPlante, description, localisation, dateDebut, dateFin, photo, userId } = annonce;
+  console.log('Paramètres pour l\'insertion SQL:', { userId, nomPlante, description, localisation });
+
   const sql = `
-    INSERT INTO Postes (Code_Utilisateurs, titre, Description, DatePoste, Localisation) 
+    INSERT INTO postes (code_Utilisateurs, titre, description, datePoste, localisation) 
     VALUES (?, ?, ?, ?, ?);
   `;
-  const params = [userId, plantName, description, new Date(), location];
+  const params = [userId, nomPlante, description, new Date(), localisation];
   
   db.run(sql, params, function(err) {
     if (err) {
@@ -15,10 +16,10 @@ const createAnnonce = (annonce, callback) => {
     }
     const postId = this.lastID;
     const photoSql = `
-      INSERT INTO Photos (datePhotos, CheminAcces, Code_Utilisateurs, Code_Plantes) 
+      INSERT INTO photos (date, cheminAcces, code_Utilisateurs, code_Postes) 
       VALUES (?, ?, ?, ?);
     `;
-    const photoParams = [new Date(), photo, userId, null]; // Assuming Code_Plantes is null for now
+    const photoParams = [new Date(), photo, userId, postId];
     db.run(photoSql, photoParams, function(err) {
       if (err) {
         return callback(err);
@@ -29,7 +30,7 @@ const createAnnonce = (annonce, callback) => {
 };
 
 const getAllAnnonces = (callback) => {
-  const sql = 'SELECT * FROM Postes';
+  const sql = 'SELECT * FROM postes';
   db.all(sql, [], (err, rows) => {
     if (err) {
       return callback(err);

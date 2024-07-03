@@ -1,5 +1,5 @@
-// userController.js
-const { getUserById, updateUserPassword , getUserInfoFromDb }= require('../models/userModel');
+const { getUserById, updateUserPassword, getUserInfoFromDb, updateUserProfilePicInDb } = require('../models/UserModel');
+
 const bcrypt = require('bcrypt');
 
 
@@ -70,9 +70,19 @@ const changePassword = (req, res) => {
 };
 
 
+const updateUserProfilePic = (req, res) => {
+  const userId = req.userId;
+  const profilePic = req.file.buffer;
+
+  updateUserProfilePicInDb(userId, profilePic, (err) => {
+    if (err) return res.status(500).json({ error: 'Erreur lors de la mise à jour de la photo de profil' });
+    res.status(200).json({ message: 'Photo de profil mise à jour avec succès' });
+  });
+};
 
 module.exports = { 
   getUserInfo,
   changePassword,
+  updateUserProfilePic,
   
 };

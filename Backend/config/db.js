@@ -12,18 +12,18 @@ const initialize = () => {
       prenom TEXT NOT NULL,
       email TEXT UNIQUE NOT NULL,
       password TEXT NOT NULL,
-      photo TEXT,
+      photo BLOB,
       botaniste INTEGER NOT NULL CHECK (botaniste IN (0, 1)),
       numero TEXT,
       adresse TEXT
     )`);
 
-    db.run(`CREATE TABLE IF NOT EXISTS Photos (
+    db.run(`CREATE TABLE IF NOT EXISTS photos (
       Code_Photos INTEGER PRIMARY KEY,
-      Code_Utilisateurs INTEGER,
-      Code_Postes INTEGER,
-      CheminAcces TEXT NOT NULL,
-      Date INTEGER,
+      code_Utilisateurs INTEGER,
+      code_Postes INTEGER,
+      cheminAcces TEXT NOT NULL,
+      date INTEGER,
       FOREIGN KEY (Code_Utilisateurs) REFERENCES Utilisateurs(Code_Utilisateurs),
       FOREIGN KEY (Code_Postes) REFERENCES Postes(Code_Postes)
     )`);
@@ -38,14 +38,14 @@ const initialize = () => {
       FOREIGN KEY (Code_Destinataire) REFERENCES Utilisateurs(Code_Utilisateurs)
     )`);
 
-    db.run(`CREATE TABLE IF NOT EXISTS Postes (
+    db.run(`CREATE TABLE IF NOT EXISTS postes (
       Code_Postes INTEGER PRIMARY KEY,
-      Code_Utilisateurs INTEGER,
-      Code_Photos INTEGER,
-      Titre TEXT,
-      Description TEXT,
-      DatePoste DATETIME,
-      Localisation TEXT,
+      code_Utilisateurs INTEGER,
+      code_Photos INTEGER,
+      titre TEXT,
+      description TEXT,
+      datePoste DATETIME,
+      localisation TEXT,
       FOREIGN KEY (Code_Utilisateurs) REFERENCES Utilisateurs(Code_Utilisateurs),
       FOREIGN KEY (Code_Photos) REFERENCES Photos(Code_Photos)
     )`);
