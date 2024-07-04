@@ -1,13 +1,30 @@
-import React, { useState, useRef } from 'react';
-import { View, StyleSheet, TouchableOpacity, Animated, TextInput, Keyboard, Image, Text } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, StyleSheet, TouchableOpacity, Animated, TextInput, Keyboard, Image, Text, FlatList } from 'react-native';
 import Header from '../components/header';
+import Icon from 'react-native-vector-icons/Ionicons';
+import MessageItem from '../components/ConversationItem';
 
 export default function Messages() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchText, setSearchText] = useState('');
   const [selectedTab, setSelectedTab] = useState('Messages');
+  const [messages, setMessages] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const searchWidth = useRef(new Animated.Value(0)).current;
   const textInputRef = useRef(null);
+
+  useEffect(() => {
+    fetch('https://api.example.com/messages')
+      .then(response => response.json())
+      .then(data => {
+        setMessages(data);
+        setIsLoading(false);
+      })
+      .catch(error => {
+        console.error('Error fetching messages:', error);
+        setIsLoading(false);
+      });
+  }, []);
 
   const handleSearchPress = () => {
     setIsSearchOpen(true);
@@ -33,8 +50,9 @@ export default function Messages() {
     }).start();
   };
 
-  const isInboxEmpty = true; // Remplacez ceci par la logique réelle pour vérifier si la boîte de réception est vide
-  const isNotificationsEmpty = true; // Remplacez ceci par la logique réelle pour vérifier si les notifications sont vides
+  const filteredMessages = messages.filter(message =>
+    message.content.toLowerCase().includes(searchText.toLowerCase())
+  );
 
   return (
     <View style={styles.container}>
@@ -50,7 +68,7 @@ export default function Messages() {
       <Animated.View style={[styles.searchBar, {
         width: searchWidth.interpolate({
           inputRange: [0, 1],
-          outputRange: ['30%', '69%'],
+          outputRange: ['30%', '60%'],
         }),
         opacity: searchWidth.interpolate({
           inputRange: [0, 1],
@@ -66,6 +84,9 @@ export default function Messages() {
           onChangeText={setSearchText}
           onSubmitEditing={handleCloseSearch}
         />
+        <TouchableOpacity onPress={handleCloseSearch}>
+          <Icon name="close-circle" size={20} color="#fff" />
+        </TouchableOpacity>
       </Animated.View>
 
       <View style={styles.tabContainer}>
@@ -73,35 +94,33 @@ export default function Messages() {
           style={[styles.tabButton, selectedTab === 'Messages' && styles.selectedTab]}
           onPress={() => setSelectedTab('Messages')}
         >
-          <Text style={styles.tabText}>Messages</Text>
+          <Text style={selectedTab === 'Messages' ? styles.activeTabText : styles.tabText}>
+            📩 Messages
+          </Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.tabButton, selectedTab === 'Notifications' && styles.selectedTab]}
           onPress={() => setSelectedTab('Notifications')}
         >
-          <Text style={styles.tabText}>Notifications</Text>
+          <Text style={selectedTab === 'Notifications' ? styles.activeTabText : styles.tabText}>
+            📢 Notifications
+          </Text>
         </TouchableOpacity>
       </View>
 
       <View style={styles.content}>
         {selectedTab === 'Messages' ? (
-          isInboxEmpty ? (
-            <Image
-              source={require('../assets/annimation-message.gif')}
-              style={styles.gif}
-            />
+          isLoading ? (
+            <Text>Chargement...</Text>
           ) : (
-            <Text style={styles.contentText}>Boîte de réception</Text>
+            <FlatList
+              data={filteredMessages}
+              keyExtractor={item => item.id.toString()}
+              renderItem={({ item }) => <MessageItem message={item} />}
+            />
           )
         ) : (
-          isNotificationsEmpty ? (
-            <Image
-              source={require('../assets/norification.gif')}
-              style={styles.gif}
-            />
-          ) : (
-            <Text style={styles.contentText}>Notifications</Text>
-          )
+          <Text style={styles.contentText}>Notifications</Text>
         )}
       </View>
     </View>
@@ -144,9 +163,11 @@ const styles = StyleSheet.create({
   },
   tabContainer: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
     marginTop: 10,
     borderBottomWidth: 1,
     borderBottomColor: '#ccc',
+    width: '90%',
   },
   tabButton: {
     flex: 1,
@@ -155,10 +176,15 @@ const styles = StyleSheet.create({
   },
   selectedTab: {
     borderBottomWidth: 2,
-    borderBottomColor: '#00FF00',
+    borderBottomColor: '#077B17',
   },
   tabText: {
     fontSize: 16,
+    color: '#555',
+  },
+  activeTabText: {
+    fontSize: 16,
+    color: '#077B17',
     fontWeight: 'bold',
   },
   content: {

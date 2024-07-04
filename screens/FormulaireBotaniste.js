@@ -74,7 +74,7 @@ const Formulaire = () => {
   };
 
   return (
-    <ImageBackground source={require('../assets/form.png')} style={styles.background}>
+    <ImageBackground source={require('../assets/form.jpg')} style={styles.background}>
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : null}

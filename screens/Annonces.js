@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { View, Text, TextInput, StyleSheet, TouchableOpacity, Animated, Image, Keyboard } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import Icon from 'react-native-vector-icons/Ionicons';
 
 const CardsPage = () => {
     const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -70,7 +71,7 @@ const CardsPage = () => {
                         onSubmitEditing={handleSearch}
                     />
                     <TouchableOpacity onPress={handleCloseSearch}>
-                        <Text style={{ color: '#fff', paddingHorizontal: 10 }}>X</Text>
+                        <Icon name="close-circle" size={20} color="#fff" />
                     </TouchableOpacity>
                 </Animated.View>
             </View>
@@ -100,7 +101,7 @@ const styles = StyleSheet.create({
     },
     searchBar: {
         position: 'absolute',
-        top: 80,
+        top: 100,
         backgroundColor: '#000',
         paddingHorizontal: 20,
         borderRadius: 25,
@@ -111,7 +112,7 @@ const styles = StyleSheet.create({
         elevation: 10,
         flexDirection: 'row',
         alignItems: 'center',
-        height: 40,
+        height: 38,
     },
     input: {
         flex: 1,

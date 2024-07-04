@@ -158,7 +158,7 @@ const styles = StyleSheet.create({
         marginRight: 10,
     },
     button: {
-        backgroundColor: '#5DB075',
+        backgroundColor: '#077B17',
         padding: 10,
         borderRadius: 30,
         width: '80%',
@@ -174,7 +174,7 @@ const styles = StyleSheet.create({
         color: 'black',
     },
     switchLink: {
-        color: '#5DB075',
+        color: '#077B17',
         fontWeight: 'bold',
     },
 });

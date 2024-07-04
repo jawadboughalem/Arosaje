@@ -6,7 +6,7 @@ export default function Bienvenue ({ navigation }) {
   return (
     <View style={styles.container}>
       <Text style={styles.welcomeText}>Bienvenue sur{"\n"}A ’Rosa-je</Text>
-      <MaterialCommunityIcons name="flower" size={190} color="#5DB075" style={styles.icon} />
+      <MaterialCommunityIcons name="flower" size={190} color="#077B17" style={styles.icon} />
       
       <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Login')}>
         <Text style={styles.buttonText}>Connexion</Text>
@@ -38,7 +38,7 @@ const styles = StyleSheet.create({
     marginBottom: 90,
   },
   button: {
-    backgroundColor: '#5DB075',
+    backgroundColor: '#077B17',
     padding: 10,
     borderRadius: 30,
     width: '80%',
