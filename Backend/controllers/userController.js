@@ -1,4 +1,4 @@
-const { getUserById, updateUserPassword, getUserInfoFromDb, updateUserPhoto, getUserPhoto } = require('../models/userModel');
+const { getUserById, updateUserPassword, getUserInfoFromDb, updateUserPhoto, getUserPhoto } = require('../models/UserModel');
 const bcrypt = require('bcrypt');
 
 const getUserInfo = (req, res) => {

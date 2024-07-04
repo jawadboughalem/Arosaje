@@ -22,7 +22,7 @@ const ParametresProfil = ({ onBack }) => {
         const storedToken = await AsyncStorage.getItem('token');
         if (storedToken) {
           setToken(storedToken);
-          fetchProfilePic(storedToken); // Fetch profile pic when token is available
+          fetchProfilePic(storedToken); 
         } else {
           Alert.alert('Token not found');
         }
@@ -49,7 +49,7 @@ const ParametresProfil = ({ onBack }) => {
         console.error('Error fetching profile pic:', data.error);
         Alert.alert(data.error);
       } else {
-        setProfilePic(data.photo); // Set profile pic from the response
+        setProfilePic(data.photo);
       }
     } catch (error) {
       console.error('Erreur lors de la récupération de la photo de profil:', error);
@@ -153,13 +153,13 @@ const ParametresProfil = ({ onBack }) => {
       return;
     }
 
-    // Permettre à l'utilisateur de sélectionner et de recadrer une image
+    // Permet à l'utilisateur de sélectionner et de recadrer une image
     let pickerResult = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,  // Permettre le recadrage de l'image
-      aspect: [4, 3],  // Proportion de recadrage (facultatif)
+      allowsEditing: true,  // Sa me permet de recadrer l'image
+      aspect: [4, 3], 
       quality: 1,
-      base64: true,  // Ajouter cette ligne pour obtenir l'image en base64
+      base64: true,  // La j'ai ajouté cette ligne pour obtenir l'image en base64
     });
 
     if (!pickerResult.canceled) {
@@ -350,7 +350,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#e0e0e0', // Ajouté pour afficher un fond par défaut
+    backgroundColor: '#e0e0e0',
   },
   profilePic: {
     width: 100,

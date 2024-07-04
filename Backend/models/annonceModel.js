@@ -16,10 +16,10 @@ const createAnnonce = (annonce, callback) => {
     }
     const postId = this.lastID;
     const photoSql = `
-      INSERT INTO photos (date, cheminAcces, code_Utilisateurs, code_Postes) 
+      INSERT INTO photos (date, photo, code_Utilisateurs, code_Postes) 
       VALUES (?, ?, ?, ?);
     `;
-    const photoParams = [new Date(), photo, userId, postId];
+    const photoParams = [new Date().getTime(), photo, userId, postId];
     db.run(photoSql, photoParams, function(err) {
       if (err) {
         return callback(err);

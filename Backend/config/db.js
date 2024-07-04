@@ -75,7 +75,7 @@ const initialize = () => {
       Statut TEXT,
       DateDebut TEXT,
       DateFin TEXT,
-      FOREIGN KEY (Code_Postes) REFERENCES Postes(Code_Postes),
+      FOREIGN KEY (Code_Postes) REFERENCES Postes(Code_Postes)
     )`);
   });
 };

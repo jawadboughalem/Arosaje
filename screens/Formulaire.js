@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, TextInput, View, Text, TouchableOpacity, ScrollView, Alert, ImageBackground } from 'react-native';
+import { StyleSheet, TextInput, View, Text, TouchableOpacity, ScrollView, Alert, ImageBackground, Image } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import * as Location from 'expo-location';
+import * as ImagePicker from 'expo-image-picker';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
 const { IPV4 } = require('../Backend/config/config');
@@ -222,6 +223,17 @@ const Formulaire = () => {
                 onCancel={hideDateFinPicker}
               />
             </View>
+            <Text style={styles.label}>Photo de la plante :</Text>
+            {photo ? (
+              <Image
+                source={{ uri: photo }}
+                style={styles.previewImage}
+              />
+            ) : (
+              <TouchableOpacity style={styles.photoButton} onPress={pickImage}>
+                <Text style={styles.photoButtonText}>Choisir une photo</Text>
+              </TouchableOpacity>
+            )}
             <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
               <Text style={styles.submitButtonText}>Poster</Text>
             </TouchableOpacity>
@@ -302,6 +314,24 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 50, // Align text vertically center
   },
+  previewImage: {
+    width: '100%',
+    height: 200,
+    marginBottom: 20,
+    borderRadius: 10,
+  },
+  photoButton: {
+    backgroundColor: '#5DB075',
+    paddingVertical: 15,
+    borderRadius: 10,
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  photoButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
   submitButton: {
     backgroundColor: '#5DB075',
     paddingVertical: 15,
@@ -310,7 +340,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   submitButtonText: {
-    color: 'black',
+    color: '#fff',
     fontSize: 18,
     fontWeight: 'bold',
   },

@@ -1,4 +1,3 @@
-// server.js
 const express = require('express');
 const bodyParser = require('body-parser');
 const morgan = require('morgan');
@@ -18,7 +17,7 @@ initialize();
 
 // Configuration CORS
 const corsOptions = {
-  origin: 'http://localhost:8081', // Remplacez par l'origine de votre frontend
+  origin: 'http://localhost:8081', // Remplace par l'origine de ton frontend
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
   allowedHeaders: 'Origin, X-Requested-With, Content-Type, Accept, Authorization'
 };
@@ -34,14 +33,14 @@ app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 const storage = multer.memoryStorage();
 const upload = multer({ 
   storage, 
-  limits: { fileSize: 50 * 1024 * 1024 } // 50 MB
+  limits: { fileSize: 50 * 1024 * 1024 }
 });
 
 // Routes
 app.use('/auth', authRoutes);
 app.use('/annonces', annonceRoutes);
 app.use('/user', userRoutes);
-app.use('/api', conseilRoutes); // Ajout des routes de conseils
+app.use('/api', conseilRoutes);
 
 app.listen(port, '0.0.0.0', () => {
   console.log(`Serveur démarré sur le port ${port}`);

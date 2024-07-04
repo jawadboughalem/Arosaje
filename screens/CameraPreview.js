@@ -1,17 +1,32 @@
-import React from 'react';
-import { View, TouchableOpacity, Text, Image, StyleSheet, ImageBackground } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, TouchableOpacity, Text, Image, StyleSheet, ImageBackground, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import * as FileSystem from 'expo-file-system';
 
 const CameraPreview = ({ route }) => {
   const { photo } = route.params || {};
   const navigation = useNavigation();
+  const [base64Photo, setBase64Photo] = useState(null);
+
+  useEffect(() => {
+    if (photo) {
+      FileSystem.readAsStringAsync(photo, { encoding: FileSystem.EncodingType.Base64 })
+        .then(encoded => {
+          setBase64Photo(`data:image/jpeg;base64,${encoded}`);
+        })
+        .catch(error => {
+          console.error('Error converting image to base64:', error);
+          Alert.alert('Erreur', 'Impossible de convertir l\'image.');
+        });
+    }
+  }, [photo]);
 
   return (
     <ImageBackground source={require('../assets/backrloundpost.png')} style={styles.background}>
       <View style={styles.container}>
-        {photo && (
+        {base64Photo && (
           <View style={styles.imageContainer}>
-            <Image source={{ uri: photo }} style={styles.image} />
+            <Image source={{ uri: base64Photo }} style={styles.image} />
           </View>
         )}
         <View style={styles.buttonContainer}>
@@ -23,7 +38,7 @@ const CameraPreview = ({ route }) => {
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.button}
-            onPress={() => navigation.navigate('Formulaire', { photo })}
+            onPress={() => navigation.navigate('Formulaire', { photo: base64Photo })}
           >
             <Text style={styles.buttonText}>Créer un post</Text>
           </TouchableOpacity>
@@ -42,10 +57,10 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.8)', // semi-transparent white to reduce the intensity of the background image
-    padding: 0, // Réduire le padding
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    padding: 0,
     borderRadius: 30,
-    margin: 30, // Réduire la marge
+    margin: 30,
   },
   imageContainer: {
     width: '90%',
@@ -76,7 +91,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     borderRadius: 25,
     alignItems: 'center',
-    marginVertical: 10, // Ajouter une marge verticale pour espacer les boutons
+    marginVertical: 10,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
