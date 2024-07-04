@@ -13,6 +13,11 @@ body {
   background: #F0F4FF;
 }
 
+main{
+  display: flex;
+  justify-content: center;
+}
+
 .sidebar {
   position: fixed;
   top: 0;
