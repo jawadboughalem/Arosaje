@@ -1,7 +1,5 @@
-const { getUserById, updateUserPassword, getUserInfoFromDb, updateUserProfilePicInDb } = require('../models/UserModel');
-
+const { getUserById, updateUserPassword, getUserInfoFromDb, updateUserPhoto, getUserPhoto } = require('../models/userModel');
 const bcrypt = require('bcrypt');
-
 
 const getUserInfo = (req, res) => {
   const userId = req.userId;
@@ -23,10 +21,8 @@ const getUserInfo = (req, res) => {
   });
 };
 
-// changement du password 
-
 const changePassword = (req, res) => {
-  const userId = req.userId; // Récupérer l'ID de l'utilisateur depuis le middleware d'authentification
+  const userId = req.userId;
   const { currentPassword, newPassword } = req.body;
 
   getUserById(userId, (err, user) => {
@@ -37,7 +33,7 @@ const changePassword = (req, res) => {
 
     console.log('Utilisateur trouvé:', user);
 
-    bcrypt.compare(currentPassword, user.password, (err, isMatch) => {  // Utilisation de 'user.password' avec 'p' minuscule
+    bcrypt.compare(currentPassword, user.password, (err, isMatch) => {
       if (err) {
         console.error('Erreur lors de la comparaison des mots de passe:', err);
         return res.status(500).json({ error: 'Erreur lors de la comparaison des mots de passe' });
@@ -69,20 +65,43 @@ const changePassword = (req, res) => {
   });
 };
 
-
 const updateUserProfilePic = (req, res) => {
   const userId = req.userId;
-  const profilePic = req.file.buffer;
+  const { photoBase64 } = req.body;
 
-  updateUserProfilePicInDb(userId, profilePic, (err) => {
-    if (err) return res.status(500).json({ error: 'Erreur lors de la mise à jour de la photo de profil' });
+  if (!photoBase64) {
+    return res.status(400).json({ error: 'Photo non fournie' });
+  }
+
+  updateUserPhoto(userId, photoBase64, (err) => {
+    if (err) {
+      console.error('Erreur lors de la mise à jour de la photo:', err);
+      return res.status(500).json({ error: 'Erreur lors de la mise à jour de la photo de profil' });
+    }
     res.status(200).json({ message: 'Photo de profil mise à jour avec succès' });
   });
 };
 
-module.exports = { 
+const getUserProfilePic = (req, res) => {
+  const userId = req.userId;
+
+  getUserPhoto(userId, (err, photoBase64) => {
+    if (err) {
+      console.error('Erreur lors de la récupération de la photo:', err);
+      return res.status(500).json({ error: 'Erreur lors de la récupération de la photo de profil' });
+    }
+
+    if (!photoBase64) {
+      return res.status(404).json({ error: 'Photo de profil non trouvée' });
+    }
+
+    res.status(200).json({ photo: photoBase64 });
+  });
+};
+
+module.exports = {
   getUserInfo,
   changePassword,
   updateUserProfilePic,
-  
+  getUserProfilePic,
 };

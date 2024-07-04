@@ -3,6 +3,7 @@ import { View, Text, TextInput, StyleSheet, TouchableOpacity, Image, ScrollView,
 import Icon from 'react-native-vector-icons/Ionicons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
+import * as ImagePicker from 'expo-image-picker';
 const { IPV4 } = require('../Backend/config/config');
 
 const ParametresProfil = ({ onBack }) => {
@@ -10,7 +11,7 @@ const ParametresProfil = ({ onBack }) => {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [token, setToken] = useState(null);
-  const [hasProfilePic, setHasProfilePic] = useState(false);
+  const [profilePic, setProfilePic] = useState(null);
   const [language, setLanguage] = useState('fr');
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const navigation = useNavigation();
@@ -21,6 +22,7 @@ const ParametresProfil = ({ onBack }) => {
         const storedToken = await AsyncStorage.getItem('token');
         if (storedToken) {
           setToken(storedToken);
+          fetchProfilePic(storedToken); // Fetch profile pic when token is available
         } else {
           Alert.alert('Token not found');
         }
@@ -32,6 +34,28 @@ const ParametresProfil = ({ onBack }) => {
 
     fetchToken();
   }, []);
+
+  const fetchProfilePic = async (token) => {
+    try {
+      const response = await fetch(`http://${IPV4}:3000/user/profile-pic`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      const data = await response.json();
+      if (data.error) {
+        console.error('Error fetching profile pic:', data.error);
+        Alert.alert(data.error);
+      } else {
+        setProfilePic(data.photo); // Set profile pic from the response
+      }
+    } catch (error) {
+      console.error('Erreur lors de la récupération de la photo de profil:', error);
+      Alert.alert('Une erreur est survenue lors de la récupération de la photo de profil.');
+    }
+  };
 
   const handleChangePassword = async () => {
     if (newPassword !== confirmPassword) {
@@ -120,6 +144,66 @@ const ParametresProfil = ({ onBack }) => {
     }
   };
 
+  const pickImage = async () => {
+    // Demander la permission d'accéder à la galerie
+    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+    if (!permissionResult.granted) {
+      alert("Permission to access gallery is required!");
+      return;
+    }
+
+    // Permettre à l'utilisateur de sélectionner et de recadrer une image
+    let pickerResult = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,  // Permettre le recadrage de l'image
+      aspect: [4, 3],  // Proportion de recadrage (facultatif)
+      quality: 1,
+      base64: true,  // Ajouter cette ligne pour obtenir l'image en base64
+    });
+
+    if (!pickerResult.canceled) {
+      setProfilePic(pickerResult.assets[0].base64);  // Stocker l'image en base64
+    }
+  };
+
+  const handleUpdateProfilePic = async () => {
+    if (!profilePic) {
+      Alert.alert('Aucune photo sélectionnée');
+      return;
+    }
+
+    if (!token) {
+      Alert.alert('Token not found. Please try again.');
+      return;
+    }
+
+    try {
+      const response = await fetch(`http://${IPV4}:3000/user/upload-profile-pic`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          photoBase64: profilePic,
+        }),
+      });
+
+      const data = await response.json();
+      if (data.error) {
+        console.error('Error response:', data.error);
+        Alert.alert(data.error);
+      } else {
+        console.log('Success response:', data.message);
+        Alert.alert(data.message);
+      }
+    } catch (error) {
+      console.error('Erreur:', error);
+      Alert.alert('Une erreur est survenue. Veuillez réessayer.');
+    }
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -131,14 +215,18 @@ const ParametresProfil = ({ onBack }) => {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Informations personnelles</Text>
           <View style={styles.profilePicContainer}>
-            {hasProfilePic ? (
-              <Image source={{ uri: 'https://via.placeholder.com/100' }} style={styles.profilePic} />
-            ) : (
-              <View style={styles.defaultProfilePic}>
-                <Icon name="person-circle-outline" size={80} color="#ccc" />
-              </View>
-            )}
-            <Text style={styles.changePicText}>Changer la photo de profil</Text>
+            <View style={styles.profilePicWrapper}>
+              {profilePic ? (
+                <Image source={{ uri: `data:image/jpeg;base64,${profilePic}` }} style={styles.profilePic} />
+              ) : (
+                <View style={styles.defaultProfilePic}>
+                  <Icon name="person-circle-outline" size={80} color="#ccc" />
+                </View>
+              )}
+            </View>
+            <TouchableOpacity onPress={pickImage}>
+              <Text style={styles.changePicText}>Changer la photo de profil</Text>
+            </TouchableOpacity>
           </View>
           <View style={styles.inputContainer}>
             <Text style={styles.label}>Mot de passe actuel :</Text>
@@ -172,6 +260,9 @@ const ParametresProfil = ({ onBack }) => {
           </View>
           <TouchableOpacity style={styles.saveButton} onPress={handleChangePassword}>
             <Text style={styles.saveButtonText}>Enregistrer les modifications</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.saveButton} onPress={handleUpdateProfilePic}>
+            <Text style={styles.saveButtonText}>Mettre à jour la photo de profil</Text>
           </TouchableOpacity>
         </View>
 
@@ -252,19 +343,25 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 20,
   },
+  profilePicWrapper: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    overflow: 'hidden',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#e0e0e0', // Ajouté pour afficher un fond par défaut
+  },
   profilePic: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    borderColor: '#ccc',
-    borderWidth: 1,
+    width: 100,
+    height: 100,
   },
   defaultProfilePic: {
     justifyContent: 'center',
     alignItems: 'center',
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+    width: 100,
+    height: 100,
+    borderRadius: 50,
     backgroundColor: '#e0e0e0',
   },
   changePicText: {
@@ -325,7 +422,7 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     alignItems: 'center',
     marginBottom: 10,
-  },
+  },  
   logoutButtonText: {
     color: '#fff',
     fontSize: 14,

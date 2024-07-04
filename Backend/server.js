@@ -8,11 +8,12 @@ const authRoutes = require('./routes/authRoutes');
 const annonceRoutes = require('./routes/annonceRoutes');
 const userRoutes = require('./routes/userRoutes');
 const conseilRoutes = require('./routes/conseilRoutes');
-
+const multer = require('multer');
 
 const app = express();
 const port = 3000;
 
+// Initialisation de la base de données
 initialize();
 
 // Configuration CORS
@@ -24,14 +25,26 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 app.use(morgan('combined'));
-app.use(bodyParser.json());
+
+// Configurer body-parser pour accepter des payloads plus grands
+app.use(bodyParser.json({ limit: '50mb' }));
+app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
+
+// Configuration de multer pour accepter des fichiers plus grands
+const storage = multer.memoryStorage();
+const upload = multer({ 
+  storage, 
+  limits: { fileSize: 50 * 1024 * 1024 } // 50 MB
+});
+
+// Routes
 app.use('/auth', authRoutes);
 app.use('/annonces', annonceRoutes);
 app.use('/user', userRoutes);
-
 app.use('/api', conseilRoutes); // Ajout des routes de conseils
-
 
 app.listen(port, '0.0.0.0', () => {
   console.log(`Serveur démarré sur le port ${port}`);
 });
+
+module.exports = app;

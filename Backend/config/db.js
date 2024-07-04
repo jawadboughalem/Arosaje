@@ -22,7 +22,7 @@ const initialize = () => {
       Code_Photos INTEGER PRIMARY KEY,
       code_Utilisateurs INTEGER,
       code_Postes INTEGER,
-      cheminAcces TEXT NOT NULL,
+      photo TEXT NOT NULL,
       date INTEGER,
       FOREIGN KEY (Code_Utilisateurs) REFERENCES Utilisateurs(Code_Utilisateurs),
       FOREIGN KEY (Code_Postes) REFERENCES Postes(Code_Postes)
@@ -71,12 +71,11 @@ const initialize = () => {
     db.run(`CREATE TABLE IF NOT EXISTS Gardes (
       Code_Gardes INTEGER PRIMARY KEY,
       Code_Postes INTEGER,
-      Code_Utilisateurs INTEGER,
+      Code_Gardien INTEGER,
       Statut TEXT,
-      DateDebut DATETIME,
-      DateFin DATETIME,
+      DateDebut TEXT,
+      DateFin TEXT,
       FOREIGN KEY (Code_Postes) REFERENCES Postes(Code_Postes),
-      FOREIGN KEY (Code_Utilisateurs) REFERENCES Utilisateurs(Code_Utilisateurs)
     )`);
   });
 };
