@@ -65,6 +65,31 @@ const changePassword = (req, res) => {
   });
 };
 
+const verifyPassword = (req, res) => {
+  const userId = req.userId;
+  const { currentPassword } = req.body;
+
+  getUserById(userId, (err, user) => {
+    if (err || !user) {
+      console.error('Utilisateur non trouvé:', err);
+      return res.status(404).json({ error: 'Utilisateur non trouvé' });
+    }
+
+    bcrypt.compare(currentPassword, user.password, (err, isMatch) => {
+      if (err) {
+        console.error('Erreur lors de la comparaison des mots de passe:', err);
+        return res.status(500).json({ error: 'Erreur lors de la comparaison des mots de passe' });
+      }
+
+      if (!isMatch) {
+        return res.status(401).json({ error: 'Mot de passe actuel incorrect' });
+      }
+
+      res.status(200).json({ message: 'Mot de passe vérifié avec succès' });
+    });
+  });
+};
+
 const updateUserProfilePic = (req, res) => {
   const userId = req.userId;
   const { photoBase64 } = req.body;
@@ -102,6 +127,7 @@ const getUserProfilePic = (req, res) => {
 module.exports = {
   getUserInfo,
   changePassword,
+  verifyPassword,
   updateUserProfilePic,
   getUserProfilePic,
 };
