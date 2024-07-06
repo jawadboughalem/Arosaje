@@ -98,15 +98,15 @@ const updateUserProfilePic = async (req, res) => {
   const userId = req.userId;
   const photoBuffer = req.file.buffer;
   const fileName = `${uuidv4()}.webp`;
-  const filePath = path.join(__dirname, '../uploads/profil', fileName);
+  const filePath = path.join(__dirname, '../uploads', fileName);
 
   try {
-    // La je convertis l'image en WebP
+    // Convertir l'image en WebP
     await sharp(photoBuffer)
       .webp({ quality: 80 })
       .toFile(filePath);
 
-    // La je met à jour la base de données avec le nom du fichier
+    // Mettre à jour la base de données avec le nom du fichier
     updateUserPhoto(userId, fileName, (err) => {
       if (err) {
         console.error('Erreur lors de la mise à jour de la photo:', err);
@@ -133,7 +133,7 @@ const getUserProfilePic = (req, res) => {
       return res.status(404).json({ error: 'Photo de profil non trouvée' });
     }
 
-    const filePath = path.join(__dirname, '../uploads/', fileName);
+    const filePath = path.join(__dirname, '../uploads', fileName);
 
     if (fs.existsSync(filePath)) {
       res.setHeader('Content-Type', 'image/webp');
