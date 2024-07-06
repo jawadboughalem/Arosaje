@@ -24,7 +24,7 @@ const ParametresProfil = ({ onBack }) => {
         const storedToken = await AsyncStorage.getItem('token');
         if (storedToken) {
           setToken(storedToken);
-          fetchProfilePic(storedToken); 
+          fetchProfilePic(storedToken);
         } else {
           Alert.alert('Token not found');
         }
@@ -46,13 +46,13 @@ const ParametresProfil = ({ onBack }) => {
         },
       });
 
-      const data = await response.json();
-      if (data.error) {
-        console.error('Error fetching profile pic:', data.error);
-        Alert.alert(data.error);
-      } else {
-        setProfilePic(data.photo);
+      if (!response.ok) {
+        throw new Error('Failed to fetch profile pic');
       }
+
+      const data = await response.blob();
+      const imageUrl = URL.createObjectURL(data);
+      setProfilePic(imageUrl);
     } catch (error) {
       console.error('Erreur lors de la récupération de la photo de profil:', error);
       Alert.alert('Une erreur est survenue lors de la récupération de la photo de profil.');
@@ -77,21 +77,13 @@ const ParametresProfil = ({ onBack }) => {
         }),
       });
 
-      const responseText = await response.text();
-      console.log('Server response:', responseText);
-
-      try {
-        const data = JSON.parse(responseText);
-        if (data.error) {
-          console.error('Error response:', data.error);
-          Alert.alert(data.error);
-          shake();
-        } else {
-          setShowNewPasswordFields(true);
-        }
-      } catch (error) {
-        console.error('JSON parsing error:', error);
-        Alert.alert('Une erreur est survenue lors de l\'analyse de la réponse du serveur.');
+      const data = await response.json();
+      if (data.error) {
+        console.error('Error response:', data.error);
+        Alert.alert(data.error);
+        shake();
+      } else {
+        setShowNewPasswordFields(true);
       }
     } catch (error) {
       console.error('Erreur:', error);
@@ -124,22 +116,14 @@ const ParametresProfil = ({ onBack }) => {
         }),
       });
 
-      const responseText = await response.text();
-      console.log('Server response:', responseText);
-
-      try {
-        const data = JSON.parse(responseText);
-        if (data.error) {
-          console.error('Error response:', data.error);
-          Alert.alert(data.error);
-        } else {
-          console.log('Success response:', data.message);
-          Alert.alert(data.message);
-          resetPasswordFields();
-        }
-      } catch (error) {
-        console.error('JSON parsing error:', error);
-        Alert.alert('Une erreur est survenue lors de l\'analyse de la réponse du serveur.');
+      const data = await response.json();
+      if (data.error) {
+        console.error('Error response:', data.error);
+        Alert.alert(data.error);
+      } else {
+        console.log('Success response:', data.message);
+        Alert.alert(data.message);
+        resetPasswordFields();
       }
     } catch (error) {
       console.error('Erreur:', error);
@@ -169,26 +153,18 @@ const ParametresProfil = ({ onBack }) => {
         },
       });
 
-      const responseText = await response.text();
-      console.log('Server response:', responseText);
-
-      try {
-        const data = JSON.parse(responseText);
-        if (data.error) {
-          console.error('Error response:', data.error);
-          Alert.alert(data.error);
-        } else {
-          console.log('Success response:', data.message);
-          Alert.alert(data.message);
-          await AsyncStorage.removeItem('token');
-          navigation.reset({
-            index: 0,
-            routes: [{ name: 'Bienvenue' }],
-          });
-        }
-      } catch (error) {
-        console.error('JSON parsing error:', error);
-        Alert.alert('Une erreur est survenue lors de l\'analyse de la réponse du serveur.');
+      const data = await response.json();
+      if (data.error) {
+        console.error('Error response:', data.error);
+        Alert.alert(data.error);
+      } else {
+        console.log('Success response:', data.message);
+        Alert.alert(data.message);
+        await AsyncStorage.removeItem('token');
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'Bienvenue' }],
+        });
       }
     } catch (error) {
       console.error('Erreur:', error);
@@ -210,7 +186,6 @@ const ParametresProfil = ({ onBack }) => {
   };
 
   const pickImage = async () => {
-    // Demander la permission d'accéder à la galerie
     const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
     if (!permissionResult.granted) {
@@ -218,17 +193,15 @@ const ParametresProfil = ({ onBack }) => {
       return;
     }
 
-    // Permet à l'utilisateur de sélectionner et de recadrer une image
     let pickerResult = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,  // Sa me permet de recadrer l'image
-      aspect: [4, 3], 
+      allowsEditing: true,
+      aspect: [4, 3],
       quality: 1,
-      base64: true,  // La j'ai ajouté cette ligne pour obtenir l'image en base64
     });
 
     if (!pickerResult.canceled) {
-      setProfilePic(pickerResult.assets[0].base64);  // Stocker l'image en base64
+      setProfilePic(pickerResult.assets[0].uri);
     }
   };
 
@@ -244,32 +217,28 @@ const ParametresProfil = ({ onBack }) => {
     }
 
     try {
+      const formData = new FormData();
+      formData.append('profilePic', {
+        uri: profilePic,
+        name: 'profile.jpg',
+        type: 'image/jpeg',
+      });
+
       const response = await fetch(`http://${IPV4}:3000/user/upload-profile-pic`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          photoBase64: profilePic,
-        }),
+        body: formData,
       });
 
-      const responseText = await response.text();
-      console.log('Server response:', responseText);
-
-      try {
-        const data = JSON.parse(responseText);
-        if (data.error) {
-          console.error('Error response:', data.error);
-          Alert.alert(data.error);
-        } else {
-          console.log('Success response:', data.message);
-          Alert.alert(data.message);
-        }
-      } catch (error) {
-        console.error('JSON parsing error:', error);
-        Alert.alert('Une erreur est survenue lors de l\'analyse de la réponse du serveur.');
+      const data = await response.json();
+      if (data.error) {
+        console.error('Error response:', data.error);
+        Alert.alert(data.error);
+      } else {
+        console.log('Success response:', data.message);
+        Alert.alert(data.message);
       }
     } catch (error) {
       console.error('Erreur:', error);
@@ -299,7 +268,7 @@ const ParametresProfil = ({ onBack }) => {
           <View style={styles.profilePicContainer}>
             <View style={styles.profilePicWrapper}>
               {profilePic ? (
-                <Image source={{ uri: `data:image/jpeg;base64,${profilePic}` }} style={styles.profilePic} />
+                <Image source={{ uri: profilePic }} style={styles.profilePic} />
               ) : (
                 <View style={styles.defaultProfilePic}>
                   <Icon name="person-circle-outline" size={80} color="#ccc" />
@@ -513,7 +482,7 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     alignItems: 'center',
     marginBottom: 10,
-  },  
+  },
   logoutButtonText: {
     color: '#fff',
     fontSize: 14,

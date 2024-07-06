@@ -12,7 +12,7 @@ const initialize = () => {
       prenom TEXT NOT NULL,
       email TEXT UNIQUE NOT NULL,
       password TEXT NOT NULL,
-      photo TEXT,
+      photo BLOB,
       botaniste INTEGER NOT NULL CHECK (botaniste IN (0, 1)),
       numero TEXT,
       adresse TEXT

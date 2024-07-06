@@ -1,6 +1,5 @@
 const { db } = require('../config/db');
 
-// Récupérer les informations utilisateur par ID
 const getUserById = (userId, callback) => {
   const query = `SELECT * FROM utilisateurs WHERE Code_Utilisateurs = ?`;
   db.get(query, [userId], (err, row) => {
@@ -8,7 +7,6 @@ const getUserById = (userId, callback) => {
       console.error('Erreur lors de la récupération de l\'utilisateur:', err);
       return callback(err);
     }
-
     console.log('Utilisateur récupéré:', row);
     callback(null, row);
   });
@@ -27,31 +25,27 @@ const getUserInfoFromDb = (userId, callback) => {
   });
 };
 
-// Mettre à jour le mot de passe de l'utilisateur
 const updateUserPassword = (userId, hashedPassword, callback) => {
   const query = `UPDATE utilisateurs SET password = ? WHERE Code_Utilisateurs = ?`;
   db.run(query, [hashedPassword, userId], (err) => {
     if (err) {
       console.error('Erreur lors de la mise à jour du mot de passe:', err);
     }
-
     callback(err);
   });
 };
 
-// Mettre à jour la photo de profil de l'utilisateur
-const updateUserPhoto = (userId, photoBase64, callback) => {
+const updateUserPhoto = (userId, photoBlob, callback) => {
   const query = `UPDATE utilisateurs SET photo = ? WHERE Code_Utilisateurs = ?`;
-  db.run(query, [photoBase64, userId], (err) => {
+  db.run(query, [photoBlob, userId], (err) => {
     if (err) {
       console.error('Erreur lors de la mise à jour de la photo:', err);
+      return callback(err);
     }
-
-    callback(err);
+    callback(null);
   });
 };
 
-// Récupérer la photo de profil de l'utilisateur
 const getUserPhoto = (userId, callback) => {
   const query = `SELECT photo FROM utilisateurs WHERE Code_Utilisateurs = ?`;
   db.get(query, [userId], (err, row) => {

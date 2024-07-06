@@ -10,7 +10,7 @@ const upload = multer({ storage });
 router.get('/user-info', authenticateToken, getUserInfo);
 router.post('/change-password', authenticateToken, changePassword);
 router.post('/verify-password', authenticateToken, verifyPassword);
-router.post('/upload-profile-pic', authenticateToken, updateUserProfilePic);
+router.post('/upload-profile-pic', authenticateToken, upload.single('profilePic'), updateUserProfilePic);
 router.get('/profile-pic', authenticateToken, getUserProfilePic);
 
 module.exports = router;

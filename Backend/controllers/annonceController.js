@@ -3,7 +3,7 @@ const annonceModel = require('../models/annonceModel');
 const addAnnonce = (req, res) => {
   const annonce = req.body;
   console.log('Données reçues pour l\'annonce:', annonce);
-  annonce.userId = req.userId; // Assuming userId is added by middleware
+  annonce.userId = req.userId;
   annonceModel.createAnnonce(annonce, (err, id) => {
     if (err) {
       console.error('Database error:', err.message);

@@ -92,13 +92,9 @@ const verifyPassword = (req, res) => {
 
 const updateUserProfilePic = (req, res) => {
   const userId = req.userId;
-  const { photoBase64 } = req.body;
+  const photoBuffer = req.file.buffer;
 
-  if (!photoBase64) {
-    return res.status(400).json({ error: 'Photo non fournie' });
-  }
-
-  updateUserPhoto(userId, photoBase64, (err) => {
+  updateUserPhoto(userId, photoBuffer, (err) => {
     if (err) {
       console.error('Erreur lors de la mise à jour de la photo:', err);
       return res.status(500).json({ error: 'Erreur lors de la mise à jour de la photo de profil' });
@@ -110,17 +106,18 @@ const updateUserProfilePic = (req, res) => {
 const getUserProfilePic = (req, res) => {
   const userId = req.userId;
 
-  getUserPhoto(userId, (err, photoBase64) => {
+  getUserPhoto(userId, (err, photoBlob) => {
     if (err) {
       console.error('Erreur lors de la récupération de la photo:', err);
       return res.status(500).json({ error: 'Erreur lors de la récupération de la photo de profil' });
     }
 
-    if (!photoBase64) {
+    if (!photoBlob) {
       return res.status(404).json({ error: 'Photo de profil non trouvée' });
     }
 
-    res.status(200).json({ photo: photoBase64 });
+    res.setHeader('Content-Type', 'image/jpeg');
+    res.status(200).send(photoBlob);
   });
 };
 
