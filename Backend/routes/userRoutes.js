@@ -4,6 +4,7 @@ const multer = require('multer');
 const authenticateToken = require('../middlewares/authMiddleware');
 const { getUserInfo, changePassword, verifyPassword, updateUserProfilePic, getUserProfilePic } = require('../controllers/userController');
 
+// J'utilise memoryStorage parce que je vais traiter l'image en mémoire
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 

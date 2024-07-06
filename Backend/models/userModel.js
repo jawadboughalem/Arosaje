@@ -35,23 +35,16 @@ const updateUserPassword = (userId, hashedPassword, callback) => {
   });
 };
 
-const updateUserPhoto = (userId, photoBlob, callback) => {
-  const query = `UPDATE utilisateurs SET photo = ? WHERE Code_Utilisateurs = ?`;
-  db.run(query, [photoBlob, userId], (err) => {
-    if (err) {
-      console.error('Erreur lors de la mise à jour de la photo:', err);
-      return callback(err);
-    }
-    callback(null);
-  });
+const updateUserPhoto = (id, fileName, callback) => {
+  const query = 'UPDATE utilisateurs SET photo = ? WHERE Code_Utilisateurs = ?';
+  db.run(query, [fileName, id], callback);
 };
 
-const getUserPhoto = (userId, callback) => {
-  const query = `SELECT photo FROM utilisateurs WHERE Code_Utilisateurs = ?`;
-  db.get(query, [userId], (err, row) => {
+const getUserPhoto = (id, callback) => {
+  const query = 'SELECT photo FROM utilisateurs WHERE Code_Utilisateurs = ?';
+  db.get(query, [id], (err, row) => {
     if (err) {
-      console.error('Erreur lors de la récupération de la photo:', err);
-      return callback(err, null);
+      return callback(err);
     }
     callback(null, row ? row.photo : null);
   });
@@ -60,7 +53,7 @@ const getUserPhoto = (userId, callback) => {
 module.exports = {
   getUserById,
   updateUserPassword,
+  getUserInfoFromDb,
   updateUserPhoto,
   getUserPhoto,
-  getUserInfoFromDb
 };

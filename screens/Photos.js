@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { StyleSheet, Text, Pressable, View, Image } from 'react-native';
+import { StyleSheet, Text, Pressable, View, Image, Modal } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
 import { Button } from 'react-native';
@@ -13,7 +13,8 @@ export default function Photos({ navigation }) {
   const [capturedPhoto, setCapturedPhoto] = useState(null);
   const [loading, setLoading] = useState(false);
   const [isTakingPicture, setIsTakingPicture] = useState(false);
-  const [isFlashOn, setIsFlashOn] = useState(false); // Nouvel état pour le flash
+  const [isFlashOn, setIsFlashOn] = useState(false);
+  const [infoVisible, setInfoVisible] = useState(false);
   const cameraRef = useRef(null);
 
   if (!permission) {
@@ -69,7 +70,7 @@ export default function Photos({ navigation }) {
 
   const toggleFlashMode = () => {
     setFlashMode(current => (current === 'off' ? 'on' : 'off'));
-    setIsFlashOn(prev => !prev); // Met à jour l'état du flash
+    setIsFlashOn(prev => !prev);
   };
 
   return (
@@ -86,14 +87,18 @@ export default function Photos({ navigation }) {
           </Pressable>
         </View>
         <View style={styles.topRightContainer}>
-          <Pressable style={({ pressed }) => [styles.button, pressed && styles.pressedButton]} onPress={toggleFlashMode}>
-            <MaterialCommunityIcons name="flash-outline" size={32} color="white" />
-            {/* Indicateur "A" jaune à côté de l'icône de flash */}
+          <View style={styles.flashButtonContainer}>
             {isFlashOn && (
-              <View style={styles.flashIndicator}>
-                <Text style={styles.flashIndicatorText}>A</Text>
-              </View>
+              <View style={styles.flashIndicator}></View>
             )}
+            <Pressable style={({ pressed }) => [styles.button, pressed && styles.pressedButton]} onPress={toggleFlashMode}>
+              <MaterialCommunityIcons name="flash-outline" size={32} color="white" />
+            </Pressable>
+          </View>
+        </View>
+        <View style={styles.topCenterContainer}>
+          <Pressable style={({ pressed }) => [styles.button, pressed && styles.pressedButton]} onPress={() => setInfoVisible(true)}>
+            <Ionicons name="information-circle-outline" size={32} color="white" />
           </Pressable>
         </View>
         <View style={styles.centerContainer}>
@@ -108,7 +113,7 @@ export default function Photos({ navigation }) {
           >
             {loading ? (
               <LottieView
-                source={require('../assets/loading.json')} // Chemin vers votre fichier JSON
+                source={require('../assets/loading.json')}
                 autoPlay
                 loop
                 style={styles.lottieAnimation}
@@ -117,7 +122,7 @@ export default function Photos({ navigation }) {
               <View style={styles.imageContainer}>
                 {isTakingPicture ? (
                   <LottieView
-                    source={require('../assets/loading.json')} // Chemin vers votre fichier JSON
+                    source={require('../assets/loading.json')}
                     autoPlay
                     loop
                     style={styles.lottieAnimation}
@@ -125,7 +130,7 @@ export default function Photos({ navigation }) {
                 ) : (
                   <Image
                     style={styles.cameraImage}
-                    source={require('../assets/plantecamera.png')} // Chemin vers votre image
+                    source={require('../assets/plantecamera.png')}
                   />
                 )}
               </View>
@@ -137,12 +142,30 @@ export default function Photos({ navigation }) {
             <Ionicons name="images-outline" size={32} color="white" />
           </Pressable>
         </View>
-        {/* Les coins et les autres éléments visuels restent inchangés */}
         <View style={styles.cornerTopLeft}></View>
         <View style={styles.cornerTopRight}></View>
         <View style={styles.cornerBottomLeft}></View>
         <View style={styles.cornerBottomRight}></View>
       </CameraView>
+
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={infoVisible}
+        onRequestClose={() => {
+          setInfoVisible(!infoVisible);
+        }}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Conseils pour la prise de photos de plantes</Text>
+            <Text style={styles.modalText}>1. Assurez-vous d'avoir une bonne lumière naturelle.</Text>
+            <Text style={styles.modalText}>2. Évitez les ombres dures en utilisant un éclairage diffus.</Text>
+            <Text style={styles.modalText}>3. Prenez la photo de près pour capturer les détails.</Text>
+            <Button title="Fermer" color="#FF6347" onPress={() => setInfoVisible(false)} />
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -172,6 +195,13 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 50,
     right: 20,
+    zIndex: 1,
+  },
+  topCenterContainer: {
+    position: 'absolute',
+    top: 50,
+    left: '50%',
+    transform: [{ translateX: -16 }],
   },
   centerContainer: {
     position: 'absolute',
@@ -189,14 +219,8 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 50,
   },
-  pressedButton: {
-    // Supprimer le style qui ajoute le cercle vert
-  },
   cameraButton: {
     borderRadius: 50,
-  },
-  disabledButton: {
-    // Ajouter des styles si besoin
   },
   lottieAnimation: {
     width: 80,
@@ -213,20 +237,20 @@ const styles = StyleSheet.create({
     height: 70,
     borderRadius: 35,
   },
-  flashIndicator: {
-    position: 'absolute',
-    right: 40, // Ajuster la position à droite de l'icône de flash
-    backgroundColor: 'yellow',
-    width: 20,
-    height: 20,
-    borderRadius: 10,
+  flashButtonContainer: {
+    position: 'relative',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  flashIndicatorText: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: 'black',
+  flashIndicator: {
+    position: 'absolute',
+    top: 7,
+    left: 7,
+    width: 35,
+    height: 35,
+    borderRadius: 25,
+    backgroundColor: '#F48E34',
+    zIndex: -1,
   },
   cornerTopLeft: {
     position: 'absolute',
@@ -272,5 +296,33 @@ const styles = StyleSheet.create({
     borderColor: 'white',
     borderBottomRightRadius: 30,
   },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  modalContent: {
+    width: '80%',
+    backgroundColor: 'white',
+    borderRadius: 10,
+    padding: 20,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.8,
+    shadowRadius: 2,
+    elevation: 5,
+  },
+  modalTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#FF6347',
+    marginBottom: 15,
+  },
+  modalText: {
+    fontSize: 18,
+    color: '#32CD32',
+    marginBottom: 10,
+  },
 });
-

@@ -1,5 +1,9 @@
 const { getUserById, updateUserPassword, getUserInfoFromDb, updateUserPhoto, getUserPhoto } = require('../models/UserModel');
 const bcrypt = require('bcrypt');
+const sharp = require('sharp');
+const path = require('path');
+const fs = require('fs');
+const { v4: uuidv4 } = require('uuid');
 
 const getUserInfo = (req, res) => {
   const userId = req.userId;
@@ -90,34 +94,53 @@ const verifyPassword = (req, res) => {
   });
 };
 
-const updateUserProfilePic = (req, res) => {
+const updateUserProfilePic = async (req, res) => {
   const userId = req.userId;
   const photoBuffer = req.file.buffer;
+  const fileName = `${uuidv4()}.webp`;
+  const filePath = path.join(__dirname, '../uploads/profil', fileName);
 
-  updateUserPhoto(userId, photoBuffer, (err) => {
-    if (err) {
-      console.error('Erreur lors de la mise à jour de la photo:', err);
-      return res.status(500).json({ error: 'Erreur lors de la mise à jour de la photo de profil' });
-    }
-    res.status(200).json({ message: 'Photo de profil mise à jour avec succès' });
-  });
+  try {
+    // La je convertis l'image en WebP
+    await sharp(photoBuffer)
+      .webp({ quality: 80 })
+      .toFile(filePath);
+
+    // La je met à jour la base de données avec le nom du fichier
+    updateUserPhoto(userId, fileName, (err) => {
+      if (err) {
+        console.error('Erreur lors de la mise à jour de la photo:', err);
+        return res.status(500).json({ error: 'Erreur lors de la mise à jour de la photo de profil' });
+      }
+      res.status(200).json({ message: 'Photo de profil mise à jour avec succès', fileName });
+    });
+  } catch (error) {
+    console.error('Erreur lors de la conversion de l\'image:', error);
+    res.status(500).json({ error: 'Erreur lors de la conversion de l\'image' });
+  }
 };
 
 const getUserProfilePic = (req, res) => {
   const userId = req.userId;
 
-  getUserPhoto(userId, (err, photoBlob) => {
+  getUserPhoto(userId, (err, fileName) => {
     if (err) {
       console.error('Erreur lors de la récupération de la photo:', err);
       return res.status(500).json({ error: 'Erreur lors de la récupération de la photo de profil' });
     }
 
-    if (!photoBlob) {
+    if (!fileName) {
       return res.status(404).json({ error: 'Photo de profil non trouvée' });
     }
 
-    res.setHeader('Content-Type', 'image/jpeg');
-    res.status(200).send(photoBlob);
+    const filePath = path.join(__dirname, '../uploads/', fileName);
+
+    if (fs.existsSync(filePath)) {
+      res.setHeader('Content-Type', 'image/webp');
+      res.status(200).sendFile(filePath);
+    } else {
+      res.status(404).json({ error: 'Photo de profil non trouvée' });
+    }
   });
 };
 

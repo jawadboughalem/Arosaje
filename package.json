@@ -59,7 +59,9 @@
     "react-native-share": "^10.2.1",
     "react-native-vector-icons": "^10.1.0",
     "react-native-web": "~0.19.10",
-    "sqlite3": "^5.1.7"
+    "sharp": "^0.33.4",
+    "sqlite3": "^5.1.7",
+    "uuid": "^10.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0"

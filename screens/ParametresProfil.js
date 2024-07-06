@@ -4,6 +4,9 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
+import * as FileSystem from 'expo-file-system';
+import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
+
 const { IPV4 } = require('../Backend/config/config');
 
 const ParametresProfil = ({ onBack }) => {
@@ -205,6 +208,15 @@ const ParametresProfil = ({ onBack }) => {
     }
   };
 
+  const convertToWebP = async (uri) => {
+    const webPImage = await manipulateAsync(
+      uri,
+      [],
+      { compress: 1, format: SaveFormat.WEBP }
+    );
+    return webPImage.uri;
+  };
+
   const handleUpdateProfilePic = async () => {
     if (!profilePic) {
       Alert.alert('Aucune photo sélectionnée');
@@ -217,11 +229,13 @@ const ParametresProfil = ({ onBack }) => {
     }
 
     try {
+      const webPImageUri = await convertToWebP(profilePic);
+
       const formData = new FormData();
       formData.append('profilePic', {
-        uri: profilePic,
-        name: 'profile.jpg',
-        type: 'image/jpeg',
+        uri: webPImageUri,
+        name: 'profile.webp',
+        type: 'image/webp',
       });
 
       const response = await fetch(`http://${IPV4}:3000/user/upload-profile-pic`, {
