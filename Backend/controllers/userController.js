@@ -1,10 +1,11 @@
-const { getUserById, updateUserPassword, getUserInfoFromDb, updateUserPhoto, getUserPhoto } = require('../models/UserModel');
+const { getUserById, updateUserPassword, getUserInfoFromDb, updateUserPhoto, getUserPhoto } = require('../models/userModel');
 const bcrypt = require('bcrypt');
 const sharp = require('sharp');
 const path = require('path');
 const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
 
+// Fonction pour récupérer les informations de l'utilisateur
 const getUserInfo = (req, res) => {
   const userId = req.userId;
   console.log(`Fetching info for user ID: ${userId}`);
@@ -25,6 +26,7 @@ const getUserInfo = (req, res) => {
   });
 };
 
+// Fonction pour changer le mot de passe de l'utilisateur
 const changePassword = (req, res) => {
   const userId = req.userId;
   const { currentPassword, newPassword } = req.body;
@@ -35,15 +37,11 @@ const changePassword = (req, res) => {
       return res.status(404).json({ error: 'Utilisateur non trouvé' });
     }
 
-    console.log('Utilisateur trouvé:', user);
-
     bcrypt.compare(currentPassword, user.password, (err, isMatch) => {
       if (err) {
         console.error('Erreur lors de la comparaison des mots de passe:', err);
         return res.status(500).json({ error: 'Erreur lors de la comparaison des mots de passe' });
       }
-
-      console.log('Résultat de la comparaison des mots de passe:', isMatch);
 
       if (!isMatch) {
         return res.status(401).json({ error: 'Mot de passe actuel incorrect' });
@@ -54,8 +52,6 @@ const changePassword = (req, res) => {
           console.error('Erreur lors du hachage du nouveau mot de passe:', err);
           return res.status(500).json({ error: 'Erreur lors du hachage du nouveau mot de passe' });
         }
-
-        console.log('Nouveau mot de passe hashé:', hash);
 
         updateUserPassword(userId, hash, (err) => {
           if (err) {
@@ -69,6 +65,7 @@ const changePassword = (req, res) => {
   });
 };
 
+// Fonction pour vérifier le mot de passe actuel de l'utilisateur
 const verifyPassword = (req, res) => {
   const userId = req.userId;
   const { currentPassword } = req.body;
@@ -94,6 +91,7 @@ const verifyPassword = (req, res) => {
   });
 };
 
+// Fonction pour mettre à jour la photo de profil de l'utilisateur
 const updateUserProfilePic = async (req, res) => {
   const userId = req.userId;
   const photoBuffer = req.file.buffer;
@@ -101,12 +99,12 @@ const updateUserProfilePic = async (req, res) => {
   const filePath = path.join(__dirname, '../uploads', fileName);
 
   try {
-    // Convertir l'image en WebP
+    // Convertir l'image en WebP avec Sharp
     await sharp(photoBuffer)
       .webp({ quality: 80 })
       .toFile(filePath);
 
-    // Mettre à jour la base de données avec le nom du fichier
+    // Mettre à jour le nom du fichier dans la base de données
     updateUserPhoto(userId, fileName, (err) => {
       if (err) {
         console.error('Erreur lors de la mise à jour de la photo:', err);
@@ -120,6 +118,7 @@ const updateUserProfilePic = async (req, res) => {
   }
 };
 
+// Fonction pour récupérer la photo de profil de l'utilisateur
 const getUserProfilePic = (req, res) => {
   const userId = req.userId;
 

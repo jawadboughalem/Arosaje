@@ -48,19 +48,26 @@ const ParametresProfil = ({ onBack }) => {
           'Authorization': `Bearer ${token}`,
         },
       });
-
+  
       if (!response.ok) {
         throw new Error('Failed to fetch profile pic');
       }
-
-      const data = await response.blob();
-      const imageUrl = URL.createObjectURL(data);
-      setProfilePic(imageUrl);
+  
+      const imageData = await response.blob();
+  
+      // Convert Blob to Base64 string
+      const reader = new FileReader();
+      reader.readAsDataURL(imageData);
+      reader.onloadend = () => {
+        const base64data = reader.result;
+        setProfilePic(base64data); // Set profile picture as Base64 string
+      };
     } catch (error) {
       console.error('Erreur lors de la récupération de la photo de profil:', error);
       Alert.alert('Une erreur est survenue lors de la récupération de la photo de profil.');
     }
   };
+  
 
   const handleVerifyCurrentPassword = async () => {
     if (!token) {
