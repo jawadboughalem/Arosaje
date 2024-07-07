@@ -60,14 +60,13 @@ const ParametresProfil = ({ onBack }) => {
       reader.readAsDataURL(imageData);
       reader.onloadend = () => {
         const base64data = reader.result;
-        setProfilePic(base64data); // Set profile picture as Base64 string
+        setProfilePic(base64data); 
       };
     } catch (error) {
       console.error('Erreur lors de la récupération de la photo de profil:', error);
       Alert.alert('Une erreur est survenue lors de la récupération de la photo de profil.');
     }
   };
-  
 
   const handleVerifyCurrentPassword = async () => {
     if (!token) {
