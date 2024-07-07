@@ -65,6 +65,8 @@ const initialize = () => {
       Code_Utilisateurs INTEGER,
       Titre TEXT,
       Description TEXT,
+      Date DATETIME,
+      Theme TEXT,
       FOREIGN KEY (Code_Utilisateurs) REFERENCES Utilisateurs(Code_Utilisateurs)
     )`);
 

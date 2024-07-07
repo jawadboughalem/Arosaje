@@ -1,19 +1,43 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Image, ImageBackground } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import * as Animatable from 'react-native-animatable';
+import { Ionicons, FontAwesome5, MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
+import CardConseil from '../components/CardConseil';
 
 const { IPV4 } = require('../Backend/config/config');
+
+const getIcon = (iconName, selected) => {
+  const iconColor = selected ? '#fff' : '#333';
+  const iconSize = 20;
+  switch (iconName) {
+    case 'flower':
+      return <MaterialCommunityIcons name="flower" size={iconSize} color={iconColor} />;
+    case 'leaf':
+      return <Ionicons name="leaf" size={iconSize} color={iconColor} />;
+    case 'tree':
+      return <FontAwesome5 name="tree" size={iconSize} color={iconColor} />;
+    case 'water':
+      return <Ionicons name="water" size={iconSize} color={iconColor} />;
+    case 'seedling':
+      return <FontAwesome5 name="seedling" size={iconSize} color={iconColor} />;
+    case 'city':
+      return <MaterialIcons name="location-city" size={iconSize} color={iconColor} />;
+    default:
+      return <Ionicons name="help-circle" size={iconSize} color={iconColor} />;
+  }
+};
 
 const Conseils = ({ route }) => {
   const [isBotanist, setIsBotanist] = useState(false);
   const [themes, setThemes] = useState([
-    { id: 1, name: 'Entretien Général', conseils: [] },
-    { id: 2, name: 'Plantes d\'intérieur', conseils: [] },
-    { id: 3, name: 'Plantes d\'extérieur', conseils: [] },
-    { id: 4, name: 'Hydroponie', conseils: [] },
-    { id: 5, name: 'Plantes Aromatiques', conseils: [] },
-    { id: 6, name: 'Jardinage Urbain', conseils: [] },
+    { id: 1, name: 'Entretien Général', icon: 'flower', conseils: [] },
+    { id: 2, name: 'Plantes d\'intérieur', icon: 'leaf', conseils: [] },
+    { id: 3, name: 'Plantes d\'extérieur', icon: 'tree', conseils: [] },
+    { id: 4, name: 'Hydroponie', icon: 'water', conseils: [] },
+    { id: 5, name: 'Plantes Aromatiques', icon: 'seedling', conseils: [] },
+    { id: 6, name: 'Jardinage Urbain', icon: 'city', conseils: [] },
   ]);
   const [selectedTheme, setSelectedTheme] = useState(themes[0].id);
   const navigation = useNavigation();
@@ -36,18 +60,50 @@ const Conseils = ({ route }) => {
     checkBotanistStatus();
   }, []);
 
+  const fetchConseils = async () => {
+    try {
+      const response = await fetch(`http://${IPV4}:3000/conseils/conseils`);
+      
+      // La j'ajoute un log pour afficher le statut et le contenu brut de la réponse
+      const responseText = await response.text();
+      console.log('Response Status:', response.status);
+      console.log('Response Text:', responseText);
+  
+      // Je convertis en JSON que si la réponse est correcte
+      if (response.ok) {
+        const data = JSON.parse(responseText);
+        setThemes((prevThemes) => {
+          return prevThemes.map((theme) => {
+            return {
+              ...theme,
+              conseils: data.filter((conseil) => conseil.Theme === theme.name),
+            };
+          });
+        });
+      } else {
+        console.error('Erreur lors de la récupération des conseils:', responseText);
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement des conseils:', error);
+    }
+  };
+  
+
   useFocusEffect(
     React.useCallback(() => {
+      fetchConseils();
+
       if (route.params?.newConseil) {
         const { newConseil } = route.params;
+        console.log('Nouveau conseil reçu:', newConseil);
         setThemes((prevThemes) =>
           prevThemes.map((theme) =>
-            theme.id === newConseil.themeId
+            theme.name === newConseil.Theme && !theme.conseils.some(c => c.Titre === newConseil.Titre && c.Description === newConseil.Description)
               ? {
                   ...theme,
                   conseils: [
                     ...theme.conseils,
-                    { text: newConseil.description, plantName: newConseil.nomPlante, imageUrl: '' },
+                    { Titre: newConseil.Titre, Description: newConseil.Description, Theme: newConseil.Theme },
                   ],
                 }
               : theme
@@ -59,18 +115,19 @@ const Conseils = ({ route }) => {
 
   return (
     <View style={styles.wrapper}>
-        <View style={styles.overlay}>
-          <View style={styles.themesContainer}>
-            <ScrollView horizontal contentContainerStyle={styles.themesScrollContainer} showsHorizontalScrollIndicator={false}>
-              {themes.map((theme) => (
+      <View style={styles.overlay}>
+        <View style={styles.themesContainer}>
+          <ScrollView horizontal contentContainerStyle={styles.themesScrollContainer} showsHorizontalScrollIndicator={false}>
+            {themes.map((theme) => (
+              <Animatable.View key={theme.id} animation="bounceIn" delay={theme.id * 100}>
                 <TouchableOpacity
-                  key={theme.id}
                   style={[
                     styles.themeButton,
                     selectedTheme === theme.id && styles.selectedThemeButton,
                   ]}
                   onPress={() => setSelectedTheme(theme.id)}
                 >
+                  {getIcon(theme.icon, selectedTheme === theme.id)}
                   <Text
                     style={[
                       styles.themeButtonText,
@@ -80,30 +137,32 @@ const Conseils = ({ route }) => {
                     {theme.name}
                   </Text>
                 </TouchableOpacity>
-              ))}
-            </ScrollView>
-          </View>
-          <ScrollView contentContainerStyle={styles.scrollContainer}>
-            <View style={styles.conseilsContainer}>
-              {themes
-                .find((theme) => theme.id === selectedTheme)
-                .conseils.map((conseil, index) => (
-                  <View key={index} style={styles.conseilCard}>
-                    <Image source={{ uri: conseil.imageUrl }} style={styles.conseilImage} />
-                    <View style={styles.conseilTextContainer}>
-                      <Text style={styles.conseilTitle}>{conseil.plantName}</Text>
-                      <Text style={styles.conseilText}>{conseil.text}</Text>
-                    </View>
-                  </View>
-                ))}
-            </View>
+              </Animatable.View>
+            ))}
           </ScrollView>
-          {isBotanist && (
-            <TouchableOpacity style={styles.addButton} onPress={() => navigation.navigate('FormulaireBotaniste', { themes })}>
-              <Text style={styles.addButtonText}>+</Text>
-            </TouchableOpacity>
-          )}
         </View>
+        <ScrollView contentContainerStyle={styles.scrollContainer}>
+          <View style={styles.conseilsContainer}>
+            {themes
+              .find((theme) => theme.id === selectedTheme)
+              .conseils.map((conseil, index) => {
+                console.log('Rendering conseil:', conseil);
+                return (
+                  <Animatable.View key={index} style={styles.conseilCard} animation="fadeInUp" delay={index * 100}>
+                    <CardConseil conseil={conseil} />
+                  </Animatable.View>
+                );
+              })}
+          </View>
+        </ScrollView>
+        {isBotanist && (
+          <Animatable.View animation="bounceIn" style={styles.addButtonContainer}>
+            <TouchableOpacity style={styles.addButton} onPress={() => navigation.navigate('FormulaireBotaniste', { themes })}>
+              <Ionicons name="add" size={40} color="white" />
+            </TouchableOpacity>
+          </Animatable.View>
+        )}
+      </View>
     </View>
   );
 };
@@ -111,6 +170,7 @@ const Conseils = ({ route }) => {
 const styles = StyleSheet.create({
   wrapper: {
     flex: 1,
+    backgroundColor: '#f0f0f0',
   },
   overlay: {
     flex: 1,
@@ -125,6 +185,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
   },
   themeButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingVertical: 10,
     paddingHorizontal: 15,
     borderRadius: 25,
@@ -132,11 +194,6 @@ const styles = StyleSheet.create({
     marginRight: 10,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
     minWidth: 100,
   },
   selectedThemeButton: {
@@ -146,6 +203,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#333',
     fontWeight: '600',
+    marginLeft: 5,
   },
   selectedThemeButtonText: {
     color: '#fff',
@@ -159,56 +217,32 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   conseilCard: {
-    backgroundColor: '#f9f9f9',
+    backgroundColor: '#fff',
     padding: 15,
     borderRadius: 10,
     marginBottom: 10,
+    borderColor: '#ddd',
+    borderWidth: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 2,
-    flexDirection: 'row',
-    alignItems: 'center',
   },
-  conseilImage: {
-    width: 60,
-    height: 60,
-    borderRadius: 10,
-    marginRight: 10,
-  },
-  conseilTextContainer: {
-    flex: 1,
-  },
-  conseilTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#333',
-  },
-  conseilText: {
-    fontSize: 16,
-    color: '#333',
-  },
-  addButton: {
+  addButtonContainer: {
     position: 'absolute',
     bottom: 100,
     right: 20,
+  },
+  addButton: {
     backgroundColor: '#077B17',
     width: 60,
     height: 60,
     borderRadius: 30,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 3,
-    elevation: 4,
-  },
-  addButtonText: {
-    color: 'white',
-    fontSize: 25,
-    fontWeight: 'bold',
   },
 });
 

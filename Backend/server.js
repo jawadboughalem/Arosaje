@@ -40,7 +40,7 @@ const upload = multer({
 app.use('/auth', authRoutes);
 app.use('/annonces', annonceRoutes);
 app.use('/user', userRoutes);
-app.use('/api', conseilRoutes);
+app.use('/conseils', conseilRoutes);
 
 app.listen(port, '0.0.0.0', () => {
   console.log(`Serveur démarré sur le port ${port}`);

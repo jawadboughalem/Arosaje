@@ -1,29 +1,33 @@
 const { db } = require('../config/db');
 
-const Conseil = {
-  create: (conseil, callback) => {
-    const { Code_Utilisateurs, Titre, Description } = conseil;
-    db.run(
-      `INSERT INTO Conseils (Code_Utilisateurs, Titre, Description) VALUES (?, ?, ?)`,
-      [Code_Utilisateurs, Titre, Description],
-      function(err) {
-        if (err) {
-          callback(err);
-        } else {
-          callback(null, { Code_Conseils: this.lastID, ...conseil });
-        }
-      }
-    );
-  },
-  getAll: (callback) => {
-    db.all(`SELECT * FROM Conseils`, [], (err, rows) => {
-      if (err) {
-        callback(err);
-      } else {
-        callback(null, rows);
-      }
-    });
-  }
+const createConseil = (conseil, callback) => {
+  const { Code_Utilisateurs, Titre, Description, Theme } = conseil;
+  const sql = `
+    INSERT INTO Conseils (Code_Utilisateurs, Titre, Description, Date, Theme) 
+    VALUES (?, ?, ?, ?, ?);
+  `;
+  const params = [Code_Utilisateurs, Titre, Description, new Date().toISOString(), Theme];
+
+  db.run(sql, params, function(err) {
+    if (err) {
+      return callback(err);
+    }
+    const conseilId = this.lastID;
+    callback(null, { Code_Conseils: conseilId, ...conseil, Date: new Date().toISOString() });
+  });
 };
 
-module.exports = Conseil;
+const getAllConseils = (callback) => {
+  const sql = 'SELECT * FROM Conseils';
+  db.all(sql, [], (err, rows) => {
+    if (err) {
+      return callback(err);
+    }
+    callback(null, rows);
+  });
+};
+
+module.exports = {
+  createConseil,
+  getAllConseils,
+};

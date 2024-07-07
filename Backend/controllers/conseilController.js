@@ -2,7 +2,7 @@ const Conseil = require('../models/conseilModel');
 
 const createConseil = (req, res) => {
   const conseil = req.body;
-  Conseil.create(conseil, (err, newConseil) => {
+  Conseil.createConseil(conseil, (err, newConseil) => {
     if (err) {
       res.status(500).json({ error: err.message });
     } else {
@@ -12,10 +12,11 @@ const createConseil = (req, res) => {
 };
 
 const getAllConseils = (req, res) => {
-  Conseil.getAll((err, conseils) => {
+  Conseil.getAllConseils((err, conseils) => {
     if (err) {
       res.status(500).json({ error: err.message });
     } else {
+      console.log('Conseils renvoyés:', conseils);
       res.json(conseils);
     }
   });
@@ -23,5 +24,5 @@ const getAllConseils = (req, res) => {
 
 module.exports = {
   createConseil,
-  getAllConseils
+  getAllConseils,
 };

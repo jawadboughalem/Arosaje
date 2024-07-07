@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, TextInput, View, Text, TouchableOpacity, ImageBackground, KeyboardAvoidingView, Platform } from 'react-native';
+import { StyleSheet, TextInput, View, Text, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { Picker } from '@react-native-picker/picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { Ionicons } from '@expo/vector-icons';
 
 const { IPV4 } = require('../Backend/config/config');
 
@@ -34,10 +35,16 @@ const Formulaire = () => {
   }, []);
 
   const handleSubmit = async () => {
+    if (!selectedTheme) {
+      console.error('Veuillez sélectionner un thème.');
+      return;
+    }
+
     const data = {
-      nomPlante,
-      description,
-      themeId: selectedTheme,
+      Code_Utilisateurs: token.userId, // Assurez-vous que c'est correct
+      Titre: nomPlante,
+      Description: description,
+      Theme: selectedTheme, // Assurez-vous que ce champ est ajouté
     };
 
     try {
@@ -49,7 +56,7 @@ const Formulaire = () => {
       console.log('Données soumises:', data);
       console.log('Utilisation du token:', token);
 
-      const response = await fetch(`http://${IPV4}:3000/annonces/addannonce`, {
+      const response = await fetch(`http://${IPV4}:3000/conseils/create`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -63,7 +70,7 @@ const Formulaire = () => {
       if (response.ok) {
         const responseData = await response.json();
         console.log('Données de la réponse:', responseData);
-        navigation.navigate('Conseils', { newConseil: data });
+        navigation.navigate('Conseils', { newConseil: responseData });
       } else {
         const errorData = await response.json();
         console.error('Erreur lors de la soumission du formulaire:', errorData);
@@ -74,7 +81,7 @@ const Formulaire = () => {
   };
 
   return (
-    <ImageBackground source={require('../assets/form.jpg')} style={styles.background}>
+    <View style={styles.wrapper}>
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : null}
@@ -87,6 +94,9 @@ const Formulaire = () => {
           keyboardShouldPersistTaps="handled"
         >
           <View style={styles.container}>
+            <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+              <Ionicons name="arrow-back" size={24} color="black" />
+            </TouchableOpacity>
             <Text style={styles.label}>Nom de la plante :</Text>
             <TextInput
               style={styles.input}
@@ -100,10 +110,14 @@ const Formulaire = () => {
               <Picker
                 selectedValue={selectedTheme}
                 style={styles.picker}
-                onValueChange={(itemValue) => setSelectedTheme(itemValue)}
+                onValueChange={(itemValue) => {
+                  console.log('Theme selected:', itemValue); // Journal de débogage
+                  setSelectedTheme(itemValue);
+                }}
               >
+                <Picker.Item label="Sélectionner un thème" value="" />
                 {themes.map((theme) => (
-                  <Picker.Item key={theme.id} label={theme.name} value={theme.id} />
+                  <Picker.Item key={theme.id} label={theme.name} value={theme.name} />
                 ))}
               </Picker>
             </View>
@@ -122,14 +136,14 @@ const Formulaire = () => {
           </View>
         </KeyboardAwareScrollView>
       </KeyboardAvoidingView>
-    </ImageBackground>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  background: {
+  wrapper: {
     flex: 1,
-    justifyContent: 'center',
+    backgroundColor: '#fff',
   },
   scrollContainer: {
     flexGrow: 1,
@@ -139,6 +153,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
+  },
+  backButton: {
+    position: 'absolute',
+    top: 50,
+    left: 5,
+    zIndex: 10,
   },
   label: {
     fontSize: 15,
@@ -152,12 +172,12 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 10,
     marginBottom: 20,
-    paddingHorizontal: 15,
-    backgroundColor: '#f9f9f9',
+    paddingHorizontal: 10,
+    backgroundColor: '#fff',
     fontSize: 16,
   },
   textArea: {
-    height: 100,
+    height: 150,
   },
   pickerContainer: {
     borderWidth: 1,
@@ -171,14 +191,14 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   submitButton: {
-    backgroundColor: '#5DB075',
+    backgroundColor: '#077B17',
     paddingVertical: 15,
     borderRadius: 10,
     alignItems: 'center',
     marginTop: 20,
   },
   submitButtonText: {
-    color: 'black',
+    color: '#fff',
     fontSize: 18,
     fontWeight: 'bold',
   },
