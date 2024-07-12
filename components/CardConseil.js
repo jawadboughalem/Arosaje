@@ -1,6 +1,6 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { Ionicons, FontAwesome5, MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons'; 
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { Ionicons, FontAwesome5, MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
 
 const getIcon = (theme) => {
   const iconSize = 20;
@@ -24,7 +24,13 @@ const getIcon = (theme) => {
   }
 };
 
-const CardConseil = ({ conseil }) => {
+const CardConseil = ({ conseil, isBotanist, onDelete }) => {
+  const [liked, setLiked] = useState(false);
+
+  const handleLike = () => {
+    setLiked(!liked);
+  };
+
   return (
     <View style={styles.card}>
       <View style={styles.iconContainer}>
@@ -34,6 +40,16 @@ const CardConseil = ({ conseil }) => {
         <Text style={styles.title}>{conseil.Titre}</Text>
         <Text style={styles.description}>{conseil.Description}</Text>
       </View>
+      <View style={styles.actionsContainer}>
+        <TouchableOpacity onPress={handleLike}>
+          <Ionicons name={liked ? "heart" : "heart-outline"} size={24} color={liked ? "red" : "gray"} />
+        </TouchableOpacity>
+        {isBotanist && (
+          <TouchableOpacity onPress={() => onDelete(conseil)}>
+            <Ionicons name="trash-outline" size={24} color="gray" />
+          </TouchableOpacity>
+        )}
+      </View>
     </View>
   );
 };
@@ -42,7 +58,7 @@ const styles = StyleSheet.create({
   card: {
     flexDirection: 'row',
     backgroundColor: '#fff',
-    padding: 15,
+    padding: 10,
     borderRadius: 10,
     marginBottom: 10,
     borderColor: '#ddd',
@@ -68,6 +84,10 @@ const styles = StyleSheet.create({
   description: {
     fontSize: 16,
     color: '#333',
+  },
+  actionsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
 });
 

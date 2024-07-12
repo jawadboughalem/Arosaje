@@ -5,6 +5,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { Button } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import LottieView from 'lottie-react-native';
+import * as Animatable from 'react-native-animatable';
 
 export default function Photos({ navigation }) {
   const [permission, requestPermission] = useCameraPermissions();
@@ -149,7 +150,7 @@ export default function Photos({ navigation }) {
       </CameraView>
 
       <Modal
-        animationType="slide"
+        animationType="fade"
         transparent={true}
         visible={infoVisible}
         onRequestClose={() => {
@@ -157,13 +158,15 @@ export default function Photos({ navigation }) {
         }}
       >
         <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
+          <Animatable.View animation="bounceIn" duration={600} style={styles.modalContent}>
             <Text style={styles.modalTitle}>Conseils pour la prise de photos de plantes</Text>
             <Text style={styles.modalText}>1. Assurez-vous d'avoir une bonne lumière naturelle.</Text>
             <Text style={styles.modalText}>2. Évitez les ombres dures en utilisant un éclairage diffus.</Text>
             <Text style={styles.modalText}>3. Prenez la photo de près pour capturer les détails.</Text>
-            <Button title="Fermer" color="#FF6347" onPress={() => setInfoVisible(false)} />
-          </View>
+            <Pressable style={styles.closeButton} onPress={() => setInfoVisible(false)}>
+              <Text style={styles.closeButtonText}>Fermer</Text>
+            </Pressable>
+          </Animatable.View>
         </View>
       </Modal>
     </View>
@@ -305,24 +308,34 @@ const styles = StyleSheet.create({
   modalContent: {
     width: '80%',
     backgroundColor: 'white',
-    borderRadius: 10,
+    borderRadius: 20,
     padding: 20,
     alignItems: 'center',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: { width: 0, height: 5 },
     shadowOpacity: 0.8,
-    shadowRadius: 2,
-    elevation: 5,
+    shadowRadius: 10,
+    elevation: 10,
   },
   modalTitle: {
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: 'bold',
     color: '#FF6347',
-    marginBottom: 15,
+    marginBottom: 20,
   },
   modalText: {
-    fontSize: 18,
-    color: '#32CD32',
-    marginBottom: 10,
+    fontSize: 16,
+    color: '#333',
+    marginBottom: 15,
+  },
+  closeButton: {
+    marginTop: 20,
+    padding: 10,
+    borderRadius: 20,
+    backgroundColor: '#FF6347',
+  },
+  closeButtonText: {
+    fontSize: 16,
+    color: 'white',
   },
 });
