@@ -30,11 +30,16 @@ const createAnnonce = (annonce, callback) => {
 };
 
 const getAllAnnonces = (callback) => {
-  const sql = 'SELECT * FROM postes';
+  const sql = `
+    SELECT p.Code_Postes, p.titre, p.description, p.datePoste, p.localisation, ph.photo
+    FROM postes p
+    LEFT JOIN photos ph ON p.Code_Postes = ph.code_Postes;
+  `;
   db.all(sql, [], (err, rows) => {
     if (err) {
       return callback(err);
     }
+    console.log('Données récupérées de la base de données:', rows); // Ajoutez ce log pour vérifier les données récupérées
     callback(null, rows);
   });
 };

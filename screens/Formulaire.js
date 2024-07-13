@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, TextInput, View, Text, TouchableOpacity, ScrollView, Alert, ImageBackground, Image } from 'react-native';
+import { StyleSheet, TextInput, View, Text, TouchableOpacity, ScrollView, Alert, Image } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
@@ -156,102 +156,97 @@ const Formulaire = () => {
   };
 
   return (
-    <ImageBackground source={require('../assets/form.png')} style={styles.background}>
-      <View style={styles.wrapper}>
-        <ScrollView contentContainerStyle={styles.scrollContainer}>
-          <View style={styles.container}>
-            <Text style={styles.label}>Nom de la plante :</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Ex: Monstera Deliciosa"
-              placeholderTextColor="#666"
-              value={nomPlante}
-              onChangeText={setNomPlante}
+    <View style={styles.wrapper}>
+      <ScrollView contentContainerStyle={styles.scrollContainer}>
+        <View style={styles.container}>
+          <Text style={styles.label}>Photo de la plante :</Text>
+          {photo ? (
+            <Image
+              source={{ uri: photo }}
+              style={styles.previewImage}
             />
-            <Text style={styles.label}>Descriptif :</Text>
+          ) : (
+            <TouchableOpacity style={styles.photoButton} onPress={pickImage}>
+              <Text style={styles.photoButtonText}>Choisir une photo</Text>
+            </TouchableOpacity>
+          )}
+          <Text style={styles.label}>Nom de la plante :</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Ex: Monstera Deliciosa"
+            placeholderTextColor="#666"
+            value={nomPlante}
+            onChangeText={setNomPlante}
+          />
+          <Text style={styles.label}>Descriptif :</Text>
+          <TextInput
+            style={[styles.input, styles.textArea]}
+            placeholder="Ex: J'ai besoin de quelqu'un pour garder ma plante pendant mes vacances."
+            placeholderTextColor="#666"
+            value={description}
+            onChangeText={setDescription}
+            multiline
+          />
+          <Text style={styles.label}>Ville :</Text>
+          <View style={styles.locationContainer}>
             <TextInput
-              style={[styles.input, styles.textArea]}
-              placeholder="Ex: J'ai besoin de quelqu'un pour garder ma plante pendant mes vacances."
+              style={[styles.input, styles.locationInput]}
+              placeholder="Ex: Paris, Île-de-France"
               placeholderTextColor="#666"
-              value={description}
-              onChangeText={setDescription}
-              multiline
+              value={localisation}
+              onChangeText={setLocalisation}
             />
-            <Text style={styles.label}>Ville :</Text>
-            <View style={styles.locationContainer}>
-              <TextInput
-                style={[styles.input, styles.locationInput]}
-                placeholder="Ex: Paris, Île-de-France"
-                placeholderTextColor="#666"
-                value={localisation}
-                onChangeText={setLocalisation}
-              />
-              <TouchableOpacity onPress={handleLocationPress} style={styles.locationIcon}>
-                <Icon name="location-on" size={30} color="#333" />
-              </TouchableOpacity>
-            </View>
-            <Text style={styles.label}>Code Postal :</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Ex: 75001"
-              placeholderTextColor="#666"
-              value={codePostal}
-              onChangeText={(text) => setCodePostal(text.replace(/[^0-9]/g, ''))}
-              maxLength={5}
-              keyboardType="numeric"
-            />
-            <Text style={styles.label}>Période de garde :</Text>
-            <View style={styles.dateContainer}>
-              <Text style={styles.dateLabel}>du</Text>
-              <TouchableOpacity onPress={showDateDebutPicker}>
-                <Text style={styles.dateInput}>{formatDate(dateDebut)}</Text>
-              </TouchableOpacity>
-              <DateTimePickerModal
-                isVisible={isDateDebutPickerVisible}
-                mode="date"
-                onConfirm={handleDateDebutConfirm}
-                onCancel={hideDateDebutPicker}
-              />
-              <Text style={styles.dateLabel}>au</Text>
-              <TouchableOpacity onPress={showDateFinPicker}>
-                <Text style={styles.dateInput}>{formatDate(dateFin)}</Text>
-              </TouchableOpacity>
-              <DateTimePickerModal
-                isVisible={isDateFinPickerVisible}
-                mode="date"
-                onConfirm={handleDateFinConfirm}
-                onCancel={hideDateFinPicker}
-              />
-            </View>
-            <Text style={styles.label}>Photo de la plante :</Text>
-            {photo ? (
-              <Image
-                source={{ uri: photo }}
-                style={styles.previewImage}
-              />
-            ) : (
-              <TouchableOpacity style={styles.photoButton} onPress={pickImage}>
-                <Text style={styles.photoButtonText}>Choisir une photo</Text>
-              </TouchableOpacity>
-            )}
-            <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
-              <Text style={styles.submitButtonText}>Poster</Text>
+            <TouchableOpacity onPress={handleLocationPress} style={styles.locationIcon}>
+              <Icon name="location-on" size={30} color="#333" />
             </TouchableOpacity>
           </View>
-        </ScrollView>
-      </View>
-    </ImageBackground>
+          <Text style={styles.label}>Code Postal :</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Ex: 75001"
+            placeholderTextColor="#666"
+            value={codePostal}
+            onChangeText={(text) => setCodePostal(text.replace(/[^0-9]/g, ''))}
+            maxLength={5}
+            keyboardType="numeric"
+          />
+          <Text style={styles.label}>Période de garde :</Text>
+          <View style={styles.dateContainer}>
+            <Text style={styles.dateLabel}>du</Text>
+            <TouchableOpacity onPress={showDateDebutPicker} style={styles.dateInputContainer}>
+              <Text style={styles.dateInput}>{formatDate(dateDebut)}</Text>
+            </TouchableOpacity>
+            <DateTimePickerModal
+              isVisible={isDateDebutPickerVisible}
+              mode="date"
+              onConfirm={handleDateDebutConfirm}
+              onCancel={hideDateDebutPicker}
+            />
+            <Text style={styles.dateLabel}>au</Text>
+            <TouchableOpacity onPress={showDateFinPicker} style={styles.dateInputContainer}>
+              <Text style={styles.dateInput}>{formatDate(dateFin)}</Text>
+            </TouchableOpacity>
+            <DateTimePickerModal
+              isVisible={isDateFinPickerVisible}
+              mode="date"
+              onConfirm={handleDateFinConfirm}
+              onCancel={hideDateFinPicker}
+            />
+          </View>
+          <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
+            <Text style={styles.submitButtonText}>Poster</Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  background: {
-    flex: 1,
-    justifyContent: 'center',
-  },
   wrapper: {
     flex: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.8)', // semi-transparent white to reduce the intensity of the background image
+    justifyContent: 'center',
+    backgroundColor: '#fff',
   },
   scrollContainer: {
     flexGrow: 1,
@@ -269,13 +264,13 @@ const styles = StyleSheet.create({
   },
   input: {
     height: 50,
-    borderColor: '#ccc',
+    borderColor: '#333', // Couleur noire pour les bordures
     borderWidth: 1,
     borderRadius: 10,
     marginBottom: 20,
     paddingHorizontal: 15,
     backgroundColor: '#f9f9f9',
-    fontSize: 16,
+    fontSize: 15,
   },
   textArea: {
     height: 100,
@@ -290,6 +285,7 @@ const styles = StyleSheet.create({
   },
   locationIcon: {
     marginLeft: 10,
+    alignSelf: 'center', // Centrer l'icône verticalement par rapport au champ
   },
   dateContainer: {
     flexDirection: 'row',
@@ -301,18 +297,20 @@ const styles = StyleSheet.create({
     color: '#333',
     fontWeight: '500',
   },
-  dateInput: {
-    height: 50,
-    borderColor: '#ccc',
+  dateInputContainer: {
+    flex: 1,
+    height: 40,
+    borderColor: '#333',
     borderWidth: 1,
     borderRadius: 10,
-    marginHorizontal: 10,
-    flex: 1,
-    paddingHorizontal: 15,
+    marginHorizontal: 5,
+    justifyContent: 'center',
     backgroundColor: '#f9f9f9',
-    fontSize: 16,
+  },
+  dateInput: {
     textAlign: 'center',
-    lineHeight: 50, // Align text vertically center
+    fontSize: 16,
+    lineHeight: 40, // Align text vertically center
   },
   previewImage: {
     width: '100%',
@@ -333,7 +331,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   submitButton: {
-    backgroundColor: '#5DB075',
+    backgroundColor: '#077B17',
     paddingVertical: 15,
     borderRadius: 10,
     alignItems: 'center',

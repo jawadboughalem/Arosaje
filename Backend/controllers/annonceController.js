@@ -19,6 +19,7 @@ const getAllAnnonces = (req, res) => {
       console.error('Database error:', err.message);
       return res.status(500).json({ error: 'Erreur lors de la récupération des annonces' });
     }
+    console.log('Annonces récupérées:', rows);
     res.status(200).json(rows);
   });
 };

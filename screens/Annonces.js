@@ -1,14 +1,40 @@
-import React, { useState, useRef } from 'react';
-import { View, Text, TextInput, StyleSheet, TouchableOpacity, Animated, Image, Keyboard } from 'react-native';
+import React, { useState, useRef, useEffect } from 'react';
+import { View, Text, TextInput, StyleSheet, TouchableOpacity, Animated, Image, Keyboard, FlatList } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Ionicons';
+import Card from '../components/Card';
+import { IPV4 } from '../Backend/config/config';
+import AsyncStorage from '@react-native-async-storage/async-storage'; // Importation pour la gestion des tokens
 
 const CardsPage = () => {
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [searchText, setSearchText] = useState('');
+    const [annonces, setAnnonces] = useState([]);
     const navigation = useNavigation();
     const searchWidth = useRef(new Animated.Value(0)).current;
     const textInputRef = useRef(null);
+
+    useEffect(() => {
+        const fetchAnnonces = async () => {
+            try {
+                const token = await AsyncStorage.getItem('token'); // Récupération du token d'authentification
+                const response = await fetch(`http://${IPV4}:3000/annonces/all`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`, // Ajout du token d'authentification
+                    }
+                });
+                if (!response.ok) {
+                    throw new Error('Erreur lors de la récupération des annonces');
+                }
+                const data = await response.json();
+                setAnnonces(data);
+            } catch (error) {
+                console.error('Erreur lors de la récupération des annonces:', error);
+            }
+        };
+
+        fetchAnnonces();
+    }, []);
 
     const handleSearchPress = () => {
         setIsSearchOpen(true);
@@ -75,6 +101,19 @@ const CardsPage = () => {
                     </TouchableOpacity>
                 </Animated.View>
             </View>
+            <FlatList
+                data={annonces}
+                keyExtractor={(item) => item.Code_Postes.toString()} // Utilisez la clé unique Code_Postes
+                renderItem={({ item }) => (
+                    <Card
+                        plantImage={`http://${IPV4}:3000/images/${item.photo}`} // Assurez-vous que cette URL est correcte
+                        plantName={item.titre}
+                        location={item.localisation}
+                        userName={item.userName} // Assurez-vous que cette propriété existe
+                        userImage={item.userImage} // Assurez-vous que cette propriété existe
+                    />
+                )}
+            />
         </View>
     );
 };
