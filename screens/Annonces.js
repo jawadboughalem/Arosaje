@@ -4,7 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import Card from '../components/Card';
 import { IPV4 } from '../Backend/config/config';
-import AsyncStorage from '@react-native-async-storage/async-storage'; // Importation pour la gestion des tokens
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const CardsPage = () => {
     const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -17,10 +17,10 @@ const CardsPage = () => {
     useEffect(() => {
         const fetchAnnonces = async () => {
             try {
-                const token = await AsyncStorage.getItem('token'); // Récupération du token d'authentification
+                const token = await AsyncStorage.getItem('token');
                 const response = await fetch(`http://${IPV4}:3000/annonces/all`, {
                     headers: {
-                        'Authorization': `Bearer ${token}`, // Ajout du token d'authentification
+                        'Authorization': `Bearer ${token}`,
                     }
                 });
                 if (!response.ok) {
@@ -103,15 +103,19 @@ const CardsPage = () => {
             </View>
             <FlatList
                 data={annonces}
-                keyExtractor={(item) => item.Code_Postes.toString()} // Utilisez la clé unique Code_Postes
+                keyExtractor={(item) => item.Code_Postes.toString()}
                 renderItem={({ item }) => (
-                    <Card
-                        plantImage={`http://${IPV4}:3000/images/${item.photo}`} // Assurez-vous que cette URL est correcte
-                        plantName={item.titre}
-                        location={item.localisation}
-                        userName={item.userName} // Assurez-vous que cette propriété existe
-                        userImage={item.userImage} // Assurez-vous que cette propriété existe
-                    />
+                    <TouchableOpacity
+                        onPress={() => navigation.navigate('DetailPoste', { annonce: item })}
+                    >
+                        <Card
+                            plantImage={`http://${IPV4}:3000/images/${item.photo}`}
+                            plantName={item.titre}
+                            location={item.localisation}
+                            userName={item.userName}
+                            userImage={item.userImage}
+                        />
+                    </TouchableOpacity>
                 )}
             />
         </View>
@@ -125,7 +129,7 @@ const styles = StyleSheet.create({
         padding: 10,
     },
     header: {
-        height: 250,
+        height: 160,
         backgroundColor: 'transparent',
         justifyContent: 'center',
         alignItems: 'center',
@@ -140,7 +144,7 @@ const styles = StyleSheet.create({
     },
     searchBar: {
         position: 'absolute',
-        top: 100,
+        top: 85,
         backgroundColor: '#000',
         paddingHorizontal: 20,
         borderRadius: 25,

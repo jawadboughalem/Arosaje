@@ -117,20 +117,20 @@ const Formulaire = () => {
       nomPlante,
       description,
       localisation: fullLocalisation,
-      dateDebut: formatDateForSaving(dateDebut),
-      dateFin: formatDateForSaving(dateFin),
+      dateDebut: dateDebut.toISOString(), // Utilisez toISOString pour envoyer un format de date standard
+      dateFin: dateFin.toISOString(), // Utilisez toISOString pour envoyer un format de date standard
       photo,
     };
-
+  
     try {
       if (!token) {
         console.error('Aucun token disponible pour la soumission');
         return;
       }
-
+  
       console.log('Données soumises:', data);
       console.log('Utilisation du token:', token);
-
+  
       const response = await fetch(`http://${IPV4}:3000/annonces/addannonce`, {
         method: 'POST',
         headers: {
@@ -139,9 +139,9 @@ const Formulaire = () => {
         },
         body: JSON.stringify(data),
       });
-
+  
       console.log('Statut de la réponse:', response.status);
-
+  
       if (response.ok) {
         const responseData = await response.json();
         console.log('Données de la réponse:', responseData);
@@ -154,7 +154,7 @@ const Formulaire = () => {
       console.error('Erreur réseau:', error);
     }
   };
-
+    
   return (
     <View style={styles.wrapper}>
       <ScrollView contentContainerStyle={styles.scrollContainer}>

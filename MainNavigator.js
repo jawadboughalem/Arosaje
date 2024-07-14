@@ -13,10 +13,28 @@ import Profil from './screens/Profil';
 import CameraPreview from './screens/CameraPreview';
 import Formulaire from './screens/Formulaire';
 import FormulaireBotaniste from './screens/FormulaireBotaniste';
+import DetailPoste from './screens/DetailPoste'; // Importer le composant DetailPoste
 import Header from './components/header';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
+
+function AnnoncesStack() {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen
+        name="Annonces"
+        component={Annonces}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="DetailPoste"
+        component={DetailPoste}
+        options={{ headerShown: false }}
+      />
+    </Stack.Navigator>
+  );
+}
 
 function PhotosStack({ navigation }) {
   const { setIsTabBarVisible } = useContext(TabBarContext);
@@ -106,7 +124,7 @@ const MainNavigator = ({ handleLogout }) => {
           tabBarIcon: ({ color, focused }) => {
             let iconName;
 
-            if (route.name === 'Annonces') {
+            if (route.name === 'AnnoncesStack') {
               iconName = focused ? 'home' : 'home-outline';
             } else if (route.name === 'Messages') {
               iconName = focused ? 'chatbox' : 'chatbox-outline';
@@ -122,8 +140,8 @@ const MainNavigator = ({ handleLogout }) => {
         })}
       >
         <Tab.Screen
-          name="Annonces"
-          component={Annonces}
+          name="AnnoncesStack"
+          component={AnnoncesStack}
           options={{
             title: 'Annonces',
             header: () => <Header title="Annonces" />,
