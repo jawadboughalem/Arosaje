@@ -109,7 +109,7 @@ const CardsPage = () => {
                         onPress={() => navigation.navigate('DetailPoste', { annonce: item })}
                     >
                         <Card
-                            plantImage={`http://${IPV4}:3000/images/${item.photo}`}
+                            plantImage={`http://${IPV4}:3000/annonces/all/${item.photo}`}
                             plantName={item.titre}
                             location={item.localisation}
                             userName={item.userName}

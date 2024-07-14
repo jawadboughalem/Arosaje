@@ -1,11 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { StyleSheet, TextInput, View, Text, TouchableOpacity, ScrollView, Alert, Image } from 'react-native';
-import { useRoute, useNavigation } from '@react-navigation/native';
+import { useRoute, useNavigation, useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import * as Location from 'expo-location';
 import * as ImagePicker from 'expo-image-picker';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import Toast from 'react-native-toast-message';
+import Spinner from 'react-native-loading-spinner-overlay';
 
 const { IPV4 } = require('../Backend/config/config');
 
@@ -22,6 +24,19 @@ const Formulaire = () => {
   const [isDateDebutPickerVisible, setDateDebutPickerVisibility] = useState(false);
   const [isDateFinPickerVisible, setDateFinPickerVisibility] = useState(false);
   const [token, setToken] = useState(null);
+  const [loading, setLoading] = useState(false); // Ajout de l'état de chargement
+
+  useFocusEffect(
+    useCallback(() => {
+      // Reset state when screen is focused
+      setNomPlante('');
+      setDescription('');
+      setLocalisation('');
+      setCodePostal('');
+      setDateDebut(new Date());
+      setDateFin(new Date());
+    }, [])
+  );
 
   useEffect(() => {
     const fetchToken = async () => {
@@ -70,12 +85,6 @@ const Formulaire = () => {
     return date.toLocaleDateString('fr-FR', { month: 'long', day: 'numeric' });
   };
 
-  const formatDateForSaving = (date) => {
-    const month = date.getMonth() + 1; // getMonth() retourne les mois de 0 à 11
-    const day = date.getDate();
-    return `${month < 10 ? `0${month}` : month}-${day < 10 ? `0${day}` : day}`;
-  };
-
   const handleLocationPress = async () => {
     let { status } = await Location.requestForegroundPermissionsAsync();
     if (status !== 'granted') {
@@ -112,51 +121,84 @@ const Formulaire = () => {
   };
 
   const handleSubmit = async () => {
+    setLoading(true); // Afficher le spinner de chargement
     const fullLocalisation = `${localisation}, ${codePostal}`;
-    const data = {
-      nomPlante,
-      description,
-      localisation: fullLocalisation,
-      dateDebut: dateDebut.toISOString(), // Utilisez toISOString pour envoyer un format de date standard
-      dateFin: dateFin.toISOString(), // Utilisez toISOString pour envoyer un format de date standard
-      photo,
-    };
-  
+    const formData = new FormData();
+    formData.append('nomPlante', nomPlante);
+    formData.append('description', description);
+    formData.append('localisation', fullLocalisation);
+    formData.append('dateDebut', dateDebut.toISOString());
+    formData.append('dateFin', dateFin.toISOString());
+    if (photo) {
+      const photoFile = {
+        uri: photo,
+        name: `${nomPlante}.webp`,
+        type: 'image/webp',
+      };
+      formData.append('photo', photoFile);
+    }
+
     try {
       if (!token) {
         console.error('Aucun token disponible pour la soumission');
+        setLoading(false); // Masquer le spinner de chargement
         return;
       }
-  
-      console.log('Données soumises:', data);
+
+      console.log('Données soumises:', formData);
       console.log('Utilisation du token:', token);
-  
+
       const response = await fetch(`http://${IPV4}:3000/annonces/addannonce`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'multipart/form-data',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify(data),
+        body: formData,
       });
-  
+
       console.log('Statut de la réponse:', response.status);
-  
+
       if (response.ok) {
         const responseData = await response.json();
         console.log('Données de la réponse:', responseData);
-        navigation.navigate('Annonces');
+        Alert.alert(
+          'Succès',
+          'Votre annonce a été ajoutée avec succès!',
+          [{ text: 'OK', onPress: () => {
+              // Réinitialiser l'état du formulaire
+              setNomPlante('');
+              setDescription('');
+              setLocalisation('');
+              setCodePostal('');
+              setDateDebut(new Date());
+              setDateFin(new Date());
+              navigation.navigate('Photos'); // Naviguer vers la caméra
+
+              // Après un délai, naviguer vers les annonces
+              setTimeout(() => {
+                navigation.navigate('Annonces');
+              }, 1000); // Ajustez le délai selon vos besoins
+            } }]
+        );
       } else {
         const errorData = await response.json();
         console.error('Erreur lors de la soumission du formulaire:', errorData);
       }
     } catch (error) {
       console.error('Erreur réseau:', error);
+    } finally {
+      setLoading(false); // Masquer le spinner de chargement après la soumission
     }
   };
-    
+
   return (
     <View style={styles.wrapper}>
+      <Spinner // Ajout du composant Spinner
+        visible={loading}
+        textContent={'Chargement...'}
+        textStyle={styles.spinnerTextStyle}
+      />
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={styles.container}>
           <Text style={styles.label}>Photo de la plante :</Text>
@@ -238,6 +280,7 @@ const Formulaire = () => {
           </TouchableOpacity>
         </View>
       </ScrollView>
+      <Toast ref={(ref) => Toast.setRef(ref)} />
     </View>
   );
 };
@@ -341,6 +384,9 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 18,
     fontWeight: 'bold',
+  },
+  spinnerTextStyle: {
+    color: '#FFF'
   },
 });
 

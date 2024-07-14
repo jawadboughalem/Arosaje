@@ -25,17 +25,28 @@ const createAnnonce = (annonce, callback) => {
       if (err) {
         return callback(err);
       }
+      const photoId = this.lastID;
 
-      const gardeSql = `
-        INSERT INTO Gardes (Code_Postes, Code_Gardien, Statut, DateDebut, DateFin) 
-        VALUES (?, ?, ?, ?, ?);
+      const updatePostSql = `
+        UPDATE postes SET code_Photos = ? WHERE Code_Postes = ?;
       `;
-      const gardeParams = [postId, userId, 'Disponible', dateDebut, dateFin];
-      db.run(gardeSql, gardeParams, function(err) {
+      const updatePostParams = [photoId, postId];
+      db.run(updatePostSql, updatePostParams, function(err) {
         if (err) {
           return callback(err);
         }
-        callback(null, postId);
+
+        const gardeSql = `
+          INSERT INTO Gardes (Code_Postes, Code_Gardien, Statut, DateDebut, DateFin) 
+          VALUES (?, ?, ?, ?, ?);
+        `;
+        const gardeParams = [postId, userId, 'Disponible', dateDebut, dateFin];
+        db.run(gardeSql, gardeParams, function(err) {
+          if (err) {
+            return callback(err);
+          }
+          callback(null, postId);
+        });
       });
     });
   });
