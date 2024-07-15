@@ -1,7 +1,8 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { View, Text, TextInput, StyleSheet, TouchableOpacity, Animated, Image, Keyboard, FlatList } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Ionicons';
+import Spinner from 'react-native-loading-spinner-overlay';
 import Card from '../components/Card';
 import { IPV4 } from '../Backend/config/config';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -10,31 +11,41 @@ const CardsPage = () => {
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [searchText, setSearchText] = useState('');
     const [annonces, setAnnonces] = useState([]);
+    const [loading, setLoading] = useState(false);
     const navigation = useNavigation();
     const searchWidth = useRef(new Animated.Value(0)).current;
     const textInputRef = useRef(null);
 
-    useEffect(() => {
-        const fetchAnnonces = async () => {
-            try {
-                const token = await AsyncStorage.getItem('token');
-                const response = await fetch(`http://${IPV4}:3000/annonces/all`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                    }
-                });
-                if (!response.ok) {
-                    throw new Error('Erreur lors de la récupération des annonces');
+    const fetchAnnonces = async () => {
+        try {
+            setLoading(true);
+            const token = await AsyncStorage.getItem('token');
+            const response = await fetch(`http://${IPV4}:3000/annonces/all`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
                 }
-                const data = await response.json();
-                setAnnonces(data);
-            } catch (error) {
-                console.error('Erreur lors de la récupération des annonces:', error);
+            });
+            if (!response.ok) {
+                throw new Error('Erreur lors de la récupération des annonces');
             }
-        };
+            const data = await response.json();
+            setAnnonces(data);
+        } catch (error) {
+            console.error('Erreur lors de la récupération des annonces:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
+    useEffect(() => {
         fetchAnnonces();
     }, []);
+
+    useFocusEffect(
+        useCallback(() => {
+            fetchAnnonces();
+        }, [])
+    );
 
     const handleSearchPress = () => {
         setIsSearchOpen(true);
@@ -68,6 +79,7 @@ const CardsPage = () => {
 
     return (
         <View style={styles.container}>
+            <Spinner visible={loading} textContent={'Chargement...'} textStyle={styles.spinnerTextStyle} />
             <View style={styles.header}>
                 {!isSearchOpen && (
                     <TouchableOpacity style={styles.searchButton} onPress={handleSearchPress}>
@@ -162,6 +174,9 @@ const styles = StyleSheet.create({
         fontSize: 16,
         height: 40,
         color: '#fff',
+    },
+    spinnerTextStyle: {
+        color: '#FFF',
     },
 });
 
