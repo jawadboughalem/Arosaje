@@ -18,6 +18,7 @@ const addAnnonce = async (req, res) => {
 
   try {
     await sharp(photoBuffer)
+      .rotate(90) // Pivote l'image de 90 degrés vers la droite
       .webp({ quality: 80 })
       .toFile(filePath);
 
@@ -28,6 +29,7 @@ const addAnnonce = async (req, res) => {
         console.error('Database error:', err.message);
         return res.status(500).json({ error: 'Erreur lors de l\'ajout de l\'annonce' });
       }
+      console.log(`Image saved successfully at ${filePath}`);
       res.status(201).json({ message: 'Annonce ajoutée avec succès', id });
     });
   } catch (error) {
@@ -54,16 +56,16 @@ const getAnnonceImage = async (req, res) => {
   if (fs.existsSync(filePath)) {
     try {
       const imageBuffer = await sharp(filePath)
-        .rotate(90) // Pivote l'image de 90 degrés vers la droite
         .toBuffer();
 
       res.setHeader('Content-Type', 'image/webp');
       res.status(200).send(imageBuffer);
     } catch (error) {
-      console.error('Erreur lors de la rotation de l\'image:', error);
-      res.status(500).json({ error: 'Erreur lors de la rotation de l\'image' });
+      console.error('Erreur lors de la récupération de l\'image:', error);
+      res.status(500).json({ error: 'Erreur lors de la récupération de l\'image' });
     }
   } else {
+    console.error(`Image non trouvée: ${filePath}`);
     res.status(404).json({ error: 'Image non trouvée' });
   }
 };

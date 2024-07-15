@@ -24,7 +24,7 @@ const DetailPoste = ({ route }) => {
   return (
     <ScrollView style={styles.container}>
       <View style={styles.imageContainer}>
-        <Image source={{ uri: `http://${IPV4}:3000/images/${annonce.photo}` }} style={styles.image} />
+        <Image source={{ uri: `http://${IPV4}:3000/annonces/image/${annonce.photo}`  }} style={styles.image} />
       </View>
       <View style={styles.detailsContainer}>
         <Text style={styles.title}>🌿 {annonce.titre}</Text>

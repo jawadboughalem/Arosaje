@@ -34,7 +34,7 @@ const styles = StyleSheet.create({
         width: 100,
         height: 100,
         borderRadius: 10,
-        transform: [{ rotate: '90deg' }], // Ajout de la rotation de 90 degrés
+        
     },
     textContainer: {
         flex: 1,
