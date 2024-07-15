@@ -109,11 +109,11 @@ const CardsPage = () => {
                         onPress={() => navigation.navigate('DetailPoste', { annonce: item })}
                     >
                         <Card
-                            plantImage={`http://${IPV4}:3000/annonces/all/${item.photo}`}
+                            plantImage={item.photo} // URL de l'image de la plante
                             plantName={item.titre}
                             location={item.localisation}
                             userName={item.userName}
-                            userImage={item.userImage}
+                            userImage={item.userImage} // URL de l'image de l'utilisateur
                         />
                     </TouchableOpacity>
                 )}

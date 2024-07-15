@@ -2,6 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const morgan = require('morgan');
 const cors = require('cors');
+const path = require('path');
 const { initialize } = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
 const annonceRoutes = require('./routes/annonceRoutes');
@@ -9,11 +10,13 @@ const userRoutes = require('./routes/userRoutes');
 const conseilRoutes = require('./routes/conseilRoutes');
 const multer = require('multer');
 
+
 const app = express();
 const port = 3000;
 
 // Initialisation de la base de données
 initialize();
+
 
 // Configuration CORS
 const corsOptions = {
@@ -40,6 +43,7 @@ const upload = multer({
 app.use('/auth', authRoutes);
 app.use('/annonces', annonceRoutes);
 app.use('/user', userRoutes);
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/conseils', conseilRoutes);
 
 app.listen(port, '0.0.0.0', () => {

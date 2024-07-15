@@ -1,6 +1,7 @@
+const fs = require('fs');
+const path = require('path');
 const annonceModel = require('../models/annonceModel');
 const sharp = require('sharp');
-const path = require('path');
 const { v4: uuidv4 } = require('uuid');
 
 const addAnnonce = async (req, res) => {
@@ -46,8 +47,29 @@ const getAllAnnonces = (req, res) => {
   });
 };
 
+const getAnnonceImage = async (req, res) => {
+  const { filename } = req.params;
+  const filePath = path.join(__dirname, '../uploads/plante', filename);
+
+  if (fs.existsSync(filePath)) {
+    try {
+      const imageBuffer = await sharp(filePath)
+        .rotate(90) // Pivote l'image de 90 degrés vers la droite
+        .toBuffer();
+
+      res.setHeader('Content-Type', 'image/webp');
+      res.status(200).send(imageBuffer);
+    } catch (error) {
+      console.error('Erreur lors de la rotation de l\'image:', error);
+      res.status(500).json({ error: 'Erreur lors de la rotation de l\'image' });
+    }
+  } else {
+    res.status(404).json({ error: 'Image non trouvée' });
+  }
+};
 
 module.exports = {
   addAnnonce,
   getAllAnnonces,
+  getAnnonceImage,
 };

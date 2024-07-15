@@ -1,15 +1,15 @@
 import React from 'react';
 import { View, Text, Image, StyleSheet } from 'react-native';
+import { IPV4 } from '../Backend/config/config';
 
 const Card = ({ plantImage, plantName, location, userName, userImage }) => {
     return (
         <View style={styles.card}>
-            <Image source={{ uri: plantImage }} style={styles.plantImage} />
+            <Image source={{ uri: `http://${IPV4}:3000/annonces/image/${plantImage}` }} style={styles.plantImage} />
             <View style={styles.textContainer}>
                 <Text style={styles.plantName}>{plantName}</Text>
                 <Text style={styles.location}>{location}</Text>
                 <View style={styles.userInfo}>
-                    <Image source={{ uri: userImage }} style={styles.userImage} />
                     <Text style={styles.userName}>{userName}</Text>
                 </View>
             </View>
@@ -34,6 +34,7 @@ const styles = StyleSheet.create({
         width: 100,
         height: 100,
         borderRadius: 10,
+        transform: [{ rotate: '90deg' }], // Ajout de la rotation de 90 degrés
     },
     textContainer: {
         flex: 1,
