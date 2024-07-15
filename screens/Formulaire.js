@@ -24,7 +24,9 @@ const Formulaire = () => {
   const [isDateDebutPickerVisible, setDateDebutPickerVisibility] = useState(false);
   const [isDateFinPickerVisible, setDateFinPickerVisibility] = useState(false);
   const [token, setToken] = useState(null);
-  const [loading, setLoading] = useState(false); // Ajout de l'état de chargement
+  const [loading, setLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formReset, setFormReset] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
@@ -35,6 +37,8 @@ const Formulaire = () => {
       setCodePostal('');
       setDateDebut(new Date());
       setDateFin(new Date());
+      setIsSubmitting(false);
+      setFormReset(true); // Réinitialiser le statut du formulaire
     }, [])
   );
 
@@ -121,7 +125,11 @@ const Formulaire = () => {
   };
 
   const handleSubmit = async () => {
+    if (isSubmitting) return; // Si déjà en cours de soumission, ne rien faire
+
+    setIsSubmitting(true); // Empêcher d'autres soumissions
     setLoading(true); // Afficher le spinner de chargement
+
     const fullLocalisation = `${localisation}, ${codePostal}`;
     const formData = new FormData();
     formData.append('nomPlante', nomPlante);
@@ -142,6 +150,7 @@ const Formulaire = () => {
       if (!token) {
         console.error('Aucun token disponible pour la soumission');
         setLoading(false); // Masquer le spinner de chargement
+        setIsSubmitting(false); // Réactiver la soumission
         return;
       }
 
@@ -165,7 +174,8 @@ const Formulaire = () => {
         Alert.alert(
           'Succès',
           'Votre annonce a été ajoutée avec succès!',
-          [{ text: 'OK', onPress: () => {
+          [{
+            text: 'OK', onPress: () => {
               // Réinitialiser l'état du formulaire
               setNomPlante('');
               setDescription('');
@@ -178,23 +188,27 @@ const Formulaire = () => {
               // Après un délai, naviguer vers les annonces
               setTimeout(() => {
                 navigation.navigate('Annonces');
-              }, 1000); // Ajustez le délai selon vos besoins
-            } }]
+              }, 1); // Ajustez le délai selon vos besoins
+            }
+          }]
         );
       } else {
         const errorData = await response.json();
         console.error('Erreur lors de la soumission du formulaire:', errorData);
+        setIsSubmitting(false); // Réactiver la soumission
       }
     } catch (error) {
       console.error('Erreur réseau:', error);
+      setIsSubmitting(false); // Réactiver la soumission
     } finally {
       setLoading(false); // Masquer le spinner de chargement après la soumission
+      setFormReset(false); // Désactiver la réinitialisation du formulaire
     }
   };
 
   return (
     <View style={styles.wrapper}>
-      <Spinner // Ajout du composant Spinner
+      <Spinner
         visible={loading}
         textContent={'Chargement...'}
         textStyle={styles.spinnerTextStyle}
@@ -275,7 +289,11 @@ const Formulaire = () => {
               onCancel={hideDateFinPicker}
             />
           </View>
-          <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
+          <TouchableOpacity
+            style={[styles.submitButton, (isSubmitting || !formReset) && styles.submitButtonDisabled]}
+            onPress={handleSubmit}
+            disabled={isSubmitting || !formReset}
+          >
             <Text style={styles.submitButtonText}>Poster</Text>
           </TouchableOpacity>
         </View>
@@ -307,7 +325,7 @@ const styles = StyleSheet.create({
   },
   input: {
     height: 50,
-    borderColor: '#333', // Couleur noire pour les bordures
+    borderColor: '#333',
     borderWidth: 1,
     borderRadius: 10,
     marginBottom: 20,
@@ -328,7 +346,7 @@ const styles = StyleSheet.create({
   },
   locationIcon: {
     marginLeft: 10,
-    alignSelf: 'center', // Centrer l'icône verticalement par rapport au champ
+    alignSelf: 'center',
   },
   dateContainer: {
     flexDirection: 'row',
@@ -353,7 +371,7 @@ const styles = StyleSheet.create({
   dateInput: {
     textAlign: 'center',
     fontSize: 16,
-    lineHeight: 40, // Align text vertically center
+    lineHeight: 40,
   },
   previewImage: {
     width: '100%',
@@ -379,6 +397,9 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: 'center',
     marginTop: 20,
+  },
+  submitButtonDisabled: {
+    backgroundColor: '#aaa',
   },
   submitButtonText: {
     color: '#fff',
