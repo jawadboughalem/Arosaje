@@ -18,7 +18,6 @@ const addAnnonce = async (req, res) => {
 
   try {
     await sharp(photoBuffer)
-      .rotate(90) // Pivote l'image de 90 degrés vers la droite
       .webp({ quality: 80 })
       .toFile(filePath);
 

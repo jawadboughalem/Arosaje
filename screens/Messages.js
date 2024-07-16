@@ -50,6 +50,11 @@ export default function Messages() {
     }).start();
   };
 
+  const handleFilterPress = () => {
+    // Ajoutez ici la logique pour ouvrir le filtre
+    console.log('Filtre pressé');
+  };
+
   const filteredMessages = messages.filter(message =>
     message.content.toLowerCase().includes(searchText.toLowerCase())
   );
@@ -88,6 +93,11 @@ export default function Messages() {
           <Icon name="close-circle" size={20} color="#fff" />
         </TouchableOpacity>
       </Animated.View>
+      {isSearchOpen && (
+        <TouchableOpacity style={styles.filterButton} onPress={handleFilterPress}>
+          <Icon name="filter-outline" size={30} color="#000" />
+        </TouchableOpacity>
+      )}
 
       <View style={styles.tabContainer}>
         <TouchableOpacity
@@ -117,6 +127,7 @@ export default function Messages() {
               data={filteredMessages}
               keyExtractor={item => item.id.toString()}
               renderItem={({ item }) => <MessageItem message={item} />}
+              contentContainerStyle={{ paddingBottom: 80 }} // Ajustez le padding en bas
             />
           )
         ) : (
@@ -154,6 +165,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     height: 40,
+  },
+  filterButton: {
+    position: 'absolute',
+    top: 91,
+    right: 20, // Ajustez la position de l'icône de filtre
+    padding: 10,
   },
   input: {
     flex: 2,

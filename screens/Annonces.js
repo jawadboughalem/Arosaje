@@ -77,6 +77,11 @@ const CardsPage = () => {
         }
     };
 
+    const handleFilterPress = () => {
+        // Ajoutez ici la logique pour ouvrir le filtre
+        console.log('Filtre pressé');
+    };
+
     return (
         <View style={styles.container}>
             <Spinner visible={loading} textContent={'Chargement...'} textStyle={styles.spinnerTextStyle} />
@@ -92,7 +97,7 @@ const CardsPage = () => {
                 <Animated.View style={[styles.searchBar, {
                     width: searchWidth.interpolate({
                         inputRange: [0, 1],
-                        outputRange: ['30%', '80%'],
+                        outputRange: ['30%', '65%'], // Réduit la largeur de la barre de recherche
                     }),
                     opacity: searchWidth.interpolate({
                         inputRange: [0, 1],
@@ -112,6 +117,11 @@ const CardsPage = () => {
                         <Icon name="close-circle" size={20} color="#fff" />
                     </TouchableOpacity>
                 </Animated.View>
+                {isSearchOpen && (
+                    <TouchableOpacity style={styles.filterButton} onPress={handleFilterPress}>
+                        <Icon name="filter-outline" size={30} color="#000" />
+                    </TouchableOpacity>
+                )}
             </View>
             <FlatList
                 data={annonces}
@@ -126,9 +136,11 @@ const CardsPage = () => {
                             location={item.localisation}
                             userName={item.userName}
                             userImage={item.userImage} // URL de l'image de l'utilisateur
+                            status={item.status} // Ajoutez le statut ici
                         />
                     </TouchableOpacity>
                 )}
+                contentContainerStyle={{ paddingBottom: 80 }} // Ajustez le padding en bas
             />
         </View>
     );
@@ -146,6 +158,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         position: 'relative',
+        flexDirection: 'row',
     },
     searchButton: {
         position: 'absolute',
@@ -168,6 +181,12 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         height: 38,
+    },
+    filterButton: {
+        position: 'absolute',
+        top: 84,
+        right: 10, 
+        padding: 5,
     },
     input: {
         flex: 1,

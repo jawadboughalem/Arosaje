@@ -2,14 +2,16 @@ import React from 'react';
 import { View, Text, Image, StyleSheet } from 'react-native';
 import { IPV4 } from '../Backend/config/config';
 
-const Card = ({ plantImage, plantName, location, userName, userImage }) => {
+const Card = ({ plantImage, plantName, location, userName, userImage, status }) => {
     return (
         <View style={styles.card}>
             <Image source={{ uri: `http://${IPV4}:3000/annonces/image/${plantImage}` }} style={styles.plantImage} />
             <View style={styles.textContainer}>
                 <Text style={styles.plantName}>{plantName}</Text>
                 <Text style={styles.location}>{location}</Text>
+                <Text style={styles.status}>{status}</Text>
                 <View style={styles.userInfo}>
+                    <Image source={{ uri: userImage }} style={styles.userImage} />
                     <Text style={styles.userName}>{userName}</Text>
                 </View>
             </View>
@@ -20,34 +22,37 @@ const Card = ({ plantImage, plantName, location, userName, userImage }) => {
 const styles = StyleSheet.create({
     card: {
         flexDirection: 'row',
-        padding: 10,
         marginBottom: 10,
         backgroundColor: '#fff',
         borderRadius: 10,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 5,
-        elevation: 5,
+        borderWidth: 1,
+        borderColor: '#ddd',
+        overflow: 'hidden',
+        height: 120, 
     },
     plantImage: {
-        width: 100,
-        height: 100,
-        borderRadius: 10,
-        
+        width: 130, 
+        height: '100%',
     },
     textContainer: {
         flex: 1,
-        paddingLeft: 10,
+        padding: 10, 
         justifyContent: 'center',
     },
     plantName: {
-        fontSize: 18,
+        fontSize: 15,
         fontWeight: 'bold',
+        marginBottom: 5,
     },
     location: {
-        fontSize: 14,
+        fontSize: 13,
         color: '#666',
+        marginBottom: 2,
+    },
+    status: {
+        fontSize: 12,
+        color: '#28a745',
+        marginBottom: 5,
     },
     userInfo: {
         flexDirection: 'row',
@@ -55,13 +60,13 @@ const styles = StyleSheet.create({
         marginTop: 5,
     },
     userImage: {
-        width: 30,
-        height: 30,
-        borderRadius: 15,
-        marginRight: 10,
+        width: 20, 
+        height: 20, 
+        borderRadius: 10, 
+        marginRight: 5,
     },
     userName: {
-        fontSize: 14,
+        fontSize: 12, 
         color: '#666',
     },
 });
