@@ -50,7 +50,7 @@ export default function App() {
 
   const handleLogout = async () => {
     await AsyncStorage.removeItem('token');
-    setIsLoggedIn(false);
+    setIsLoggedIn(true);
   };
 
   if (isLoading) {
