@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Platform, ScrollView, KeyboardAvoidingView, Switch, Alert } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Platform, ScrollView, KeyboardAvoidingView, Switch, Alert, Animated } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 const { IPV4 } = require('../Backend//config/config');
 
@@ -10,6 +10,31 @@ export default function Sign({ navigation }) {
     const [password, setPassword] = useState('');
     const [isBotanist, setIsBotanist] = useState(false);
     const [errors, setErrors] = useState({});
+    const [errorShakeAnimation] = useState(new Animated.Value(0));
+    const [botanistAnimation] = useState(new Animated.Value(0));
+
+    useEffect(() => {
+        if (Object.keys(errors).length > 0) {
+            startShakeAnimation();
+        }
+    }, [errors]);
+
+    useEffect(() => {
+        Animated.timing(botanistAnimation, {
+            toValue: isBotanist ? 1 : 0,
+            duration: 300,
+            useNativeDriver: false
+        }).start();
+    }, [isBotanist]);
+
+    const startShakeAnimation = () => {
+        Animated.sequence([
+            Animated.timing(errorShakeAnimation, { toValue: 10, duration: 50, useNativeDriver: true }),
+            Animated.timing(errorShakeAnimation, { toValue: -10, duration: 50, useNativeDriver: true }),
+            Animated.timing(errorShakeAnimation, { toValue: 10, duration: 50, useNativeDriver: true }),
+            Animated.timing(errorShakeAnimation, { toValue: 0, duration: 50, useNativeDriver: true })
+        ]).start();
+    };
 
     const handleSignUp = async () => {
         const validationErrors = {};
@@ -19,39 +44,64 @@ export default function Sign({ navigation }) {
         if (!password.trim()) validationErrors.password = "Le mot de passe est requis.";
         setErrors(validationErrors);
 
-        if (Object.keys(validationErrors).length === 0) {
-            try {
-                const response = await fetch(`http://${IPV4}:3000/auth/signup`, { // Mise à jour de l'URL ici
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        name,
-                        surname,
-                        email,
-                        password,
-                        isBotanist,
-                    }),
-                });
-                if (!response.ok) {
-                    console.error('Erreur lors de l\'inscription:', response.statusText);
-                    throw new Error('Erreur lors de l\'inscription');
-                }
-                const data = await response.json();
-                console.log('Inscription réussie. ID utilisateur:', data.userId);
-                Alert.alert("Inscription réussie", "Votre compte a été créé avec succès.");
-                setName('');
-                setSurname('');
-                setEmail('');
-                setPassword('');
-                setIsBotanist(false);
-                setErrors({});
-            } catch (error) {
-                console.error('Erreur lors de l\'inscription:', error);
-                Alert.alert("Erreur", "Une erreur s'est produite lors de l'inscription.");
-            }
+        if (Object.keys(validationErrors).length > 0) {
+            return;
         }
+
+        try {
+            const response = await fetch(`http://${IPV4}:3000/auth/signup`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    name,
+                    surname,
+                    email,
+                    password,
+                    isBotanist,
+                }),
+            });
+            if (!response.ok) {
+                console.error('Erreur lors de l\'inscription:', response.statusText);
+                throw new Error('Erreur lors de l\'inscription');
+            }
+            const data = await response.json();
+            console.log('Inscription réussie. ID utilisateur:', data.userId);
+            Alert.alert("Inscription réussie", "Votre compte a été créé avec succès.");
+            setName('');
+            setSurname('');
+            setEmail('');
+            setPassword('');
+            setIsBotanist(false);
+            setErrors({});
+        } catch (error) {
+            console.error('Erreur lors de l\'inscription:', error);
+            Alert.alert("Erreur", "Une erreur s'est produite lors de l'inscription.");
+        }
+    };
+
+    const handleTextChange = (setter, field) => (text) => {
+        setter(text);
+        if (errors[field]) {
+            setErrors((prevErrors) => {
+                const newErrors = { ...prevErrors };
+                delete newErrors[field];
+                return newErrors;
+            });
+        }
+    };
+
+    const getTextInputStyle = (errorField) => {
+        return [
+            styles.input,
+            errors[errorField] && styles.inputError,
+            {
+                transform: [
+                    { translateX: errors[errorField] ? errorShakeAnimation : 0 }
+                ]
+            }
+        ];
     };
 
     return (
@@ -64,18 +114,60 @@ export default function Sign({ navigation }) {
                     </View>
                     <View style={styles.formContainer}>
                         <Text style={styles.formTitle}>Inscription</Text>
-                        <TextInput style={styles.input} placeholder="Nom" value={name} onChangeText={setName} />
-                        {errors.name && <Text style={styles.errorText}>{errors.name}</Text>}
-                        <TextInput style={styles.input} placeholder="Prénom" value={surname} onChangeText={setSurname} />
-                        {errors.surname && <Text style={styles.errorText}>{errors.surname}</Text>}
-                        <TextInput style={styles.input} placeholder="Email" value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" />
-                        {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
-                        <TextInput style={styles.input} placeholder="Mot de passe" value={password} onChangeText={setPassword} secureTextEntry autoCapitalize="none" />
-                        {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
-                        <View style={styles.switchContainer}>
-                            <Text style={styles.switchLabel}>Êtes-vous un botaniste?</Text>
-                            <Switch value={isBotanist} onValueChange={setIsBotanist} />
-                        </View>
+                        <Animated.View style={getTextInputStyle('name')}>
+                            <TextInput 
+                                placeholder="Nom" 
+                                placeholderTextColor={errors.name ? 'red' : '#ccc'}
+                                value={name} 
+                                onChangeText={handleTextChange(setName, 'name')} 
+                            />
+                        </Animated.View>
+                        <Animated.View style={getTextInputStyle('surname')}>
+                            <TextInput 
+                                placeholder="Prénom" 
+                                placeholderTextColor={errors.surname ? 'red' : '#ccc'}
+                                value={surname} 
+                                onChangeText={handleTextChange(setSurname, 'surname')} 
+                            />
+                        </Animated.View>
+                        <Animated.View style={getTextInputStyle('email')}>
+                            <TextInput 
+                                placeholder="Email" 
+                                placeholderTextColor={errors.email ? 'red' : '#ccc'}
+                                value={email} 
+                                onChangeText={handleTextChange(setEmail, 'email')} 
+                                keyboardType="email-address" 
+                                autoCapitalize="none" 
+                            />
+                        </Animated.View>
+                        <Animated.View style={getTextInputStyle('password')}>
+                            <TextInput 
+                                placeholder="Mot de passe" 
+                                placeholderTextColor={errors.password ? 'red' : '#ccc'}
+                                value={password} 
+                                onChangeText={handleTextChange(setPassword, 'password')} 
+                                secureTextEntry 
+                                autoCapitalize="none" 
+                            />
+                        </Animated.View>
+                        {isBotanist ? (
+                            <Animated.View style={[styles.botanistContainer, { opacity: botanistAnimation, transform: [{ scale: botanistAnimation }] }]}>
+                                <TextInput 
+                                    style={styles.botanistInput}
+                                    placeholder="Code Botaniste" 
+                                    keyboardType="numeric"
+                                    maxLength={5}
+                                />
+                                <TouchableOpacity onPress={() => setIsBotanist(false)} style={styles.closeButton}>
+                                    <MaterialCommunityIcons name="close-circle" size={20} color="black" />
+                                </TouchableOpacity>
+                            </Animated.View>
+                        ) : (
+                            <View style={styles.switchContainer}>
+                                <Text style={styles.switchLabel}>Êtes-vous un botaniste?</Text>
+                                <Switch value={isBotanist} onValueChange={setIsBotanist} />
+                            </View>
+                        )}
                         <TouchableOpacity style={styles.button} onPress={handleSignUp}>
                             <Text style={styles.buttonText}>Inscription</Text>
                         </TouchableOpacity>
@@ -119,7 +211,7 @@ const styles = StyleSheet.create({
     },
     formContainer: {
         width: '100%',
-        height: '60%',
+        height: '70%', // Augmentez cette valeur pour déplacer le formulaire vers le haut
         backgroundColor: 'white',
         alignItems: 'center',
         justifyContent: 'center',
@@ -132,7 +224,7 @@ const styles = StyleSheet.create({
         fontSize: 25,
         fontWeight: 'bold',
         color: 'black',
-        marginBottom: 10,
+        marginBottom: 70,
     },
     input: {
         width: '80%',
@@ -140,13 +232,10 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: '#ccc',
         borderRadius: 5,
-        marginBottom: 10,
+        marginBottom: 20,
     },
-    errorText: {
-        color: 'red',
-        marginBottom: 2,
-        alignSelf: 'flex-start',
-        marginLeft: '10%',
+    inputError: {
+        borderColor: 'red',
     },
     switchContainer: {
         flexDirection: 'row',
@@ -176,5 +265,27 @@ const styles = StyleSheet.create({
     switchLink: {
         color: '#077B17',
         fontWeight: 'bold',
+    },
+    botanistContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        width: '50%',
+        marginBottom: 20,
+        position: 'relative',
+    },
+    botanistInput: {
+        flex: 1,
+        padding: 10,
+        borderWidth: 1,
+        borderColor: '#ccc',
+        borderRadius: 5,
+        textAlign: 'center',
+       
+    },
+    closeButton: {
+        position: 'absolute',
+        right: 5,
+        top: '50%',
+        marginTop: -10, // Half of the close button size to center it vertically
     },
 });

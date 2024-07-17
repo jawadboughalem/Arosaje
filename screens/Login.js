@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Platform, ScrollView, KeyboardAvoidingView, Alert } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Platform, ScrollView, KeyboardAvoidingView, Alert, Animated } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 const { IPV4 } = require('../Backend/config/config');
@@ -8,12 +8,28 @@ export default function Login({ navigation, setIsLoggedIn }) {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [errors, setErrors] = useState({});
+    const [errorShakeAnimation] = useState(new Animated.Value(0));
+
+    useEffect(() => {
+        if (Object.keys(errors).length > 0) {
+            startShakeAnimation();
+        }
+    }, [errors]);
+
+    const startShakeAnimation = () => {
+        Animated.sequence([
+            Animated.timing(errorShakeAnimation, { toValue: 10, duration: 50, useNativeDriver: true }),
+            Animated.timing(errorShakeAnimation, { toValue: -10, duration: 50, useNativeDriver: true }),
+            Animated.timing(errorShakeAnimation, { toValue: 10, duration: 50, useNativeDriver: true }),
+            Animated.timing(errorShakeAnimation, { toValue: 0, duration: 50, useNativeDriver: true })
+        ]).start();
+    };
 
     const handleLogin = async () => {
         const validationErrors = {};
 
-        if (!email) validationErrors.email = "L'email est requis.";
-        if (!password) validationErrors.password = "Le mot de passe est requis.";
+        if (!email) validationErrors.email = true;
+        if (!password) validationErrors.password = true;
 
         setErrors(validationErrors);
 
@@ -50,6 +66,17 @@ export default function Login({ navigation, setIsLoggedIn }) {
         }
     };
 
+    const handleTextChange = (setter, field) => (text) => {
+        setter(text);
+        if (errors[field]) {
+            setErrors((prevErrors) => {
+                const newErrors = { ...prevErrors };
+                delete newErrors[field];
+                return newErrors;
+            });
+        }
+    };
+
     return (
         <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
             <ScrollView contentContainerStyle={styles.scrollContainer}>
@@ -58,26 +85,26 @@ export default function Login({ navigation, setIsLoggedIn }) {
                         <Text style={styles.title}>A’rosa-je</Text>
                         <MaterialCommunityIcons name="flower" size={100} color="black" style={styles.icon} />
                     </View>
-                    <View style={styles.formContainer}>
+                    <Animated.View style={[styles.formContainer, { transform: [{ translateX: errorShakeAnimation }] }]}>
                         <Text style={styles.formTitle}>Connexion</Text>
                         <TextInput
-                            style={styles.input}
+                            style={[styles.input, errors.email && styles.inputError]}
                             placeholder="Email"
                             value={email}
-                            onChangeText={setEmail}
+                            onChangeText={handleTextChange(setEmail, 'email')}
                             keyboardType="email-address"
                             autoCapitalize="none"
+                            placeholderTextColor={errors.email ? 'red' : '#ccc'}
                         />
-                        {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
                         <TextInput
-                            style={styles.input}
+                            style={[styles.input, errors.password && styles.inputError]}
                             placeholder="Mot de passe"
                             value={password}
-                            onChangeText={setPassword}
+                            onChangeText={handleTextChange(setPassword, 'password')}
                             secureTextEntry
                             autoCapitalize="none"
+                            placeholderTextColor={errors.password ? 'red' : '#ccc'}
                         />
-                        {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
                         <TouchableOpacity style={styles.button} onPress={handleLogin}>
                             <Text style={styles.buttonText}>Connexion</Text>
                         </TouchableOpacity>
@@ -87,7 +114,7 @@ export default function Login({ navigation, setIsLoggedIn }) {
                                 Inscription
                             </Text>
                         </Text>
-                    </View>
+                    </Animated.View>
                 </View>
             </ScrollView>
         </KeyboardAvoidingView>
@@ -142,13 +169,10 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: '#ccc',
         borderRadius: 5,
-        marginBottom: 10,
+        marginBottom: 20,
     },
-    errorText: {
-        color: 'red',
-        marginBottom: 2,
-        alignSelf: 'flex-start',
-        marginLeft: '10%',
+    inputError: {
+        borderColor: 'red',
     },
     button: {
         backgroundColor: '#077B17',
