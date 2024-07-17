@@ -13,7 +13,7 @@ import Profil from './screens/Profil';
 import CameraPreview from './screens/CameraPreview';
 import Formulaire from './screens/Formulaire';
 import FormulaireBotaniste from './screens/FormulaireBotaniste';
-import DetailPoste from './screens/DetailPoste'; // Importer le composant DetailPoste
+import DetailPoste from './screens/DetailPoste';
 import Header from './components/header';
 
 const Tab = createBottomTabNavigator();
@@ -30,7 +30,9 @@ function AnnoncesStack() {
       <Stack.Screen
         name="DetailPoste"
         component={DetailPoste}
-        options={{ headerShown: false }}
+        options={{
+          header: () => <Header title="Détails de l'annonce" />,
+        }}
       />
     </Stack.Navigator>
   );
@@ -144,7 +146,7 @@ const MainNavigator = ({ handleLogout }) => {
           component={AnnoncesStack}
           options={{
             title: 'Annonces',
-            header: () => <Header title="Annonces" />,
+            headerShown: false,
           }}
         />
         <Tab.Screen

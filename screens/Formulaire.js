@@ -30,7 +30,6 @@ const Formulaire = () => {
 
   useFocusEffect(
     useCallback(() => {
-      // Reset state when screen is focused
       setNomPlante('');
       setDescription('');
       setLocalisation('');
@@ -38,7 +37,7 @@ const Formulaire = () => {
       setDateDebut(new Date());
       setDateFin(new Date());
       setIsSubmitting(false);
-      setFormReset(true); // Réinitialiser le statut du formulaire
+      setFormReset(true); // Réinitialise le statut du formulaire
     }, [])
   );
 
