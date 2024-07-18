@@ -25,11 +25,30 @@ export default function Login({ navigation, setIsLoggedIn }) {
         ]).start();
     };
 
+    const validateEmail = (email) => {
+        const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return re.test(String(email).toLowerCase());
+    };
+
+    const showAlert = (message) => {
+        Alert.alert(
+            "Erreur",
+            message,
+            [{ text: "OK", onPress: () => console.log("OK Pressed") }],
+            { cancelable: false }
+        );
+    };
+
     const handleLogin = async () => {
         const validationErrors = {};
 
-        if (!email) validationErrors.email = true;
-        if (!password) validationErrors.password = true;
+        if (!email.trim()) {
+            validationErrors.email = "L'email est requis.";
+        } else if (!validateEmail(email)) {
+            validationErrors.email = "L'email n'est pas valide.";
+            showAlert("L'email n'est pas valide.");
+        }
+        if (!password.trim()) validationErrors.password = "Le mot de passe est requis.";
 
         setErrors(validationErrors);
 
@@ -161,7 +180,7 @@ const styles = StyleSheet.create({
         fontSize: 25,
         fontWeight: 'bold',
         color: 'black',
-        marginBottom: 10,
+        marginTop: -50,
     },
     input: {
         width: '80%',

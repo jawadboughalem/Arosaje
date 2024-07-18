@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Platform, ScrollView, KeyboardAvoidingView, Switch, Alert, Animated } from 'react-native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native'; // Importez useNavigation depuis @react-navigation/native
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 const { IPV4 } = require('../Backend//config/config');
 
-export default function Sign({ navigation }) {
+export default function Sign() {
+    const navigation = useNavigation(); // Obtenez l'objet de navigation
+
     const [name, setName] = useState('');
     const [surname, setSurname] = useState('');
     const [email, setEmail] = useState('');
@@ -27,6 +30,17 @@ export default function Sign({ navigation }) {
         }).start();
     }, [isBotanist]);
 
+    useFocusEffect(
+        React.useCallback(() => {
+            setName('');
+            setSurname('');
+            setEmail('');
+            setPassword('');
+            setIsBotanist(false);
+            setErrors({});
+        }, [])
+    );
+
     const startShakeAnimation = () => {
         Animated.sequence([
             Animated.timing(errorShakeAnimation, { toValue: 10, duration: 50, useNativeDriver: true }),
@@ -36,11 +50,30 @@ export default function Sign({ navigation }) {
         ]).start();
     };
 
+    const validateEmail = (email) => {
+        const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return re.test(String(email).toLowerCase());
+    };
+
+    const showAlert = (message) => {
+        Alert.alert(
+            "Erreur",
+            message,
+            [{ text: "OK", onPress: () => console.log("OK Pressed") }],
+            { cancelable: false }
+        );
+    };
+
     const handleSignUp = async () => {
         const validationErrors = {};
         if (!name.trim()) validationErrors.name = "Le nom est requis.";
         if (!surname.trim()) validationErrors.surname = "Le prénom est requis.";
-        if (!email.trim()) validationErrors.email = "L'email est requis.";
+        if (!email.trim()) {
+            validationErrors.email = "L'email est requis.";
+        } else if (!validateEmail(email)) {
+            validationErrors.email = "L'email n'est pas valide.";
+            showAlert("L'email n'est pas valide.");
+        }
         if (!password.trim()) validationErrors.password = "Le mot de passe est requis.";
         setErrors(validationErrors);
 
@@ -68,13 +101,10 @@ export default function Sign({ navigation }) {
             }
             const data = await response.json();
             console.log('Inscription réussie. ID utilisateur:', data.userId);
-            Alert.alert("Inscription réussie", "Votre compte a été créé avec succès.");
-            setName('');
-            setSurname('');
-            setEmail('');
-            setPassword('');
-            setIsBotanist(false);
-            setErrors({});
+            // Affichage de la popup d'alerte
+            Alert.alert("Inscription réussie", "Votre compte a été créé avec succès.", [
+                { text: "OK", onPress: () => navigation.navigate('Login') } // Rediriger vers l'écran de connexion après inscription réussie
+            ]);
         } catch (error) {
             console.error('Erreur lors de l\'inscription:', error);
             Alert.alert("Erreur", "Une erreur s'est produite lors de l'inscription.");
@@ -109,7 +139,7 @@ export default function Sign({ navigation }) {
             <ScrollView contentContainerStyle={styles.scrollContainer}>
                 <View style={styles.container}>
                     <View style={styles.header}>
-                        <Text style={styles.title}>A’rosa- je</Text>
+                        <Text style={styles.title}>A’rosa-je</Text>
                         <MaterialCommunityIcons name="flower" size={100} color="black" style={styles.icon} />
                     </View>
                     <View style={styles.formContainer}>
@@ -211,7 +241,7 @@ const styles = StyleSheet.create({
     },
     formContainer: {
         width: '100%',
-        height: '70%', // Augmentez cette valeur pour déplacer le formulaire vers le haut
+        height: '70%', 
         backgroundColor: 'white',
         alignItems: 'center',
         justifyContent: 'center',
@@ -274,18 +304,18 @@ const styles = StyleSheet.create({
         position: 'relative',
     },
     botanistInput: {
-        flex: 1,
-        padding: 10,
+        padding: 12,
+        width: '50%',
         borderWidth: 1,
         borderColor: '#ccc',
-        borderRadius: 5,
+        borderRadius: 15,
         textAlign: 'center',
-       
-    },
+        marginLeft: '20%',
+    },       
     closeButton: {
         position: 'absolute',
         right: 5,
         top: '50%',
-        marginTop: -10, // Half of the close button size to center it vertically
+        marginTop: -10, 
     },
 });
