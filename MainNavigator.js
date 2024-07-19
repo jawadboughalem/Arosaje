@@ -25,7 +25,9 @@ function AnnoncesStack() {
       <Stack.Screen
         name="Annonces"
         component={Annonces}
-        options={{ headerShown: false }}
+        options={{
+          header: () => <Header title="Annonces" />,
+        }}
       />
       <Stack.Screen
         name="DetailPoste"

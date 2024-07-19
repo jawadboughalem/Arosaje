@@ -1,120 +1,89 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, FlatList, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native';
-import Icon from 'react-native-vector-icons/Ionicons';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, StyleSheet, TextInput, Text, FlatList } from 'react-native';
 import { useRoute } from '@react-navigation/native';
+import MessageItem from '../components/MessageItem';
 
-const Conversation = () => {
+export default function Conversation() {
   const [messages, setMessages] = useState([]);
-  const [newMessage, setNewMessage] = useState('');
-  const [isLoading, setIsLoading] = useState(true);
+  const [ws, setWs] = useState(null);
   const route = useRoute();
-  const { conversationId } = route.params;
+  const { conversation } = route.params;
+  const currentUserId = 'currentUserId'; // Remplacez par l'ID de l'utilisateur courant
 
   useEffect(() => {
-    // Remplacez cette URL par l'URL de votre API pour récupérer les messages de la conversation
-    fetch(`https://api.example.com/conversations/${conversationId}`)
-      .then(response => response.json())
-      .then(data => {
-        setMessages(data);
-        setIsLoading(false);
-      })
-      .catch(error => {
-        console.error('Error fetching messages:', error);
-        setIsLoading(false);
-      });
-  }, [conversationId]);
+    const websocket = new WebSocket('ws://172.17.72.1:8080'); // Utilisez l'adresse IP correcte
+    setWs(websocket);
 
-  const handleSendMessage = () => {
-    if (newMessage.trim()) {
-      // Envoyer le message à l'API et ajouter le message à l'état local
+    websocket.onopen = () => {
+      console.log('Connected to WebSocket server');
+
+      // Envoyer un message pour identifier l'utilisateur
+      websocket.send(JSON.stringify({ type: 'identify', userId: currentUserId }));
+    };
+
+    websocket.onmessage = (event) => {
+      console.log(`Message received: ${event.data}`);
+      const newMessage = JSON.parse(event.data);
+      setMessages(prevMessages => [...prevMessages, newMessage]);
+    };
+
+    websocket.onerror = (error) => {
+      console.error('WebSocket error:', error.message);
+    };
+
+    websocket.onclose = (event) => {
+      console.log(`WebSocket connection closed: ${event.reason}`);
+    };
+
+    return () => {
+      websocket.close();
+    };
+  }, []);
+
+  const sendMessage = (messageContent) => {
+    if (ws && ws.readyState === WebSocket.OPEN) {
       const message = {
-        id: messages.length + 1, // ID temporaire, doit être généré par l'API
-        content: newMessage,
-        sender: 'Vous',
-        time: new Date().toLocaleTimeString(),
+        type: 'message',
+        from: currentUserId,
+        to: conversation.userId, // Utilisez l'ID de l'utilisateur avec qui vous avez la conversation
+        content: messageContent,
+        timestamp: new Date().toISOString(),
       };
+      ws.send(JSON.stringify(message));
       setMessages([...messages, message]);
-      setNewMessage('');
     }
   };
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 60 : 0}
-    >
-      <View style={styles.messagesContainer}>
-        {isLoading ? (
-          <Text>Chargement...</Text>
-        ) : (
-          <FlatList
-            data={messages}
-            keyExtractor={item => item.id.toString()}
-            renderItem={({ item }) => (
-              <View style={styles.messageItem}>
-                <Text style={styles.messageSender}>{item.sender}</Text>
-                <Text style={styles.messageContent}>{item.content}</Text>
-                <Text style={styles.messageTime}>{item.time}</Text>
-              </View>
-            )}
-          />
-        )}
-      </View>
-      <View style={styles.inputContainer}>
-        <TextInput
-          style={styles.input}
-          placeholder="Écrire un message..."
-          value={newMessage}
-          onChangeText={setNewMessage}
-        />
-        <TouchableOpacity onPress={handleSendMessage}>
-          <Icon name="send" size={24} color="#007BFF" />
-        </TouchableOpacity>
-      </View>
-    </KeyboardAvoidingView>
+    <View style={styles.container}>
+      <FlatList
+        data={messages}
+        keyExtractor={item => item.timestamp}
+        renderItem={({ item }) => <MessageItem message={item} />}
+        contentContainerStyle={{ paddingBottom: 80 }}
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="Type your message"
+        onSubmitEditing={(event) => sendMessage(event.nativeEvent.text)}
+      />
+    </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
-  },
-  messagesContainer: {
-    flex: 1,
-    padding: 10,
-  },
-  messageItem: {
-    marginBottom: 10,
-  },
-  messageSender: {
-    fontWeight: 'bold',
-  },
-  messageContent: {
-    marginTop: 5,
-  },
-  messageTime: {
-    marginTop: 5,
-    fontSize: 12,
-    color: '#888',
-  },
-  inputContainer: {
-    flexDirection: 'row',
     alignItems: 'center',
-    borderTopWidth: 1,
-    borderTopColor: '#ccc',
-    padding: 10,
+    justifyContent: 'center',
   },
   input: {
-    flex: 1,
-    fontSize: 16,
-    padding: 10,
     borderWidth: 1,
     borderColor: '#ccc',
-    borderRadius: 25,
-    marginRight: 10,
+    padding: 10,
+    width: '90%',
+    marginVertical: 10,
+    borderRadius: 5,
   },
 });
-
-export default Conversation;
