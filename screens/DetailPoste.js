@@ -1,3 +1,4 @@
+// screens/DetailPoste.js
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, Animated } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
@@ -9,15 +10,15 @@ const DetailPoste = ({ route }) => {
   const buttonAnimation = new Animated.Value(1);
 
   const handleJeGarde = () => {
-    navigation.navigate('Messages', { ownerId: annonce.code_Utilisateurs });
+    navigation.navigate('Conversation', { ownerId: annonce.code_Utilisateurs, annonceId: annonce.id });
   };
 
   // Fonction pour formater les dates
   const formatDate = (dateString) => {
-    if (!dateString) return "Date invalide"; // Gère les dates nulles ou indéfinies
+    if (!dateString) return "Date invalide";
     const date = new Date(dateString);
     if (isNaN(date)) {
-      return "Date invalide"; // Retourner un message d'erreur clair
+      return "Date invalide";
     }
     return date.toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' });
   };
@@ -73,7 +74,7 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   imageContainer: {
-    height: 350, // En portrait
+    height: 350,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#fff',
@@ -115,7 +116,7 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     alignItems: 'center',
-    marginBottom: 90, // Ajout d'espace en bas du bouton
+    marginBottom: 90,
   },
   button: {
     backgroundColor: '#077B17',

@@ -1,26 +1,47 @@
-const Message = require('../models/message');
+// controllers/messageController.js
+const Message = require('../models/messageModel');
 
-exports.createMessage = (req, res) => {
-  const newMessage = {
-    Code_Expediteur: req.body.Code_Expediteur,
-    Code_Destinataire: req.body.Code_Destinataire,
-    Message: req.body.Message,
-    DateEnvoi: new Date().toISOString(),
+const createMessage = (req, res) => {
+  const message = {
+    codeExpediteur: req.body.codeExpediteur,
+    codeDestinataire: req.body.codeDestinataire,
+    messageText: req.body.messageText,
+    dateEnvoi: new Date().toISOString()
   };
 
-  Message.create(newMessage, (err, message) => {
+  Message.create(message, (err, newMessage) => {
     if (err) {
-      return res.status(500).send(err.message);
+      return res.status(500).json({ error: err.message });
     }
-    res.status(201).send(message);
+    res.status(201).json(newMessage);
   });
 };
 
-exports.getMessages = (req, res) => {
-  Message.getAll((err, messages) => {
+const getAllMessages = (req, res) => {
+  const userId = req.params.userId;
+
+  Message.getAll(userId, (err, messages) => {
     if (err) {
-      return res.status(500).send(err.message);
+      return res.status(500).json({ error: err.message });
     }
-    res.status(200).send(messages);
+    res.status(200).json(messages);
   });
+};
+
+const getMessagesByConversation = (req, res) => {
+  const userId = req.params.userId;
+  const annonceId = req.params.annonceId;
+
+  Message.getByConversation(userId, annonceId, (err, messages) => {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+    res.status(200).json(messages);
+  });
+};
+
+module.exports = {
+  createMessage,
+  getAllMessages,
+  getMessagesByConversation
 };

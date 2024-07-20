@@ -1,27 +1,46 @@
-const db = require('./config/db');
-class Message {
-  static create(message, callback) {
-    const { Code_Expediteur, Code_Destinataire, Message, DateEnvoi } = message;
-    const query = `
-      INSERT INTO Messages (Code_Expediteur, Code_Destinataire, Message, DateEnvoi)
-      VALUES (?, ?, ?, ?)
-    `;
-    db.run(query, [Code_Expediteur, Code_Destinataire, Message, DateEnvoi], function(err) {
-      if (err) {
-        return callback(err);
-      }
-      callback(null, { id: this.lastID });
-    });
-  }
+// models/messageModel.js
+const { db } = require('../config/db');
 
-  static getAll(callback) {
-    db.all(`SELECT * FROM Messages`, [], (err, rows) => {
-      if (err) {
-        return callback(err);
+const Message = {
+  create: (message, callback) => {
+    const { codeExpediteur, codeDestinataire, messageText, dateEnvoi } = message;
+    db.run(
+      `INSERT INTO Messages (Code_Expediteur, Code_Destinataire, Message, DateEnvoi) VALUES (?, ?, ?, ?)`,
+      [codeExpediteur, codeDestinataire, messageText, dateEnvoi],
+      function (err) {
+        if (err) {
+          return callback(err);
+        }
+        callback(null, { id: this.lastID, ...message });
       }
-      callback(null, rows);
-    });
+    );
+  },
+
+  getAll: (userId, callback) => {
+    db.all(
+      `SELECT * FROM Messages WHERE Code_Expediteur = ? OR Code_Destinataire = ? ORDER BY DateEnvoi ASC`,
+      [userId, userId],
+      (err, rows) => {
+        if (err) {
+          return callback(err);
+        }
+        callback(null, rows);
+      }
+    );
+  },
+
+  getByConversation: (userId, annonceId, callback) => {
+    db.all(
+      `SELECT * FROM Messages WHERE (Code_Expediteur = ? AND Code_Destinataire = ?) OR (Code_Expediteur = ? AND Code_Destinataire = ?) ORDER BY DateEnvoi ASC`,
+      [userId, annonceId, annonceId, userId],
+      (err, rows) => {
+        if (err) {
+          return callback(err);
+        }
+        callback(null, rows);
+      }
+    );
   }
-}
+};
 
 module.exports = Message;

@@ -8,24 +8,25 @@ const authRoutes = require('./routes/authRoutes');
 const annonceRoutes = require('./routes/annonceRoutes');
 const userRoutes = require('./routes/userRoutes');
 const conseilRoutes = require('./routes/conseilRoutes');
+const messageRoutes = require('./routes/messageRoutes');
 const multer = require('multer');
 const http = require('http');
 const WebSocket = require('ws');
+const Message = require('./models/messageModel'); // Assurez-vous d'importer le modèle Message
 
 const app = express();
-const port = 8080;
+const port = 3000;
 
 initialize();
 
 const corsOptions = {
-  origin: 'http://localhost:8081', // Remplace par l'origine de ton frontend
+  origin: 'http://localhost:3000',
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
   allowedHeaders: 'Origin, X-Requested-With, Content-Type, Accept, Authorization'
 };
 
 app.use(cors(corsOptions));
 app.use(morgan('combined'));
-
 app.use(bodyParser.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 
@@ -40,11 +41,10 @@ app.use('/annonces', annonceRoutes);
 app.use('/user', userRoutes);
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/conseils', conseilRoutes);
+app.use('/messages', messageRoutes);
 
 const server = http.createServer(app);
-
 const wss = new WebSocket.Server({ server });
-
 const clients = new Map();
 
 wss.on('connection', (ws) => {
@@ -62,6 +62,22 @@ wss.on('connection', (ws) => {
       if (recipientWs && recipientWs.readyState === WebSocket.OPEN) {
         recipientWs.send(JSON.stringify(data));
       }
+      
+      // Save the message in the database
+      const newMessage = {
+        codeExpediteur: data.from,
+        codeDestinataire: data.to,
+        messageText: data.content,
+        dateEnvoi: new Date().toISOString(),
+      };
+
+      Message.create(newMessage, (err, message) => {
+        if (err) {
+          console.error('Error saving message:', err);
+        } else {
+          console.log('Message saved:', message);
+        }
+      });
     }
   });
 

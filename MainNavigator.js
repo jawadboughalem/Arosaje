@@ -14,6 +14,7 @@ import CameraPreview from './screens/CameraPreview';
 import Formulaire from './screens/Formulaire';
 import FormulaireBotaniste from './screens/FormulaireBotaniste';
 import DetailPoste from './screens/DetailPoste';
+import Conversation from './screens/Conversation';
 import Header from './components/header';
 
 const Tab = createBottomTabNavigator();
@@ -34,6 +35,13 @@ function AnnoncesStack() {
         component={DetailPoste}
         options={{
           header: () => <Header title="Détails de l'annonce" />,
+        }}
+      />
+      <Stack.Screen
+        name="Conversation"
+        component={Conversation}
+        options={{
+          header: () => <Header title="Conversation" />,
         }}
       />
     </Stack.Navigator>
@@ -101,6 +109,27 @@ function ConseilsStack() {
   );
 }
 
+function MessagesStack() {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen
+        name="Messages"
+        component={Messages}
+        options={{
+          header: () => <Header title="Messages" />,
+        }}
+      />
+      <Stack.Screen
+        name="Conversation"
+        component={Conversation}
+        options={{
+          header: () => <Header title="Conversation" />,
+        }}
+      />
+    </Stack.Navigator>
+  );
+}
+
 const MainNavigator = ({ handleLogout }) => {
   const { isTabBarVisible } = useContext(TabBarContext);
 
@@ -130,7 +159,7 @@ const MainNavigator = ({ handleLogout }) => {
 
             if (route.name === 'AnnoncesStack') {
               iconName = focused ? 'home' : 'home-outline';
-            } else if (route.name === 'Messages') {
+            } else if (route.name === 'MessagesStack') {
               iconName = focused ? 'chatbox' : 'chatbox-outline';
             } else if (route.name === 'PhotosStack') {
               return null;
@@ -152,11 +181,11 @@ const MainNavigator = ({ handleLogout }) => {
           }}
         />
         <Tab.Screen
-          name="Messages"
-          component={Messages}
+          name="MessagesStack"
+          component={MessagesStack}
           options={{
             title: 'Messages',
-            header: () => <Header title="Messages" />,
+            headerShown: false,
           }}
         />
         <Tab.Screen
