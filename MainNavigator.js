@@ -20,7 +20,9 @@ import Header from './components/header';
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 
-function AnnoncesStack() {
+function AnnoncesStack({ navigation }) {
+  const { setIsTabBarVisible } = useContext(TabBarContext);
+
   return (
     <Stack.Navigator>
       <Stack.Screen
@@ -40,8 +42,10 @@ function AnnoncesStack() {
       <Stack.Screen
         name="Conversation"
         component={Conversation}
-        options={{
-          header: () => <Header title="Conversation" />,
+        options={{ headerShown: false }}
+        listeners={{
+          focus: () => setIsTabBarVisible(false),
+          blur: () => setIsTabBarVisible(true),
         }}
       />
     </Stack.Navigator>
@@ -109,7 +113,9 @@ function ConseilsStack() {
   );
 }
 
-function MessagesStack() {
+function MessagesStack({ navigation }) {
+  const { setIsTabBarVisible } = useContext(TabBarContext);
+
   return (
     <Stack.Navigator>
       <Stack.Screen
@@ -122,8 +128,10 @@ function MessagesStack() {
       <Stack.Screen
         name="Conversation"
         component={Conversation}
-        options={{
-          header: () => <Header title="Conversation" />,
+        options={{ headerShown: false }}
+        listeners={{
+          focus: () => setIsTabBarVisible(false),
+          blur: () => setIsTabBarVisible(true),
         }}
       />
     </Stack.Navigator>

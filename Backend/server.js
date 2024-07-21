@@ -20,7 +20,7 @@ const port = 3000;
 initialize();
 
 const corsOptions = {
-  origin: 'http://localhost:3000',
+  origin: 'http://localhost:8081',
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
   allowedHeaders: 'Origin, X-Requested-With, Content-Type, Accept, Authorization'
 };
@@ -68,7 +68,7 @@ wss.on('connection', (ws) => {
         codeExpediteur: data.from,
         codeDestinataire: data.to,
         messageText: data.content,
-        dateEnvoi: new Date().toISOString(),
+        dateEnvoi: data.timestamp,
       };
 
       Message.create(newMessage, (err, message) => {
