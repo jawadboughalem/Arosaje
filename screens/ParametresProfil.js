@@ -7,6 +7,7 @@ import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system';
 import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
 
+
 const { IPV4 } = require('../Backend/config/config');
 
 const ParametresProfil = ({ onBack }) => {
@@ -48,13 +49,13 @@ const ParametresProfil = ({ onBack }) => {
           'Authorization': `Bearer ${token}`,
         },
       });
-  
+
       if (!response.ok) {
         throw new Error('Failed to fetch profile pic');
       }
-  
+
       const imageData = await response.blob();
-  
+
       // Convert Blob to Base64 string
       const reader = new FileReader();
       reader.readAsDataURL(imageData);
@@ -152,33 +153,56 @@ const ParametresProfil = ({ onBack }) => {
       Alert.alert('Token not found. Please try again.');
       return;
     }
-
-    try {
-      const response = await fetch(`http://${IPV4}:3000/user/delete-account`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
+    Alert.alert(
+      "Confirmation",
+      "Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est irréversible.",
+      [
+        {
+          text: "Annuler",
+          style: "cancel"
         },
-      });
-
-      const data = await response.json();
-      if (data.error) {
-        console.error('Error response:', data.error);
-        Alert.alert(data.error);
-      } else {
-        console.log('Success response:', data.message);
-        Alert.alert(data.message);
-        await AsyncStorage.removeItem('token');
-        navigation.reset({
-          index: 0,
-          routes: [{ name: 'Bienvenue' }],
-        });
-      }
-    } catch (error) {
-      console.error('Erreur:', error);
-      Alert.alert('Une erreur est survenue. Veuillez réessayer.');
-    }
+        {
+          text: "Supprimer",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              const response = await fetch(`http://${IPV4}:3000/user/delete-account`, {
+                method: 'DELETE',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${token}`,
+                },
+              });
+    
+              const data = await response.json();
+              if (response.ok) {
+                console.log('Success response:', data.message);
+                Alert.alert('Succès', data.message, [
+                  {
+                    text: 'OK',
+                    onPress: async () => {
+                      await AsyncStorage.removeItem('token');
+                      navigation.reset({
+                        index: 0,
+                        routes: [{ name: 'Connexion' }],
+                      });
+                    }
+                  }
+                ]);
+              } else {
+                console.error('Error response:', data.error);
+                Alert.alert('Erreur', data.error);
+              }
+            } catch (error) {
+              console.error('Erreur:', error);
+              Alert.alert('Une erreur est survenue. Veuillez réessayer.');
+            }
+          }
+        }
+      ],
+      { cancelable: true }
+    );
+    
   };
 
   const handleLogout = async () => {
@@ -186,7 +210,7 @@ const ParametresProfil = ({ onBack }) => {
       await AsyncStorage.removeItem('token');
       navigation.reset({
         index: 0,
-        routes: [{ name: 'Bienvenue' }],
+        routes: [{ name: 'Connexion' }],
       });
     } catch (error) {
       console.error('Error during logout:', error);

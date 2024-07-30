@@ -1,4 +1,4 @@
-const { getUserById, updateUserPassword, getUserInfoFromDb, updateUserPhoto, getUserPhoto } = require('../models/userModel');
+const { getUserById, updateUserPassword, getUserInfoFromDb, updateUserPhoto, getUserPhoto, deleteUserById } = require('../models/userModel');
 const bcrypt = require('bcrypt');
 const sharp = require('sharp');
 const path = require('path');
@@ -143,10 +143,23 @@ const getUserProfilePic = (req, res) => {
   });
 };
 
+// Fonction pour supprimer l'utilisateur
+const deleteUser = async (req, res) => {
+  const userId = req.params.id;
+  try {
+    await deleteUserById(userId);
+    res.status(200).send({ message: 'User deleted successfully' });
+  } catch (error) {
+    console.error('Erreur lors de la suppression de l\'utilisateur:', error);
+    res.status(500).send({ error: 'Failed to delete user' });
+  }
+};
+
 module.exports = {
   getUserInfo,
   changePassword,
   verifyPassword,
   updateUserProfilePic,
   getUserProfilePic,
+  deleteUser
 };

@@ -50,10 +50,26 @@ const getUserPhoto = (id, callback) => {
   });
 };
 
+
+const deleteUserById = (userId) => {
+  return new Promise((resolve, reject) => {
+    const query = 'DELETE FROM utilisateurs WHERE Code_Utilisateurs = ?';
+    db.run(query, [userId], (err) => {
+      if (err) {
+        console.error('Erreur lors de la suppression de l\'utilisateur:', err);
+        return reject(err);
+      }
+      resolve();
+    });
+  });
+};
+
+
 module.exports = {
   getUserById,
   updateUserPassword,
   getUserInfoFromDb,
   updateUserPhoto,
   getUserPhoto,
+  deleteUserById,
 };
