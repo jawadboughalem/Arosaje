@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, StyleSheet, TouchableOpacity, Animated, TextInput, Keyboard, Image, Text, FlatList } from 'react-native';
-import Header from '../components/header';
+import { useNavigation } from '@react-navigation/native';
+import Header from '../components/header'; 
 import Icon from 'react-native-vector-icons/Ionicons';
-import MessageItem from '../components/ConversationItem';
+import ConversationItem from '../components/ConversationItem';
 
 export default function Messages() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -12,9 +13,10 @@ export default function Messages() {
   const [isLoading, setIsLoading] = useState(true);
   const searchWidth = useRef(new Animated.Value(0)).current;
   const textInputRef = useRef(null);
+  const navigation = useNavigation();
 
   useEffect(() => {
-    fetch('https://api.example.com/messages')
+    fetch('http://localhost:3000/user/users')
       .then(response => response.json())
       .then(data => {
         setMessages(data);
@@ -51,8 +53,11 @@ export default function Messages() {
   };
 
   const handleFilterPress = () => {
-    // Ajoutez ici la logique pour ouvrir le filtre
     console.log('Filtre pressé');
+  };
+
+  const handleConversationPress = (conversation) => {
+    navigation.navigate('Conversation', { ownerId: conversation.ownerId, annonceId: conversation.annonceId });
   };
 
   const filteredMessages = messages.filter(message =>
@@ -126,8 +131,8 @@ export default function Messages() {
             <FlatList
               data={filteredMessages}
               keyExtractor={item => item.id.toString()}
-              renderItem={({ item }) => <MessageItem message={item} />}
-              contentContainerStyle={{ paddingBottom: 80 }} // Ajustez le padding en bas
+              renderItem={({ item }) => <ConversationItem conversation={item} onPress={handleConversationPress} />}
+              contentContainerStyle={{ paddingBottom: 80 }}
             />
           )
         ) : (
@@ -169,7 +174,7 @@ const styles = StyleSheet.create({
   filterButton: {
     position: 'absolute',
     top: 91,
-    right: 20, // Ajustez la position de l'icône de filtre
+    right: 20,
     padding: 10,
   },
   input: {

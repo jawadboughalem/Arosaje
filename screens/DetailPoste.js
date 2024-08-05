@@ -13,7 +13,6 @@ const DetailPoste = ({ route }) => {
     navigation.navigate('Conversation', { ownerId: annonce.code_Utilisateurs, annonceId: annonce.id });
   };
 
-  // Fonction pour formater les dates
   const formatDate = (dateString) => {
     if (!dateString) return "Date invalide";
     const date = new Date(dateString);

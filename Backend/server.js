@@ -8,93 +8,46 @@ const authRoutes = require('./routes/authRoutes');
 const annonceRoutes = require('./routes/annonceRoutes');
 const userRoutes = require('./routes/userRoutes');
 const conseilRoutes = require('./routes/conseilRoutes');
-const messageRoutes = require('./routes/messageRoutes');
 const multer = require('multer');
-const http = require('http');
-const WebSocket = require('ws');
-const Message = require('./models/messageModel'); // Assurez-vous d'importer le modèle Message
+
 
 const app = express();
 const port = 3000;
 
+// Initialisation de la base de données
 initialize();
 
+
+// Configuration CORS
 const corsOptions = {
-  origin: 'http://localhost:8081',
+  origin: 'http://localhost:8081', // Remplace par l'origine de ton frontend
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
   allowedHeaders: 'Origin, X-Requested-With, Content-Type, Accept, Authorization'
 };
 
 app.use(cors(corsOptions));
 app.use(morgan('combined'));
+
+// Configurer body-parser pour accepter des payloads plus grands
 app.use(bodyParser.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 
+// Configuration de multer pour accepter des fichiers plus grands
 const storage = multer.memoryStorage();
 const upload = multer({ 
   storage, 
   limits: { fileSize: 50 * 1024 * 1024 }
 });
 
+// Routes
 app.use('/auth', authRoutes);
 app.use('/annonces', annonceRoutes);
 app.use('/user', userRoutes);
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/conseils', conseilRoutes);
-app.use('/messages', messageRoutes);
 
-const server = http.createServer(app);
-const wss = new WebSocket.Server({ server });
-const clients = new Map();
-
-wss.on('connection', (ws) => {
-  console.log('Client connected');
-
-  ws.on('message', (message) => {
-    const data = JSON.parse(message);
-
-    if (data.type === 'identify') {
-      clients.set(data.userId, ws);
-      ws.userId = data.userId;
-      console.log(`User ${data.userId} connected`);
-    } else if (data.type === 'message') {
-      const recipientWs = clients.get(data.to);
-      if (recipientWs && recipientWs.readyState === WebSocket.OPEN) {
-        recipientWs.send(JSON.stringify(data));
-      }
-      
-      // Save the message in the database
-      const newMessage = {
-        codeExpediteur: data.from,
-        codeDestinataire: data.to,
-        messageText: data.content,
-        dateEnvoi: data.timestamp,
-      };
-
-      Message.create(newMessage, (err, message) => {
-        if (err) {
-          console.error('Error saving message:', err);
-        } else {
-          console.log('Message saved:', message);
-        }
-      });
-    }
-  });
-
-  ws.on('close', () => {
-    console.log(`User ${ws.userId} disconnected`);
-    clients.delete(ws.userId);
-  });
-
-  ws.on('error', (error) => {
-    console.error(`WebSocket error: ${error}`);
-  });
-
-  ws.send('Welcome to WebSocket server');
-});
-
-server.listen(port, '0.0.0.0', () => {
-  console.log(`Server started on port ${port}`);
+app.listen(port, '0.0.0.0', () => {
+  console.log(`Serveur démarré sur le port ${port}`);
 });
 
 module.exports = app;
