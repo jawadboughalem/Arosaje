@@ -2,9 +2,9 @@ name : Arosaje CI
 
 on :
   push:
-    branches: [main]
+    branches: [nali900m-test-1]
   pull_request:
-    branches: [main]
+    branches: [nali900m-test-1]
 
 jobs:
   build:
