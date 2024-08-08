@@ -20,7 +20,7 @@ import Header from './components/header';
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 
-function AnnoncesStack({ navigation }) {
+function AnnoncesStack() {
   const { setIsTabBarVisible } = useContext(TabBarContext);
 
   return (
@@ -39,20 +39,11 @@ function AnnoncesStack({ navigation }) {
           header: () => <Header title="Détails de l'annonce" />,
         }}
       />
-      <Stack.Screen
-        name="Conversation"
-        component={Conversation}
-        options={{ headerShown: false }}
-        listeners={{
-          focus: () => setIsTabBarVisible(false),
-          blur: () => setIsTabBarVisible(true),
-        }}
-      />
     </Stack.Navigator>
   );
 }
 
-function PhotosStack({ navigation }) {
+function PhotosStack() {
   const { setIsTabBarVisible } = useContext(TabBarContext);
 
   return (
@@ -72,7 +63,6 @@ function PhotosStack({ navigation }) {
         options={{
           title: 'Nouvelle plante',
           headerTitleAlign: 'center',
-          tabBarVisible: false,
         }}
         listeners={{
           focus: () => setIsTabBarVisible(false),
@@ -85,7 +75,6 @@ function PhotosStack({ navigation }) {
         options={{
           title: 'Nouveau poste',
           headerTitleAlign: 'center',
-          tabBarVisible: false,
         }}
         listeners={{
           focus: () => setIsTabBarVisible(false),
@@ -113,7 +102,7 @@ function ConseilsStack() {
   );
 }
 
-function MessagesStack({ navigation }) {
+function MessagesStack() {
   const { setIsTabBarVisible } = useContext(TabBarContext);
 
   return (

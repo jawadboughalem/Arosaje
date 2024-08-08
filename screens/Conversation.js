@@ -1,6 +1,7 @@
+// screens/Conversation.js
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, Button, FlatList, StyleSheet } from 'react-native';
-import io from 'socket.io-client/dist/socket.io.js';
+import io from 'socket.io-client';
 import { IPV4 } from '../Backend/config/config';
 
 const socket = io(`http://${IPV4}:8000`);
@@ -13,10 +14,7 @@ const Conversation = ({ route }) => {
 
   useEffect(() => {
     socket.on('SERVER_MSG', (msg) => {
-      setMessages((prevMessages) => [
-        ...prevMessages,
-        msg
-      ]);
+      setMessages((prevMessages) => [...prevMessages, msg]);
     });
 
     return () => {

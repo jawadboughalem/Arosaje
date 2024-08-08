@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, StyleSheet, TouchableOpacity, Animated, TextInput, Keyboard, Image, Text, FlatList } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { View, StyleSheet, TouchableOpacity, Animated, TextInput, Keyboard, Text, FlatList } from 'react-native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import Header from '../components/header'; 
 import Icon from 'react-native-vector-icons/Ionicons';
 import ConversationItem from '../components/ConversationItem';
+import { IPV4 } from '../Backend/config/config';
 
 export default function Messages() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -14,23 +15,41 @@ export default function Messages() {
   const searchWidth = useRef(new Animated.Value(0)).current;
   const textInputRef = useRef(null);
   const navigation = useNavigation();
+  const route = useRoute();
+  const { ownerId, annonceId } = route.params || {};
 
   useEffect(() => {
-    fetch('http://localhost:3000/user/users')
-      .then(response => response.json())
-      .then(data => {
+    const fetchMessages = async () => {
+      try {
+        const response = await fetch(`http://${IPV4}:3000/messages/${ownerId}/${annonceId}`);
+        const data = await response.json()
         setMessages(data);
         setIsLoading(false);
-      })
-      .catch(error => {
+
+        if (ownerId && annonceId) {
+          const conversationExists = data.some(
+            (msg) => msg.ownerId === ownerId && msg.annonceId === annonceId
+          );
+          if (!conversationExists) {
+            createConversation(ownerId, annonceId);
+          }
+        }
+      } catch (error) {
         console.error('Error fetching messages:', error);
         setIsLoading(false);
-      });
-  }, []);
+      }
+    };
+
+    fetchMessages();
+  }, [IPV4, ownerId, annonceId]);
+
+  const createConversation = (ownerId, annonceId) => {
+    const newConversation = { ownerId, annonceId, userName: 'New User', lastMessage: 'Start of conversation', profilePic: 'url_to_default_image' };
+    setMessages((prevMessages) => [...prevMessages, newConversation]);
+  };
 
   const handleSearchPress = () => {
     setIsSearchOpen(true);
-
     Animated.timing(searchWidth, {
       toValue: 1,
       duration: 300,
@@ -44,7 +63,6 @@ export default function Messages() {
     Keyboard.dismiss();
     setIsSearchOpen(false);
     setSearchText('');
-
     Animated.timing(searchWidth, {
       toValue: 0,
       duration: 300,
@@ -61,7 +79,7 @@ export default function Messages() {
   };
 
   const filteredMessages = messages.filter(message =>
-    message.content.toLowerCase().includes(searchText.toLowerCase())
+    message.userName.toLowerCase().includes(searchText.toLowerCase())
   );
 
   return (
@@ -69,10 +87,7 @@ export default function Messages() {
       <Header title="Messages" />
       {!isSearchOpen && (
         <TouchableOpacity style={styles.searchButton} onPress={handleSearchPress}>
-          <Image
-            source={require('../assets/loupe.png')}
-            style={{ width: 30, height: 30 }}
-          />
+          <Icon name="search" size={25} color="black" />
         </TouchableOpacity>
       )}
       <Animated.View style={[styles.searchBar, {
@@ -216,10 +231,5 @@ const styles = StyleSheet.create({
   },
   contentText: {
     fontSize: 20,
-  },
-  gif: {
-    width: 100,
-    height: 100,
-    marginTop: -70,
   },
 });

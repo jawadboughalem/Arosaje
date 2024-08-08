@@ -1,4 +1,3 @@
-// screens/DetailPoste.js
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, Animated } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
@@ -10,8 +9,12 @@ const DetailPoste = ({ route }) => {
   const buttonAnimation = new Animated.Value(1);
 
   const handleJeGarde = () => {
-    navigation.navigate('Conversation', { ownerId: annonce.code_Utilisateurs, annonceId: annonce.id });
-  };
+    console.log('Navigating to Messages with ownerId:', annonce.code_Utilisateurs, 'annonceId:', annonce.id);
+    navigation.navigate('MessagesStack', {
+      screen: 'Messages',
+      params: { ownerId: annonce.code_Utilisateurs, annonceId: annonce.id },
+    });
+  };  
 
   const formatDate = (dateString) => {
     if (!dateString) return "Date invalide";

@@ -32,6 +32,8 @@ const getMessagesByConversation = (req, res) => {
   const userId = req.params.userId;
   const annonceId = req.params.annonceId;
 
+  console.log(userId, annonceId)
+
   Message.getByConversation(userId, annonceId, (err, messages) => {
     if (err) {
       return res.status(500).json({ error: err.message });
