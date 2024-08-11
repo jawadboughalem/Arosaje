@@ -1,12 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Platform, ScrollView, KeyboardAvoidingView, Alert, Animated } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 const { IPV4 } = require('../Backend/config/config');
 
 export default function Login({ navigation, setIsLoggedIn }) {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
+    const [formData, setFormData] = useState({
+        email: '',
+        password: '',
+    });
+
     const [errors, setErrors] = useState({});
     const [errorShakeAnimation] = useState(new Animated.Value(0));
 
@@ -16,19 +19,19 @@ export default function Login({ navigation, setIsLoggedIn }) {
         }
     }, [errors]);
 
-    const startShakeAnimation = () => {
+    const startShakeAnimation = useCallback(() => {
         Animated.sequence([
             Animated.timing(errorShakeAnimation, { toValue: 10, duration: 50, useNativeDriver: true }),
             Animated.timing(errorShakeAnimation, { toValue: -10, duration: 50, useNativeDriver: true }),
             Animated.timing(errorShakeAnimation, { toValue: 10, duration: 50, useNativeDriver: true }),
             Animated.timing(errorShakeAnimation, { toValue: 0, duration: 50, useNativeDriver: true })
         ]).start();
-    };
+    }, [errorShakeAnimation]);
 
-    const validateEmail = (email) => {
+    const validateEmail = useCallback((email) => {
         const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         return re.test(String(email).toLowerCase());
-    };
+    }, []);
 
     const showAlert = (message) => {
         Alert.alert(
@@ -42,13 +45,13 @@ export default function Login({ navigation, setIsLoggedIn }) {
     const handleLogin = async () => {
         const validationErrors = {};
 
-        if (!email.trim()) {
+        if (!formData.email.trim()) {
             validationErrors.email = "L'email est requis.";
-        } else if (!validateEmail(email)) {
+        } else if (!validateEmail(formData.email)) {
             validationErrors.email = "L'email n'est pas valide.";
             showAlert("L'email n'est pas valide.");
         }
-        if (!password.trim()) validationErrors.password = "Le mot de passe est requis.";
+        if (!formData.password.trim()) validationErrors.password = "Le mot de passe est requis.";
 
         setErrors(validationErrors);
 
@@ -59,7 +62,7 @@ export default function Login({ navigation, setIsLoggedIn }) {
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ email, password }),
+                    body: JSON.stringify({ email: formData.email, password: formData.password }),
                 });
 
                 const data = await response.json();
@@ -85,8 +88,11 @@ export default function Login({ navigation, setIsLoggedIn }) {
         }
     };
 
-    const handleTextChange = (setter, field) => (text) => {
-        setter(text);
+    const handleTextChange = (field) => (text) => {
+        setFormData((prevData) => ({
+            ...prevData,
+            [field]: text,
+        }));
         if (errors[field]) {
             setErrors((prevErrors) => {
                 const newErrors = { ...prevErrors };
@@ -109,8 +115,8 @@ export default function Login({ navigation, setIsLoggedIn }) {
                         <TextInput
                             style={[styles.input, errors.email && styles.inputError]}
                             placeholder="Email"
-                            value={email}
-                            onChangeText={handleTextChange(setEmail, 'email')}
+                            value={formData.email}
+                            onChangeText={handleTextChange('email')}
                             keyboardType="email-address"
                             autoCapitalize="none"
                             placeholderTextColor={errors.email ? 'red' : '#ccc'}
@@ -118,8 +124,8 @@ export default function Login({ navigation, setIsLoggedIn }) {
                         <TextInput
                             style={[styles.input, errors.password && styles.inputError]}
                             placeholder="Mot de passe"
-                            value={password}
-                            onChangeText={handleTextChange(setPassword, 'password')}
+                            value={formData.password}
+                            onChangeText={handleTextChange('password')}
                             secureTextEntry
                             autoCapitalize="none"
                             placeholderTextColor={errors.password ? 'red' : '#ccc'}
@@ -144,7 +150,7 @@ const styles = StyleSheet.create({
     scrollContainer: {
         flexGrow: 1,
         justifyContent: 'center',
-        backgroundColor: '#5DB075',
+        backgroundColor: '#077B17',
     },
     container: {
         flex: 1,
@@ -180,15 +186,16 @@ const styles = StyleSheet.create({
         fontSize: 25,
         fontWeight: 'bold',
         color: 'black',
-        marginTop: -50,
-    },
+        marginTop: 0,
+        marginBottom: 50,
+    },    
     input: {
         width: '80%',
         padding: 10,
         borderWidth: 1,
         borderColor: '#ccc',
         borderRadius: 5,
-        marginBottom: 20,
+        marginBottom: 15,
     },
     inputError: {
         borderColor: 'red',

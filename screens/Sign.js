@@ -1,17 +1,20 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Platform, ScrollView, KeyboardAvoidingView, Switch, Alert, Animated } from 'react-native';
-import { useFocusEffect, useNavigation } from '@react-navigation/native'; // Importez useNavigation depuis @react-navigation/native
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 const { IPV4 } = require('../Backend//config/config');
 
 export default function Sign() {
-    const navigation = useNavigation(); // Obtenez l'objet de navigation
+    const navigation = useNavigation();
 
-    const [name, setName] = useState('');
-    const [surname, setSurname] = useState('');
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [isBotanist, setIsBotanist] = useState(false);
+    const [formData, setFormData] = useState({
+        name: '',
+        surname: '',
+        email: '',
+        password: '',
+        isBotanist: false,
+    });
+    
     const [errors, setErrors] = useState({});
     const [errorShakeAnimation] = useState(new Animated.Value(0));
     const [botanistAnimation] = useState(new Animated.Value(0));
@@ -24,36 +27,38 @@ export default function Sign() {
 
     useEffect(() => {
         Animated.timing(botanistAnimation, {
-            toValue: isBotanist ? 1 : 0,
+            toValue: formData.isBotanist ? 1 : 0,
             duration: 300,
             useNativeDriver: false
         }).start();
-    }, [isBotanist]);
+    }, [formData.isBotanist]);
 
     useFocusEffect(
         React.useCallback(() => {
-            setName('');
-            setSurname('');
-            setEmail('');
-            setPassword('');
-            setIsBotanist(false);
+            setFormData({
+                name: '',
+                surname: '',
+                email: '',
+                password: '',
+                isBotanist: false,
+            });
             setErrors({});
         }, [])
     );
 
-    const startShakeAnimation = () => {
+    const startShakeAnimation = useCallback(() => {
         Animated.sequence([
             Animated.timing(errorShakeAnimation, { toValue: 10, duration: 50, useNativeDriver: true }),
             Animated.timing(errorShakeAnimation, { toValue: -10, duration: 50, useNativeDriver: true }),
             Animated.timing(errorShakeAnimation, { toValue: 10, duration: 50, useNativeDriver: true }),
             Animated.timing(errorShakeAnimation, { toValue: 0, duration: 50, useNativeDriver: true })
         ]).start();
-    };
+    }, [errorShakeAnimation]);
 
-    const validateEmail = (email) => {
+    const validateEmail = useCallback((email) => {
         const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         return re.test(String(email).toLowerCase());
-    };
+    }, []);
 
     const showAlert = (message) => {
         Alert.alert(
@@ -66,15 +71,15 @@ export default function Sign() {
 
     const handleSignUp = async () => {
         const validationErrors = {};
-        if (!name.trim()) validationErrors.name = "Le nom est requis.";
-        if (!surname.trim()) validationErrors.surname = "Le prénom est requis.";
-        if (!email.trim()) {
+        if (!formData.name.trim()) validationErrors.name = "Le nom est requis.";
+        if (!formData.surname.trim()) validationErrors.surname = "Le prénom est requis.";
+        if (!formData.email.trim()) {
             validationErrors.email = "L'email est requis.";
-        } else if (!validateEmail(email)) {
+        } else if (!validateEmail(formData.email)) {
             validationErrors.email = "L'email n'est pas valide.";
             showAlert("L'email n'est pas valide.");
         }
-        if (!password.trim()) validationErrors.password = "Le mot de passe est requis.";
+        if (!formData.password.trim()) validationErrors.password = "Le mot de passe est requis.";
         setErrors(validationErrors);
 
         if (Object.keys(validationErrors).length > 0) {
@@ -88,11 +93,11 @@ export default function Sign() {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    name,
-                    surname,
-                    email,
-                    password,
-                    isBotanist,
+                    name: formData.name,
+                    surname: formData.surname,
+                    email: formData.email,
+                    password: formData.password,
+                    isBotanist: formData.isBotanist,
                 }),
             });
             if (!response.ok) {
@@ -101,7 +106,6 @@ export default function Sign() {
             }
             const data = await response.json();
             console.log('Inscription réussie. ID utilisateur:', data.userId);
-            // Affichage de la popup d'alerte
             Alert.alert("Inscription réussie", "Votre compte a été créé avec succès.", [
                 { text: "OK", onPress: () => navigation.navigate('Login') } // Rediriger vers l'écran de connexion après inscription réussie
             ]);
@@ -111,8 +115,11 @@ export default function Sign() {
         }
     };
 
-    const handleTextChange = (setter, field) => (text) => {
-        setter(text);
+    const handleTextChange = (field) => (text) => {
+        setFormData((prevData) => ({
+            ...prevData,
+            [field]: text,
+        }));
         if (errors[field]) {
             setErrors((prevErrors) => {
                 const newErrors = { ...prevErrors };
@@ -148,24 +155,24 @@ export default function Sign() {
                             <TextInput 
                                 placeholder="Nom" 
                                 placeholderTextColor={errors.name ? 'red' : '#ccc'}
-                                value={name} 
-                                onChangeText={handleTextChange(setName, 'name')} 
+                                value={formData.name} 
+                                onChangeText={handleTextChange('name')} 
                             />
                         </Animated.View>
                         <Animated.View style={getTextInputStyle('surname')}>
                             <TextInput 
                                 placeholder="Prénom" 
                                 placeholderTextColor={errors.surname ? 'red' : '#ccc'}
-                                value={surname} 
-                                onChangeText={handleTextChange(setSurname, 'surname')} 
+                                value={formData.surname} 
+                                onChangeText={handleTextChange('surname')} 
                             />
                         </Animated.View>
                         <Animated.View style={getTextInputStyle('email')}>
                             <TextInput 
                                 placeholder="Email" 
                                 placeholderTextColor={errors.email ? 'red' : '#ccc'}
-                                value={email} 
-                                onChangeText={handleTextChange(setEmail, 'email')} 
+                                value={formData.email} 
+                                onChangeText={handleTextChange('email')} 
                                 keyboardType="email-address" 
                                 autoCapitalize="none" 
                             />
@@ -174,13 +181,13 @@ export default function Sign() {
                             <TextInput 
                                 placeholder="Mot de passe" 
                                 placeholderTextColor={errors.password ? 'red' : '#ccc'}
-                                value={password} 
-                                onChangeText={handleTextChange(setPassword, 'password')} 
+                                value={formData.password} 
+                                onChangeText={handleTextChange('password')} 
                                 secureTextEntry 
                                 autoCapitalize="none" 
                             />
                         </Animated.View>
-                        {isBotanist ? (
+                        {formData.isBotanist ? (
                             <Animated.View style={[styles.botanistContainer, { opacity: botanistAnimation, transform: [{ scale: botanistAnimation }] }]}>
                                 <TextInput 
                                     style={styles.botanistInput}
@@ -188,14 +195,14 @@ export default function Sign() {
                                     keyboardType="numeric"
                                     maxLength={5}
                                 />
-                                <TouchableOpacity onPress={() => setIsBotanist(false)} style={styles.closeButton}>
+                                <TouchableOpacity onPress={() => setFormData((prevData) => ({ ...prevData, isBotanist: false }))} style={styles.closeButton}>
                                     <MaterialCommunityIcons name="close-circle" size={20} color="black" />
                                 </TouchableOpacity>
                             </Animated.View>
                         ) : (
                             <View style={styles.switchContainer}>
                                 <Text style={styles.switchLabel}>Êtes-vous un botaniste?</Text>
-                                <Switch value={isBotanist} onValueChange={setIsBotanist} />
+                                <Switch value={formData.isBotanist} onValueChange={(value) => setFormData((prevData) => ({ ...prevData, isBotanist: value }))} />
                             </View>
                         )}
                         <TouchableOpacity style={styles.button} onPress={handleSignUp}>
@@ -218,7 +225,7 @@ const styles = StyleSheet.create({
     scrollContainer: {
         flexGrow: 1,
         justifyContent: 'center',
-        backgroundColor: '#5DB075',
+        backgroundColor: '#077B17',
     },
     container: {
         flex: 1,
@@ -228,8 +235,8 @@ const styles = StyleSheet.create({
     header: {
         alignItems: 'center',
         justifyContent: 'center',
-        padding: 80,
-    },
+        padding: 53,
+    },    
     title: {
         fontSize: 30,
         fontWeight: 'bold',
@@ -254,15 +261,15 @@ const styles = StyleSheet.create({
         fontSize: 25,
         fontWeight: 'bold',
         color: 'black',
-        marginBottom: 70,
-    },
+        marginBottom: 40,
+    },    
     input: {
         width: '80%',
         padding: 10,
         borderWidth: 1,
         borderColor: '#ccc',
         borderRadius: 5,
-        marginBottom: 20,
+        marginBottom: 15,
     },
     inputError: {
         borderColor: 'red',
