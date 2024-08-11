@@ -9,9 +9,9 @@ const DetailPoste = ({ route }) => {
   const buttonAnimation = new Animated.Value(1);
 
   const handleJeGarde = () => {
-    console.log('Navigating to Messages with ownerId:', annonce.code_Utilisateurs, 'annonceId:', annonce.id);
+    console.log('Navigue vers Conversation avec ownerId:', annonce.code_Utilisateurs, 'annonceId:', annonce.id);
     navigation.navigate('MessagesStack', {
-      screen: 'Messages',
+      screen: 'Conversation',
       params: { ownerId: annonce.code_Utilisateurs, annonceId: annonce.id },
     });
   };  

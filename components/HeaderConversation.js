@@ -8,11 +8,19 @@ const HeaderConversation = ({ userName, userImage }) => {
   
   return (
     <View style={styles.headerContainer}>
-      <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+      <TouchableOpacity onPress={() => navigation.navigate('Messages')} style={styles.backButton}>
         <Ionicons name="arrow-back" size={24} color="#fff" />
       </TouchableOpacity>
-      <Image source={{ uri: userImage }} style={styles.userImage} />
-      <Text style={styles.userName}>{userName}</Text>
+      <View style={styles.userInfo}>
+        <View style={styles.userImageContainer}>
+          {userImage ? (
+            <Image source={{ uri: userImage }} style={styles.userImage} />
+          ) : (
+            <View style={styles.defaultUserImage} />
+          )}
+        </View>
+        <Text style={styles.userName}>{userName}</Text>
+      </View>
     </View>
   );
 };
@@ -26,12 +34,26 @@ const styles = StyleSheet.create({
   },
   backButton: {
     marginRight: 10,
+    marginTop: 15,
+  },
+  userInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  userImageContainer: {
+    marginRight: 10,
   },
   userImage: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    marginRight: 10,
+  },
+  defaultUserImage: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#ccc',
+    marginTop: 15,
   },
   userName: {
     color: '#fff',
