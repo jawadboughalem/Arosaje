@@ -39,7 +39,8 @@ function AnnoncesStack() {
         name="DetailPoste"
         component={DetailPoste}
         options={{
-          header: () => <Header title="Détails de l'annonce" />,
+          title: 'Detail post',
+          headerTitleAlign: 'center',
         }}
       />
     </Stack.Navigator>
@@ -94,12 +95,17 @@ function ConseilsStack() {
       <Stack.Screen
         name="Conseils"
         component={Conseils}
-        options={{ headerShown: false }}
+        options={{ 
+          title: 'Conseil',
+          headerTitleAlign: 'center', }}
       />
       <Stack.Screen
         name="FormulaireBotaniste"
         component={FormulaireBotaniste}
-        options={{ headerShown: false }}
+        options={{
+          title: 'Conseil',
+          headerTitleAlign: 'center',
+        }}
       />
     </Stack.Navigator>
   );
@@ -236,8 +242,7 @@ const MainNavigator = ({ handleLogout }) => {
           name="ConseilsStack"
           component={ConseilsStack}
           options={{
-            title: 'Conseils',
-            header: () => <Header title="Conseils" />,
+            headerShown: false,
           }}
         />
         <Tab.Screen

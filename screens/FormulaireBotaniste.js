@@ -94,9 +94,6 @@ const Formulaire = () => {
           keyboardShouldPersistTaps="handled"
         >
           <View style={styles.container}>
-            <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-              <Ionicons name="arrow-back" size={24} color="black" />
-            </TouchableOpacity>
             <Text style={styles.label}>Nom de la plante :</Text>
             <TextInput
               style={styles.input}
