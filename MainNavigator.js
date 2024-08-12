@@ -3,6 +3,8 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import { TouchableOpacity, StyleSheet, Platform, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
+import Icon from 'react-native-vector-icons/Ionicons';
 
 import TabBarContext from './components/TabBarContext';
 import Annonces from './screens/Annonces';
@@ -16,6 +18,7 @@ import FormulaireBotaniste from './screens/FormulaireBotaniste';
 import DetailPoste from './screens/DetailPoste';
 import Conversation from './screens/Conversation';
 import Header from './components/header';
+import ParametresProfil from './screens/ParametresProfil';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -127,6 +130,35 @@ function MessagesStack() {
   );
 }
 
+function ProfilStack() {
+  const { setIsTabBarVisible } = useContext(TabBarContext);
+  const navigation = useNavigation();
+
+  return (
+    <Stack.Navigator>
+      <Stack.Screen
+        name="Profil"
+        component={Profil}
+        options={{
+          headerTitleAlign: 'center',
+          headerRight: () => (
+            <TouchableOpacity onPress={() => navigation.navigate('Parametres')} style={styles.settingsButton}>
+            <Icon name="settings-outline" size={30} color="#000" />
+          </TouchableOpacity>
+          ),
+        }}
+      />
+      <Stack.Screen
+        name="Parametres"
+        component={ParametresProfil}
+        options={{
+          headerTitleAlign: 'center',
+        }}
+      />
+    </Stack.Navigator>
+  );
+}
+
 const MainNavigator = ({ handleLogout }) => {
   const { isTabBarVisible } = useContext(TabBarContext);
 
@@ -162,7 +194,7 @@ const MainNavigator = ({ handleLogout }) => {
               return null;
             } else if (route.name === 'ConseilsStack') {
               iconName = focused ? 'leaf' : 'leaf-outline';
-            } else if (route.name === 'Profil') {
+            } else if (route.name === 'ProfilStack') {
               iconName = focused ? 'person' : 'person-outline';
             }
             return <Ionicons name={iconName} size={22} color={color} style={styles.tabBarIcon} />;
@@ -209,11 +241,12 @@ const MainNavigator = ({ handleLogout }) => {
           }}
         />
         <Tab.Screen
-          name="Profil"
-          component={Profil}
+          name="ProfilStack"
+          component={ProfilStack}
           options={{
             title: 'Profil',
-            header: () => <Header title="Profil" />,
+            headerTitleAlign: 'center',
+            headerShown: false,
           }}
         />
       </Tab.Navigator>
@@ -250,5 +283,8 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5,
+  },
+  settingsButton: {
+    marginRight: 10,
   },
 });

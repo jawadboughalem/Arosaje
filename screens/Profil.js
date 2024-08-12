@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, TouchableOpacity, Text, ScrollView, Alert } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import ParametresProfil from './ParametresProfil';
@@ -13,6 +14,7 @@ const ProfileScreen = () => {
   const [mesPlantes, setMesPlantes] = useState([]);
   const [mesGardes, setMesGardes] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const navigation = useNavigation();
 
   useEffect(() => {
     const fetchUserInfo = async () => {
@@ -153,9 +155,6 @@ const ProfileScreen = () => {
     <View style={styles.container}>
       {!showSettings ? (
         <View>
-          <TouchableOpacity onPress={goToSettings} style={styles.settingsButton}>
-            <Icon name="settings-outline" size={30} color="#000" />
-          </TouchableOpacity>
           <View style={styles.headerContainer}>
             <Text style={styles.headerText}>Bon retour, {userInfo.prenom}</Text>
           </View>
