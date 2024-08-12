@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { View, TextInput, TouchableOpacity, FlatList, StyleSheet, KeyboardAvoidingView, Platform, Alert } from 'react-native';
+import { View, TextInput, TouchableOpacity, FlatList, StyleSheet, KeyboardAvoidingView, Platform, Animated, Text } from 'react-native';
 import { MaterialIcons, MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import io from 'socket.io-client';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { IPV4 } from '../Backend/config/config';
-import HeaderConversation from '../components/HeaderConversation'; 
+import HeaderConversation from '../components/HeaderConversation';
 
 const socket = io(`http://${IPV4}:8000`);
 
@@ -14,44 +13,7 @@ const Conversation = ({ route }) => {
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState('');
   const [showSendButton, setShowSendButton] = useState(false);
-  const [userImage, setUserImage] = useState(null);
-
-  useEffect(() => {
-    const fetchUserProfilePic = async () => {
-      try {
-          const token = await AsyncStorage.getItem('token');
-          if (!token) {
-              Alert.alert('Token not found');
-              return;
-          }
-          
-          const response = await fetch(`http://${IPV4}:3000/profile-pic`, {
-              method: 'GET',
-              headers: {
-                  'Authorization': `Bearer ${token}`,
-              },
-          });
-  
-          if (!response.ok) {
-              console.error('Erreur HTTP:', response.status, response.statusText);
-              throw new Error('Failed to fetch profile pic');
-          }
-  
-          const imageData = await response.blob(); 
-          const reader = new FileReader();
-          reader.readAsDataURL(imageData);
-          reader.onloadend = () => {
-              const base64data = reader.result;
-              setUserImage(base64data); 
-          };
-      } catch (error) {
-          console.error('Erreur lors de la récupération de la photo de profil:', error);
-          Alert.alert('Une erreur est survenue lors de la récupération de la photo de profil.');
-      }
-  };  
-
-    fetchUserProfilePic();
-  }, []);
+  const [buttonOpacity] = useState(new Animated.Value(0));
 
   useEffect(() => {
     socket.on('SERVER_MSG', (msg) => {
@@ -63,6 +25,24 @@ const Conversation = ({ route }) => {
     };
   }, []);
 
+  const handleTextChange = (value) => {
+    setText(value);
+    if (value.length > 0) {
+      setShowSendButton(true);
+      Animated.timing(buttonOpacity, {
+        toValue: 1,
+        duration: 200,
+        useNativeDriver: true,
+      }).start();
+    } else {
+      Animated.timing(buttonOpacity, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+      }).start(() => setShowSendButton(false));
+    }
+  };
+
   const sendMessage = () => {
     const msg = {
       text,
@@ -71,12 +51,7 @@ const Conversation = ({ route }) => {
     };
     socket.emit('CLIENT_MSG', msg);
     setText('');
-    setShowSendButton(false);
-  };
-
-  const handleTextChange = (value) => {
-    setText(value);
-    setShowSendButton(value.length > 0);
+    handleTextChange(''); // Réinitialiser l'état du texte
   };
 
   const pickImage = async () => {
@@ -113,8 +88,8 @@ const Conversation = ({ route }) => {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       keyboardVerticalOffset={80}
     >
-      <HeaderConversation userName={userName} userImage={userImage} />
-      
+      <HeaderConversation userName={userName} />
+
       <FlatList
         data={messages}
         renderItem={renderMessageItem}
@@ -122,29 +97,33 @@ const Conversation = ({ route }) => {
         style={styles.messages}
         contentContainerStyle={styles.messageList}
       />
+
       <View style={styles.inputContainer}>
-        {!showSendButton && (
-          <>
-            <TouchableOpacity onPress={pickImage} style={styles.iconButton}>
-              <MaterialIcons name="photo" size={24} color="gray" />
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.iconButton}>
-              <MaterialCommunityIcons name="microphone" size={24} color="gray" />
-            </TouchableOpacity>
-          </>
-        )}
+        <TouchableOpacity onPress={pickImage} style={styles.iconButton}>
+          <MaterialIcons name="photo-camera" size={24} color="#0091FF" />
+        </TouchableOpacity>
         <TextInput
           style={styles.input}
-          placeholder="Your message"
+          placeholder="Votre message..."
           value={text}
           onChangeText={handleTextChange}
         />
-        {showSendButton ? (
-          <TouchableOpacity onPress={sendMessage} style={styles.iconButton}>
-            <Ionicons name="send" size={24} color="#077B17" />
-          </TouchableOpacity>
-        ) : (
-          <View style={styles.iconPlaceholder} />
+        {!showSendButton && (
+          <View style={styles.iconsRight}>
+            <TouchableOpacity style={styles.iconButton}>
+              <MaterialCommunityIcons name="microphone" size={24} color="white" />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.iconButton}>
+              <MaterialCommunityIcons name="image" size={24} color="white" />
+            </TouchableOpacity>
+          </View>
+        )}
+        {showSendButton && (
+          <Animated.View style={{ opacity: buttonOpacity }}>
+            <TouchableOpacity onPress={sendMessage} style={styles.iconButton}>
+              <Ionicons name="send" size={24} color="#0091FF" />
+            </TouchableOpacity>
+          </Animated.View>
         )}
       </View>
     </KeyboardAvoidingView>
@@ -154,10 +133,11 @@ const Conversation = ({ route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: '#fff',
   },
   messages: {
     flex: 1,
+    marginBottom: 10, // Assure que la FlatList ne soit pas cachée par la barre de messages
   },
   messageList: {
     paddingVertical: 10,
@@ -190,25 +170,22 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     padding: 10,
-    borderTopWidth: 1,
-    borderColor: '#ddd',
-    backgroundColor: '#FFF',
+    backgroundColor: '#333333',
+    borderRadius: 30,
+    margin: 10,
   },
   input: {
     flex: 1,
     height: 40,
-    borderColor: '#ddd',
-    borderWidth: 1,
-    borderRadius: 20,
-    paddingHorizontal: 15,
-    backgroundColor: '#F9F9F9',
+    paddingHorizontal: 10,
+    color: 'white',
+  },
+  iconsRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   iconButton: {
     marginHorizontal: 5,
-  },
-  iconPlaceholder: {
-    width: 24,
-    height: 24,
   },
 });
 
