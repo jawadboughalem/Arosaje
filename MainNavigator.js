@@ -242,6 +242,7 @@ const MainNavigator = ({ handleLogout }) => {
           name="ConseilsStack"
           component={ConseilsStack}
           options={{
+            title: 'Conseil',
             headerShown: false,
           }}
         />
