@@ -22,7 +22,19 @@ const getAllConseils = (req, res) => {
   });
 };
 
+const deleteConseil = (req, res) => {
+  const { id } = req.params;
+  Conseil.deleteConseil(id, (err) => {
+    if (err) {
+      res.status(500).json({ error: err.message });
+    } else {
+      res.status(204).send();
+    }
+  });
+};
+
 module.exports = {
   createConseil,
   getAllConseils,
+  deleteConseil,
 };

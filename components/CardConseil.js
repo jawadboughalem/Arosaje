@@ -1,9 +1,13 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { Ionicons, FontAwesome5, MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import moment from 'moment';
+import 'moment/locale/fr';
+
+moment.locale('fr');
 
 const getIcon = (theme) => {
-  const iconSize = 20;
+  const iconSize = 32;
   const iconColor = '#077B17';
 
   switch (theme) {
@@ -12,43 +16,59 @@ const getIcon = (theme) => {
     case 'Plantes d\'intérieur':
       return <Ionicons name="leaf" size={iconSize} color={iconColor} />;
     case 'Plantes d\'extérieur':
-      return <FontAwesome5 name="tree" size={iconSize} color={iconColor} />;
+      return <MaterialCommunityIcons name="tree" size={iconSize} color={iconColor} />;
     case 'Hydroponie':
       return <Ionicons name="water" size={iconSize} color={iconColor} />;
     case 'Plantes Aromatiques':
-      return <FontAwesome5 name="seedling" size={iconSize} color={iconColor} />;
+      return <MaterialCommunityIcons name="seedling" size={iconSize} color={iconColor} />;
     case 'Jardinage Urbain':
-      return <MaterialIcons name="location-city" size={iconSize} color={iconColor} />;
+      return <MaterialCommunityIcons name="city" size={iconSize} color={iconColor} />;
     default:
       return <Ionicons name="help-circle" size={iconSize} color={iconColor} />;
   }
 };
 
-const CardConseil = ({ conseil, isBotanist, onDelete }) => {
-  const [liked, setLiked] = useState(false);
+const CardConseil = ({ conseil, onDelete }) => {
+  const [expanded, setExpanded] = useState(false);
 
-  const handleLike = () => {
-    setLiked(!liked);
+  const handleDelete = () => {
+    Alert.alert(
+      'Confirmation',
+      'Êtes-vous sûr de vouloir supprimer ce conseil ?',
+      [
+        { text: 'Annuler', style: 'cancel' },
+        { text: 'Supprimer', style: 'destructive', onPress: () => onDelete(conseil.Code_Conseils) },
+      ]
+    );
+  };
+
+  const toggleExpanded = () => {
+    setExpanded(!expanded);
   };
 
   return (
     <View style={styles.card}>
-      <View style={styles.iconContainer}>
-        {getIcon(conseil.Theme)}
-      </View>
-      <View style={styles.textContainer}>
-        <Text style={styles.title}>{conseil.Titre}</Text>
-        <Text style={styles.description}>{conseil.Description}</Text>
-      </View>
-      <View style={styles.actionsContainer}>
-        <TouchableOpacity onPress={handleLike}>
-          <Ionicons name={liked ? "heart" : "heart-outline"} size={24} color={liked ? "red" : "gray"} />
+      <View style={styles.header}>
+        <Text style={styles.dateText}>{moment(conseil.Date).fromNow()}</Text>
+        <TouchableOpacity onPress={handleDelete}>
+          <Ionicons name="trash-bin-outline" size={20} color="#d9534f" />
         </TouchableOpacity>
-        {isBotanist && (
-          <TouchableOpacity onPress={() => onDelete(conseil)}>
-            <Ionicons name="trash-outline" size={24} color="gray" />
-          </TouchableOpacity>
-        )}
+      </View>
+      <View style={styles.body}>
+        <View style={styles.iconContainer}>
+          {getIcon(conseil.Theme)}
+        </View>
+        <View style={styles.textContainer}>
+          <Text style={styles.title}>{conseil.Titre}</Text>
+          <Text style={styles.description}>
+            {expanded ? conseil.Description : `${conseil.Description.substring(0, 100)}...`}
+          </Text>
+          {conseil.Description.length > 100 && (
+            <TouchableOpacity onPress={toggleExpanded}>
+              <Text style={styles.viewMore}>{expanded ? 'Voir moins' : 'Voir plus'}</Text>
+            </TouchableOpacity>
+          )}
+        </View>
       </View>
     </View>
   );
@@ -56,38 +76,47 @@ const CardConseil = ({ conseil, isBotanist, onDelete }) => {
 
 const styles = StyleSheet.create({
   card: {
-    flexDirection: 'row',
     backgroundColor: '#fff',
-    padding: 10,
+    padding: 20,
     borderRadius: 10,
+    marginBottom: 20,
+    borderWidth: 0,
+    shadowColor: 'transparent',
+    flexDirection: 'column',
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     marginBottom: 10,
-    borderColor: '#ddd',
-    borderWidth: 1,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+  },
+  dateText: {
+    fontSize: 14,
+    color: '#666',
+  },
+  body: {
+    flexDirection: 'column',
+    alignItems: 'flex-start',
   },
   iconContainer: {
-    marginRight: 10,
+    marginBottom: 13, 
   },
   textContainer: {
     flex: 1,
   },
   title: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: 'bold',
     color: '#333',
+    marginBottom: 5,
   },
   description: {
     fontSize: 16,
-    color: '#333',
+    color: '#666',
   },
-  actionsContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  viewMore: {
+    fontSize: 14,
+    color: '#007BFF',
+    marginTop: 5,
   },
 });
 

@@ -27,7 +27,18 @@ const getAllConseils = (callback) => {
   });
 };
 
+const deleteConseil = (conseilId, callback) => {
+  const sql = 'DELETE FROM Conseils WHERE Code_Conseils = ?';
+  db.run(sql, [conseilId], function(err) {
+    if (err) {
+      return callback(err);
+    }
+    callback(null);
+  });
+};
+
 module.exports = {
   createConseil,
   getAllConseils,
+  deleteConseil,
 };
