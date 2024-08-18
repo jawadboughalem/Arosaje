@@ -10,6 +10,7 @@ import Messages from './screens/Messages';
 import Photos from './screens/Photos';
 import Conseils from './screens/Conseils';
 import Profil from './screens/Profil';
+import ParametresProfil from './screens/ParametresProfil';
 import CameraPreview from './screens/CameraPreview';
 import Formulaire from './screens/Formulaire';
 import FormulaireBotaniste from './screens/FormulaireBotaniste';
@@ -36,7 +37,13 @@ function AnnoncesStack() {
         name="DetailPoste"
         component={DetailPoste}
         options={{
-          header: () => <Header title="Détails de l'annonce" />,
+          header: ({ navigation }) => (
+            <Header
+              title="Détails de l'annonce"
+              showBackButton={true}
+              onBackPress={() => navigation.goBack()}
+            />
+          ),
         }}
       />
     </Stack.Navigator>
@@ -91,12 +98,23 @@ function ConseilsStack() {
       <Stack.Screen
         name="Conseils"
         component={Conseils}
-        options={{ headerShown: false }}
+        options={{
+          header: () => <Header title="Conseils" />,
+        }}
       />
       <Stack.Screen
         name="FormulaireBotaniste"
         component={FormulaireBotaniste}
-        options={{ headerShown: false }}
+        options={{
+          header: ({ navigation }) => (
+            <Header
+              title="Formulaire Botaniste"
+              showBackButton={true}
+              onBackPress={() => navigation.goBack()}
+            />
+          ),
+          headerShown: true,
+        }}
       />
     </Stack.Navigator>
   );
@@ -121,6 +139,43 @@ function MessagesStack() {
         listeners={{
           focus: () => setIsTabBarVisible(false),
           blur: () => setIsTabBarVisible(true),
+        }}
+      />
+    </Stack.Navigator>
+  );
+}
+
+function ProfilStack() {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen
+        name="Profil"
+        component={Profil}
+        options={{
+          header: ({ navigation }) => (
+            <Header
+              title="Profil"
+              headerRight={() => (
+                <TouchableOpacity onPress={() => navigation.navigate('ParametresProfil')} style={{ marginRight: 10 }}>
+                  <Ionicons name="settings-outline" size={30} color="#000" />
+                </TouchableOpacity>
+              )}
+            />
+          ),
+        }}
+      />
+      <Stack.Screen
+        name="ParametresProfil"
+        component={ParametresProfil}
+        options={{
+          title: 'Paramètres',
+          header: ({ navigation }) => (
+            <Header
+              title="Paramètres"
+              showBackButton={true}
+              onBackPress={() => navigation.goBack()}
+            />
+          ),
         }}
       />
     </Stack.Navigator>
@@ -162,7 +217,7 @@ const MainNavigator = ({ handleLogout }) => {
               return null;
             } else if (route.name === 'ConseilsStack') {
               iconName = focused ? 'leaf' : 'leaf-outline';
-            } else if (route.name === 'Profil') {
+            } else if (route.name === 'ProfilStack') {
               iconName = focused ? 'person' : 'person-outline';
             }
             return <Ionicons name={iconName} size={22} color={color} style={styles.tabBarIcon} />;
@@ -205,15 +260,15 @@ const MainNavigator = ({ handleLogout }) => {
           component={ConseilsStack}
           options={{
             title: 'Conseils',
-            header: () => <Header title="Conseils" />,
+            headerShown: false,
           }}
         />
         <Tab.Screen
-          name="Profil"
-          component={Profil}
+          name="ProfilStack"
+          component={ProfilStack}
           options={{
             title: 'Profil',
-            header: () => <Header title="Profil" />,
+            headerShown: false,
           }}
         />
       </Tab.Navigator>

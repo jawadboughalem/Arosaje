@@ -41,10 +41,10 @@ const Formulaire = () => {
     }
 
     const data = {
-      Code_Utilisateurs: token.userId, // Assurez-vous que c'est correct
+      Code_Utilisateurs: token.userId,
       Titre: nomPlante,
       Description: description,
-      Theme: selectedTheme, // Assurez-vous que ce champ est ajouté
+      Theme: selectedTheme,
     };
 
     try {
@@ -94,9 +94,6 @@ const Formulaire = () => {
           keyboardShouldPersistTaps="handled"
         >
           <View style={styles.container}>
-            <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-              <Ionicons name="arrow-back" size={24} color="black" />
-            </TouchableOpacity>
             <Text style={styles.label}>Nom de la plante :</Text>
             <TextInput
               style={styles.input}
@@ -111,7 +108,7 @@ const Formulaire = () => {
                 selectedValue={selectedTheme}
                 style={styles.picker}
                 onValueChange={(itemValue) => {
-                  console.log('Theme selected:', itemValue); // Journal de débogage
+                  console.log('Theme selected:', itemValue);
                   setSelectedTheme(itemValue);
                 }}
               >
@@ -153,12 +150,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
-  },
-  backButton: {
-    position: 'absolute',
-    top: 50,
-    left: 5,
-    zIndex: 10,
   },
   label: {
     fontSize: 15,

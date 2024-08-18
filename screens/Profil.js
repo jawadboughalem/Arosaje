@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, TouchableOpacity, Text, ScrollView, Alert } from 'react-native';
-import Icon from 'react-native-vector-icons/Ionicons';
+import { View, StyleSheet, Text, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import ParametresProfil from './ParametresProfil';
 
@@ -93,14 +92,6 @@ const ProfileScreen = () => {
     fetchData();
   }, []);
 
-  const goToSettings = () => {
-    setShowSettings(true);
-  };
-
-  const goBack = () => {
-    setShowSettings(false);
-  };
-
   const renderMesPlantes = () => {
     if (isLoading) {
       return (
@@ -153,9 +144,6 @@ const ProfileScreen = () => {
     <View style={styles.container}>
       {!showSettings ? (
         <View>
-          <TouchableOpacity onPress={goToSettings} style={styles.settingsButton}>
-            <Icon name="settings-outline" size={30} color="#000" />
-          </TouchableOpacity>
           <View style={styles.headerContainer}>
             <Text style={styles.headerText}>Bon retour, {userInfo.prenom}</Text>
           </View>
@@ -198,13 +186,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
-    paddingTop: 50,
+    paddingTop: 110, // Espace ajouté pour compenser la hauteur du header
     paddingHorizontal: 20,
-  },
-  settingsButton: {
-    alignSelf: 'flex-end',
-    marginTop: 30,
-    marginRight: 10,
   },
   headerContainer: {
     alignItems: 'center',

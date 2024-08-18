@@ -2,14 +2,13 @@ import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, TextInput, StyleSheet, TouchableOpacity, Image, ScrollView, Alert, Animated, Switch } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useNavigation } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system';
 import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
 
 const { IPV4 } = require('../Backend/config/config');
 
-const ParametresProfil = ({ onBack }) => {
+const ParametresProfil = () => {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -18,7 +17,6 @@ const ParametresProfil = ({ onBack }) => {
   const [language, setLanguage] = useState('fr');
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const [showNewPasswordFields, setShowNewPasswordFields] = useState(false);
-  const navigation = useNavigation();
   const shakeAnimation = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -48,19 +46,19 @@ const ParametresProfil = ({ onBack }) => {
           'Authorization': `Bearer ${token}`,
         },
       });
-  
+
       if (!response.ok) {
         throw new Error('Failed to fetch profile pic');
       }
-  
+
       const imageData = await response.blob();
-  
+
       // Convert Blob to Base64 string
       const reader = new FileReader();
       reader.readAsDataURL(imageData);
       reader.onloadend = () => {
         const base64data = reader.result;
-        setProfilePic(base64data); 
+        setProfilePic(base64data);
       };
     } catch (error) {
       console.error('Erreur lors de la récupération de la photo de profil:', error);
@@ -277,11 +275,6 @@ const ParametresProfil = ({ onBack }) => {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={onBack} style={styles.backButton}>
-          <Icon name="arrow-back" size={24} color="#000" />
-        </TouchableOpacity>
-      </View>
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Informations personnelles</Text>
@@ -384,19 +377,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f7f7f7',
-  },
-  header: {
-    height: 60,
-    justifyContent: 'center',
-    paddingHorizontal: 10,
-    borderBottomColor: '#ddd',
-    borderBottomWidth: 1,
-    backgroundColor: '#fff',
-  },
-  backButton: {
-    position: 'absolute',
-    top: 20,
-    left: 16,
+    paddingTop: 110, // Ajout d'un padding pour compenser l'espace du header
   },
   scrollViewContent: {
     padding: 15,
