@@ -11,13 +11,11 @@ const conseilRoutes = require('./routes/conseilRoutes');
 const messageRoutes = require('./routes/messageRoutes');
 const multer = require('multer');
 
-
 const app = express();
 const port = 3000;
 
 // Initialisation de la base de données
 initialize();
-
 
 // Configuration CORS
 const corsOptions = {
@@ -48,7 +46,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/conseils', conseilRoutes);
 app.use('/messages', messageRoutes);
 
-app.listen(port, '0.0.0.0', () => {
+app.listen(port, () => {
   console.log(`Serveur démarré sur le port ${port}`);
 });
 
