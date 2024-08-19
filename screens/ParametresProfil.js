@@ -388,11 +388,6 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     backgroundColor: '#fff',
   },
-  backButton: {
-    position: 'absolute',
-    top: 20,
-    left: 16,
-  },
   scrollViewContent: {
     padding: 15,
     paddingBottom: 80,
