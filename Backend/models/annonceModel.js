@@ -55,9 +55,10 @@ const createAnnonce = (annonce, callback) => {
 const getAllAnnonces = (callback) => {
   const sql = `
     SELECT p.Code_Postes, p.titre, p.description, p.datePoste, p.localisation, ph.photo, g.DateDebut, g.DateFin
-    FROM postes p
-    LEFT JOIN photos ph ON p.Code_Postes = ph.code_Postes
-    LEFT JOIN Gardes g ON p.Code_Postes = g.Code_Postes;
+FROM postes p
+LEFT JOIN photos ph ON p.Code_Postes = ph.code_Postes
+LEFT JOIN Gardes g ON p.Code_Postes = g.Code_Postes
+ORDER BY p.datePoste DESC;
   `;
   db.all(sql, [], (err, rows) => {
     if (err) {

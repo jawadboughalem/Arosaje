@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { StyleSheet, TextInput, View, Text, TouchableOpacity, ScrollView, Alert, Image } from 'react-native';
+import { StyleSheet, TextInput, View, Text, TouchableOpacity, ScrollView, Alert, Image, FlatList } from 'react-native';
 import { useRoute, useNavigation, useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
@@ -27,6 +27,88 @@ const Formulaire = () => {
   const [loading, setLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formReset, setFormReset] = useState(false);
+
+  // Nouveaux états pour les suggestions de villes
+  const [villesSuggestions, setVillesSuggestions] = useState([]);
+
+  useFocusEffect(
+    useCallback(() => {
+      setNomPlante('');
+      setDescription('');
+      setLocalisation('');
+      setCodePostal('');
+      setDateDebut(new Date());
+      setDateFin(new Date());
+      setIsSubmitting(false);
+      setFormReset(true); // Réinitialise le statut du formulaire
+    }, [])
+  );
+
+  useEffect(() => {
+    const fetchToken = async () => {
+      try {
+        const storedToken = await AsyncStorage.getItem('token');
+        if (storedToken) {
+          setToken(storedToken);
+        } else {
+          console.error('Aucun token trouvé');
+        }
+      } catch (error) {
+        console.error('Erreur lors de la récupération du token:', error);
+      }
+    };
+
+    fetchToken();
+  }, []);
+
+  // Fonction pour récupérer les suggestions de villes
+  const fetchVilles = async (query) => {
+    if (!query) {
+      setVillesSuggestions([]);
+      return;
+    }
+
+    try {
+      const response = await fetch(`https://geo.api.gouv.fr/communes?nom=${query}&fields=code,codesPostaux,nom&boost=population&limit=5`);
+      const data = await response.json();
+      setVillesSuggestions(data || []);
+    } catch (error) {
+      console.error('Erreur lors de la récupération des villes:', error);
+    }
+  };
+
+  // Fonction pour gérer la saisie de la ville
+  const handleVilleChange = (text) => {
+    setLocalisation(text);
+    fetchVilles(text);
+  };
+
+  // Fonction pour sélectionner une ville dans les suggestions
+  const handleVilleSelect = (ville) => {
+    setLocalisation(ville.nom);
+    setCodePostal(ville.codesPostaux[0]);
+    setVillesSuggestions([]);
+  };
+
+  // Fonction pour gérer la saisie du code postal
+  const handleCodePostalChange = async (text) => {
+    setCodePostal(text.replace(/[^0-9]/g, ''));
+    if (text.length === 5) {
+      try {
+        const response = await fetch(`https://geo.api.gouv.fr/communes?codePostal=${text}`);
+        const data = await response.json();
+
+        if (data.length > 0) {
+          setLocalisation(data[0].nom);
+          setVillesSuggestions([]);
+        }
+      } catch (error) {
+        console.error('Erreur lors de la récupération de la ville par code postal:', error);
+      }
+    }
+  };
+
+
 
   useFocusEffect(
     useCallback(() => {
@@ -205,6 +287,16 @@ const Formulaire = () => {
     }
   };
 
+    // Rendu des éléments de la FlatList
+    const renderSuggestion = ({ item }) => (
+      <TouchableOpacity style={styles.suggestionItem} onPress={() => handleVilleSelect(item)}>
+        <ScrollView style={styles.scrollView}>
+          <Text style={styles.suggestionText}>{item.nom}</Text>
+        
+        </ScrollView>
+      </TouchableOpacity>
+    );
+
   return (
     <View style={styles.wrapper}>
       <Spinner
@@ -242,26 +334,38 @@ const Formulaire = () => {
             onChangeText={setDescription}
             multiline
           />
-          <Text style={styles.label}>Ville :</Text>
+            <Text style={styles.label}>Ville :</Text>
           <View style={styles.locationContainer}>
             <TextInput
               style={[styles.input, styles.locationInput]}
               placeholder="Ex: Paris, Île-de-France"
               placeholderTextColor="#666"
               value={localisation}
-              onChangeText={setLocalisation}
+              onChangeText={handleVilleChange}
             />
             <TouchableOpacity onPress={handleLocationPress} style={styles.locationIcon}>
               <Icon name="location-on" size={30} color="#333" />
             </TouchableOpacity>
           </View>
+          {villesSuggestions.length > 0 && (
+            <FlatList
+              data={villesSuggestions}
+              keyExtractor={(item) => item.code}
+              renderItem={({ item }) => (
+                <TouchableOpacity style={styles.suggestionItem} onPress={() => handleVilleSelect(item)}>
+                  <Text style={styles.suggestionText}>{item.nom}</Text>
+                </TouchableOpacity>
+              )}
+              style={styles.suggestionList}
+            />
+          )}
           <Text style={styles.label}>Code Postal :</Text>
           <TextInput
             style={styles.input}
             placeholder="Ex: 75001"
             placeholderTextColor="#666"
             value={codePostal}
-            onChangeText={(text) => setCodePostal(text.replace(/[^0-9]/g, ''))}
+            onChangeText={handleCodePostalChange}
             maxLength={5}
             keyboardType="numeric"
           />
