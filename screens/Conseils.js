@@ -178,7 +178,7 @@ const styles = StyleSheet.create({
   },
   themesContainer: {
     height: 50,
-    marginTop: 100,
+    marginTop: 20,
     marginBottom: 20,
   },
   themesScrollContainer: {
