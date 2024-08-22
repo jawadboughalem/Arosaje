@@ -14,7 +14,7 @@ const CardsPage = () => {
     const [searchText, setSearchText] = useState('');
     const [annonces, setAnnonces] = useState([]);
     const [loading, setLoading] = useState(false);
-    const [visibleAnnonces, setVisibleAnnonces] = useState(10); 
+    const [visibleAnnonces, setVisibleAnnonces] = useState(10);
     const [isLoadingMore, setIsLoadingMore] = useState(false);
     const [isModalVisible, setIsModalVisible] = useState(false);
     const navigation = useNavigation();
@@ -108,7 +108,7 @@ const CardsPage = () => {
     };
 
     const handleMapPress = () => {
-        setIsModalVisible(true); 
+        setIsModalVisible(true);
     };
 
     const handleCloseModal = () => {
@@ -157,7 +157,7 @@ const CardsPage = () => {
                 )}
             </View>
             <FlatList
-                data={annonces.slice(0, visibleAnnonces)} // Afficher seulement les annonces visibles
+                data={annonces.slice(0, visibleAnnonces)}
                 keyExtractor={(item) => item.Code_Postes.toString()}
                 renderItem={({ item }) => (
                     <TouchableOpacity
@@ -170,6 +170,7 @@ const CardsPage = () => {
                             userName={item.userName}
                             userImage={item.userImage}
                             status={item.status}
+                            datePoste={item.datePoste} // Passing the datePoste to Card
                         />
                     </TouchableOpacity>
                 )}
@@ -186,7 +187,6 @@ const CardsPage = () => {
                 <Ionicons name="map-outline" size={30} color="#fff" />
             </TouchableOpacity>
 
-            {/* Modal */}
             {isModalVisible && (
                 <>
                     <View style={styles.modalBackground} />
@@ -201,7 +201,6 @@ const CardsPage = () => {
                                 <TouchableOpacity style={styles.closeButton} onPress={handleCloseModal}>
                                     <Icon name="close" size={30} color="#000" />
                                 </TouchableOpacity>
-                                {/* En mode la c'est des données en dur plus tard j'utiliserais l'aAPI de Google */}
                                 <MapView
                                     style={styles.map}
                                     initialRegion={{
@@ -293,7 +292,7 @@ const styles = StyleSheet.create({
     loadingText: {
         marginTop: 10,
         fontSize: 16,
-        color: '#0000ff',
+        color: '#077B17',
     },
     spinnerTextStyle: {
         color: '#fff',

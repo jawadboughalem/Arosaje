@@ -1,8 +1,12 @@
 import React from 'react';
 import { View, Text, Image, StyleSheet } from 'react-native';
 import { IPV4 } from '../Backend/config/config';
+import moment from 'moment';
+import 'moment/locale/fr';
 
-const Card = ({ plantImage, plantName, location, userName, userImage, status }) => {
+moment.locale('fr');
+
+const Card = ({ plantImage, plantName, location, userName, userImage, status, datePoste }) => {
     return (
         <View style={styles.card}>
             <Image source={{ uri: `http://${IPV4}:3000/annonces/image/${plantImage}` }} style={styles.plantImage} />
@@ -14,6 +18,7 @@ const Card = ({ plantImage, plantName, location, userName, userImage, status }) 
                     <Image source={{ uri: userImage }} style={styles.userImage} />
                     <Text style={styles.userName}>{userName}</Text>
                 </View>
+                <Text style={styles.dateText}>{moment(datePoste).fromNow()}</Text>
             </View>
         </View>
     );
@@ -28,15 +33,15 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: '#ddd',
         overflow: 'hidden',
-        height: 120, 
+        height: 120,
     },
     plantImage: {
-        width: 130, 
+        width: 130,
         height: '100%',
     },
     textContainer: {
         flex: 1,
-        padding: 10, 
+        padding: 10,
         justifyContent: 'center',
     },
     plantName: {
@@ -60,14 +65,23 @@ const styles = StyleSheet.create({
         marginTop: 5,
     },
     userImage: {
-        width: 20, 
-        height: 20, 
-        borderRadius: 10, 
+        width: 20,
+        height: 20,
+        borderRadius: 10,
         marginRight: 5,
     },
     userName: {
-        fontSize: 12, 
+        fontSize: 12,
         color: '#666',
+    },
+    dateText: {
+        fontSize: 10,
+        color: '#999',
+        marginTop: 5,
+        textAlign: 'right',
+        position: 'absolute',
+        bottom: 10,
+        right: 10,
     },
 });
 
