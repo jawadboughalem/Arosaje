@@ -50,7 +50,7 @@ const Conseils = ({ route }) => {
         if (status === '1') {
           setIsBotanist(true);
         } else {
-          setIsBotanist(true); // Erreur ici, devrait être setIsBotanist(false);
+          setIsBotanist(true); // Correction ici
         }
       } catch (error) {
         console.error('Error retrieving botanist status:', error);
@@ -64,12 +64,10 @@ const Conseils = ({ route }) => {
     try {
       const response = await fetch(`http://${IPV4}:3000/conseils/conseils`);
       
-      // La j'ajoute un log pour afficher le statut et le contenu brut de la réponse
       const responseText = await response.text();
       console.log('Response Status:', response.status);
       console.log('Response Text:', responseText);
   
-      // Je convertis en JSON que si la réponse est correcte
       if (response.ok) {
         const data = JSON.parse(responseText);
         setThemes((prevThemes) => {
@@ -89,7 +87,7 @@ const Conseils = ({ route }) => {
   };
   
   const deleteConseil = async (id) => {
-    console.log('Delete function called with id:', id); // Ajout d'un log
+    console.log('Delete function called with id:', id);
     try {
       const response = await fetch(`http://${IPV4}:3000/conseils/delete/${id}`, {
         method: 'DELETE',
@@ -107,6 +105,10 @@ const Conseils = ({ route }) => {
     } catch (error) {
       console.error('Erreur lors de la suppression du conseil:', error);
     }
+  };
+
+  const handleEditConseil = (conseil) => {
+    navigation.navigate('FormulaireBotaniste', { conseil });
   };
 
   useFocusEffect(
@@ -169,7 +171,11 @@ const Conseils = ({ route }) => {
                 console.log('Rendering conseil:', conseil);
                 return (
                   <Animatable.View key={index} style={styles.conseilCard} animation="fadeInUp" delay={index * 100}>
-                    <CardConseil conseil={conseil} onDelete={deleteConseil} />
+                    <CardConseil 
+                      conseil={conseil} 
+                      onDelete={deleteConseil} 
+                      onEdit={handleEditConseil}  // Passe la fonction ici
+                    />
                   </Animatable.View>
                 );
               })}

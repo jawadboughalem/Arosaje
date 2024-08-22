@@ -37,8 +37,26 @@ const deleteConseil = (conseilId, callback) => {
   });
 };
 
+const updateConseil = (conseilId, updatedConseil, callback) => {
+  const { Titre, Description, Theme } = updatedConseil;
+  const sql = `
+    UPDATE Conseils
+    SET Titre = ?, Description = ?, Theme = ?
+    WHERE Code_Conseils = ?;
+  `;
+  const params = [Titre, Description, Theme, conseilId];
+
+  db.run(sql, params, function(err) {
+    if (err) {
+      return callback(err);
+    }
+    callback(null);
+  });
+};
+
 module.exports = {
   createConseil,
   getAllConseils,
   deleteConseil,
+  updateConseil, 
 };

@@ -4,11 +4,11 @@ import { useRoute, useNavigation } from '@react-navigation/native';
 import { Picker } from '@react-native-picker/picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import { Ionicons } from '@expo/vector-icons';
+import moment from 'moment';
 
 const { IPV4 } = require('../Backend/config/config');
 
-const Formulaire = () => {
+const FormulaireBotaniste = () => {
   const route = useRoute();
   const navigation = useNavigation();
   const [nomPlante, setNomPlante] = useState('');
@@ -34,6 +34,16 @@ const Formulaire = () => {
     fetchToken();
   }, []);
 
+  // Utiliser les données du conseil si on est en mode modification
+  useEffect(() => {
+    if (route.params && route.params.conseil) {
+      const { Titre, Description, Theme } = route.params.conseil;
+      setNomPlante(Titre);
+      setDescription(Description);
+      setSelectedTheme(Theme);
+    }
+  }, [route.params]);
+
   const handleSubmit = async () => {
     if (!selectedTheme) {
       console.error('Veuillez sélectionner un thème.');
@@ -41,10 +51,10 @@ const Formulaire = () => {
     }
 
     const data = {
-      Code_Utilisateurs: token.userId,
       Titre: nomPlante,
       Description: description,
       Theme: selectedTheme,
+      Date: moment().toISOString()  // Met à jour la date lors de la modification
     };
 
     try {
@@ -54,16 +64,24 @@ const Formulaire = () => {
       }
 
       console.log('Données soumises:', data);
-      console.log('Utilisation du token:', token);
 
-      const response = await fetch(`http://${IPV4}:3000/conseils/create`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(data),
-      });
+      const response = route.params.conseil
+        ? await fetch(`http://${IPV4}:3000/conseils/update/${route.params.conseil.Code_Conseils}`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(data),
+          })
+        : await fetch(`http://${IPV4}:3000/conseils/create`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(data),
+          });
 
       console.log('Statut de la réponse:', response.status);
 
@@ -195,4 +213,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Formulaire;
+export default FormulaireBotaniste;

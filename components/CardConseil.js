@@ -28,8 +28,8 @@ const getIcon = (theme) => {
   }
 };
 
-const CardConseil = ({ conseil, onDelete }) => {
-  const [expanded, setExpanded] = useState(false);
+const CardConseil = ({ conseil, onDelete, onEdit }) => {
+  const [expanded, setExpanded] = useState(false); // Ajout de l'état `expanded`
 
   const handleDelete = () => {
     Alert.alert(
@@ -42,17 +42,26 @@ const CardConseil = ({ conseil, onDelete }) => {
     );
   };
 
+  const handleEdit = () => {
+    onEdit(conseil);  // Appelle la fonction onEdit avec les détails du conseil
+  };
+
   const toggleExpanded = () => {
-    setExpanded(!expanded);
+    setExpanded(!expanded); // Fonction pour gérer l'état d'expansion du texte
   };
 
   return (
     <View style={styles.card}>
       <View style={styles.header}>
         <Text style={styles.dateText}>{moment(conseil.Date).fromNow()}</Text>
-        <TouchableOpacity onPress={handleDelete}>
-          <Ionicons name="trash-bin-outline" size={20} color="#d9534f" />
-        </TouchableOpacity>
+        <View style={{ flexDirection: 'row' }}>
+          <TouchableOpacity onPress={handleEdit}>
+            <Ionicons name="pencil-outline" size={20} color="#007bff" style={{ marginRight: 10 }} />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={handleDelete}>
+            <Ionicons name="trash-bin-outline" size={20} color="#d9534f" />
+          </TouchableOpacity>
+        </View>
       </View>
       <View style={styles.body}>
         <View style={styles.iconContainer}>
