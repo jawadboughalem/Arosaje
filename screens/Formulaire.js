@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { StyleSheet, TextInput, View, Text, TouchableOpacity, ScrollView, Alert, Image, FlatList } from 'react-native';
+import { StyleSheet, TextInput, View, Text, TouchableOpacity, FlatList, Alert, Image } from 'react-native';
 import { useRoute, useNavigation, useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
@@ -27,8 +27,6 @@ const Formulaire = () => {
   const [loading, setLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formReset, setFormReset] = useState(false);
-
-  // Nouveaux états pour les suggestions de villes
   const [villesSuggestions, setVillesSuggestions] = useState([]);
 
   useFocusEffect(
@@ -107,38 +105,6 @@ const Formulaire = () => {
       }
     }
   };
-
-
-
-  useFocusEffect(
-    useCallback(() => {
-      setNomPlante('');
-      setDescription('');
-      setLocalisation('');
-      setCodePostal('');
-      setDateDebut(new Date());
-      setDateFin(new Date());
-      setIsSubmitting(false);
-      setFormReset(true); // Réinitialise le statut du formulaire
-    }, [])
-  );
-
-  useEffect(() => {
-    const fetchToken = async () => {
-      try {
-        const storedToken = await AsyncStorage.getItem('token');
-        if (storedToken) {
-          setToken(storedToken);
-        } else {
-          console.error('Aucun token trouvé');
-        }
-      } catch (error) {
-        console.error('Erreur lors de la récupération du token:', error);
-      }
-    };
-
-    fetchToken();
-  }, []);
 
   const showDateDebutPicker = () => {
     setDateDebutPickerVisibility(true);
@@ -287,16 +253,6 @@ const Formulaire = () => {
     }
   };
 
-    // Rendu des éléments de la FlatList
-    const renderSuggestion = ({ item }) => (
-      <TouchableOpacity style={styles.suggestionItem} onPress={() => handleVilleSelect(item)}>
-        <ScrollView style={styles.scrollView}>
-          <Text style={styles.suggestionText}>{item.nom}</Text>
-        
-        </ScrollView>
-      </TouchableOpacity>
-    );
-
   return (
     <View style={styles.wrapper}>
       <Spinner
@@ -304,104 +260,104 @@ const Formulaire = () => {
         textContent={'Chargement...'}
         textStyle={styles.spinnerTextStyle}
       />
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
-        <View style={styles.container}>
-          <Text style={styles.label}>Photo de la plante :</Text>
-          {photo ? (
-            <Image
-              source={{ uri: photo }}
-              style={styles.previewImage}
-            />
-          ) : (
-            <TouchableOpacity style={styles.photoButton} onPress={pickImage}>
-              <Text style={styles.photoButtonText}>Choisir une photo</Text>
-            </TouchableOpacity>
-          )}
-          <Text style={styles.label}>Nom de la plante :</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Ex: Monstera Deliciosa"
-            placeholderTextColor="#666"
-            value={nomPlante}
-            onChangeText={setNomPlante}
-          />
-          <Text style={styles.label}>Descriptif :</Text>
-          <TextInput
-            style={[styles.input, styles.textArea]}
-            placeholder="Ex: J'ai besoin de quelqu'un pour garder ma plante pendant mes vacances."
-            placeholderTextColor="#666"
-            value={description}
-            onChangeText={setDescription}
-            multiline
-          />
-            <Text style={styles.label}>Ville :</Text>
-          <View style={styles.locationContainer}>
+      <FlatList
+        data={[]}
+        ListHeaderComponent={(
+          <View style={styles.container}>
+            <Text style={styles.label}>Photo de la plante :</Text>
+            {photo ? (
+              <Image
+                source={{ uri: photo }}
+                style={styles.previewImage}
+              />
+            ) : (
+              <TouchableOpacity style={styles.photoButton} onPress={pickImage}>
+                <Text style={styles.photoButtonText}>Choisir une photo</Text>
+              </TouchableOpacity>
+            )}
+            <Text style={styles.label}>Nom de la plante :</Text>
             <TextInput
-              style={[styles.input, styles.locationInput]}
-              placeholder="Ex: Paris, Île-de-France"
+              style={styles.input}
+              placeholder="Ex: Monstera Deliciosa"
               placeholderTextColor="#666"
-              value={localisation}
-              onChangeText={handleVilleChange}
+              value={nomPlante}
+              onChangeText={setNomPlante}
             />
-            <TouchableOpacity onPress={handleLocationPress} style={styles.locationIcon}>
-              <Icon name="location-on" size={30} color="#333" />
+            <Text style={styles.label}>Descriptif :</Text>
+            <TextInput
+              style={[styles.input, styles.textArea]}
+              placeholder="Ex: J'ai besoin de quelqu'un pour garder ma plante pendant mes vacances."
+              placeholderTextColor="#666"
+              value={description}
+              onChangeText={setDescription}
+              multiline
+            />
+            <Text style={styles.label}>Ville :</Text>
+            <View style={styles.locationContainer}>
+              <TextInput
+                style={[styles.input, styles.locationInput]}
+                placeholder="Ex: Paris, Île-de-France"
+                placeholderTextColor="#666"
+                value={localisation}
+                onChangeText={handleVilleChange}
+              />
+              <TouchableOpacity onPress={handleLocationPress} style={styles.locationIcon}>
+                <Icon name="location-on" size={30} color="#333" />
+              </TouchableOpacity>
+            </View>
+            {villesSuggestions.length > 0 && (
+              <View style={styles.suggestionsContainer}>
+                {villesSuggestions.map((ville) => (
+                  <TouchableOpacity key={ville.code} onPress={() => handleVilleSelect(ville)}>
+                    <Text style={styles.suggestionText}>{ville.nom}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
+            <Text style={styles.label}>Code Postal :</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Ex: 75001"
+              placeholderTextColor="#666"
+              value={codePostal}
+              onChangeText={handleCodePostalChange}
+              maxLength={5}
+              keyboardType="numeric"
+            />
+            <Text style={styles.label}>Période de garde :</Text>
+            <View style={styles.dateContainer}>
+              <Text style={styles.dateLabel}>du</Text>
+              <TouchableOpacity onPress={showDateDebutPicker} style={styles.dateInputContainer}>
+                <Text style={styles.dateInput}>{formatDate(dateDebut)}</Text>
+              </TouchableOpacity>
+              <DateTimePickerModal
+                isVisible={isDateDebutPickerVisible}
+                mode="date"
+                onConfirm={handleDateDebutConfirm}
+                onCancel={hideDateDebutPicker}
+              />
+              <Text style={styles.dateLabel}>au</Text>
+              <TouchableOpacity onPress={showDateFinPicker} style={styles.dateInputContainer}>
+                <Text style={styles.dateInput}>{formatDate(dateFin)}</Text>
+              </TouchableOpacity>
+              <DateTimePickerModal
+                isVisible={isDateFinPickerVisible}
+                mode="date"
+                onConfirm={handleDateFinConfirm}
+                onCancel={hideDateFinPicker}
+              />
+            </View>
+            <TouchableOpacity
+              style={[styles.submitButton, (isSubmitting || !formReset) && styles.submitButtonDisabled]}
+              onPress={handleSubmit}
+              disabled={isSubmitting || !formReset}
+            >
+              <Text style={styles.submitButtonText}>Poster</Text>
             </TouchableOpacity>
           </View>
-          {villesSuggestions.length > 0 && (
-            <FlatList
-              data={villesSuggestions}
-              keyExtractor={(item) => item.code}
-              renderItem={({ item }) => (
-                <TouchableOpacity style={styles.suggestionItem} onPress={() => handleVilleSelect(item)}>
-                  <Text style={styles.suggestionText}>{item.nom}</Text>
-                </TouchableOpacity>
-              )}
-              style={styles.suggestionList}
-            />
-          )}
-          <Text style={styles.label}>Code Postal :</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Ex: 75001"
-            placeholderTextColor="#666"
-            value={codePostal}
-            onChangeText={handleCodePostalChange}
-            maxLength={5}
-            keyboardType="numeric"
-          />
-          <Text style={styles.label}>Période de garde :</Text>
-          <View style={styles.dateContainer}>
-            <Text style={styles.dateLabel}>du</Text>
-            <TouchableOpacity onPress={showDateDebutPicker} style={styles.dateInputContainer}>
-              <Text style={styles.dateInput}>{formatDate(dateDebut)}</Text>
-            </TouchableOpacity>
-            <DateTimePickerModal
-              isVisible={isDateDebutPickerVisible}
-              mode="date"
-              onConfirm={handleDateDebutConfirm}
-              onCancel={hideDateDebutPicker}
-            />
-            <Text style={styles.dateLabel}>au</Text>
-            <TouchableOpacity onPress={showDateFinPicker} style={styles.dateInputContainer}>
-              <Text style={styles.dateInput}>{formatDate(dateFin)}</Text>
-            </TouchableOpacity>
-            <DateTimePickerModal
-              isVisible={isDateFinPickerVisible}
-              mode="date"
-              onConfirm={handleDateFinConfirm}
-              onCancel={hideDateFinPicker}
-            />
-          </View>
-          <TouchableOpacity
-            style={[styles.submitButton, (isSubmitting || !formReset) && styles.submitButtonDisabled]}
-            onPress={handleSubmit}
-            disabled={isSubmitting || !formReset}
-          >
-            <Text style={styles.submitButtonText}>Poster</Text>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
-      <Toast ref={(ref) => Toast.setRef(ref)} />
+        )}
+        ListFooterComponent={<Toast ref={(ref) => Toast.setRef(ref)} />}
+      />
     </View>
   );
 };
@@ -412,13 +368,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: '#fff',
   },
-  scrollContainer: {
-    flexGrow: 1,
-    padding: 20,
-    justifyContent: 'center',
-  },
   container: {
-    flex: 1,
+    padding: 20,
   },
   label: {
     fontSize: 18,
@@ -426,12 +377,15 @@ const styles = StyleSheet.create({
     color: '#333',
     fontWeight: '500',
   },
+  inputContainer: {
+    position: 'relative',
+    marginBottom: 20,
+  },
   input: {
     height: 50,
     borderColor: '#333',
     borderWidth: 1,
     borderRadius: 10,
-    marginBottom: 20,
     paddingHorizontal: 15,
     backgroundColor: '#f9f9f9',
     fontSize: 15,
@@ -449,7 +403,21 @@ const styles = StyleSheet.create({
   },
   locationIcon: {
     marginLeft: 10,
-    alignSelf: 'center',
+  },
+  suggestionsContainer: {
+    backgroundColor: '#fff',
+    borderColor: '#ccc',
+    borderWidth: 1,
+    borderRadius: 5,
+    marginTop: -10,
+    marginBottom: 20,
+    zIndex: 1,
+  },
+  suggestionText: {
+    padding: 10,
+    fontSize: 16,
+    borderBottomColor: '#eee',
+    borderBottomWidth: 1,
   },
   dateContainer: {
     flexDirection: 'row',

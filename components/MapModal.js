@@ -1,4 +1,3 @@
-// MapModal.js
 import React from 'react';
 import { View, StyleSheet, Modal, Button } from 'react-native';
 import MapView from 'react-native-maps';
@@ -15,7 +14,6 @@ const MapModal = ({ visible, onClose }) => {
                 <View style={styles.mapContainer}>
                     <MapView
                         style={StyleSheet.absoluteFillObject}
-                        // Configurez ici votre carte
                     />
                 </View>
                 <Button title="Close" onPress={onClose} />
@@ -29,7 +27,7 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: 'rgba(0,0,0,0.5)', // Fond sombre pour le modal
+        backgroundColor: 'rgba(0,0,0,0.5)',
     },
     mapContainer: {
         width: '100%',

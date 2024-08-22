@@ -7,16 +7,16 @@ import Card from '../components/Card';
 import { IPV4 } from '../Backend/config/config';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
-import MapView, { Marker } from 'react-native-maps'; // Importation de MapView et Marker
+import MapView, { Marker } from 'react-native-maps';
 
 const CardsPage = () => {
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [searchText, setSearchText] = useState('');
     const [annonces, setAnnonces] = useState([]);
     const [loading, setLoading] = useState(false);
-    const [visibleAnnonces, setVisibleAnnonces] = useState(10); // Nombre d'annonces visibles
-    const [isLoadingMore, setIsLoadingMore] = useState(false); // État pour suivre si le chargement est en cours
-    const [isModalVisible, setIsModalVisible] = useState(false); // État pour contrôler le modal
+    const [visibleAnnonces, setVisibleAnnonces] = useState(10); 
+    const [isLoadingMore, setIsLoadingMore] = useState(false);
+    const [isModalVisible, setIsModalVisible] = useState(false);
     const navigation = useNavigation();
     const searchWidth = useRef(new Animated.Value(0)).current;
     const textInputRef = useRef(null);
@@ -108,11 +108,11 @@ const CardsPage = () => {
     };
 
     const handleMapPress = () => {
-        setIsModalVisible(true); // Afficher le modal
+        setIsModalVisible(true); 
     };
 
     const handleCloseModal = () => {
-        setIsModalVisible(false); // Fermer le modal
+        setIsModalVisible(false);
     };
 
     return (
@@ -130,7 +130,7 @@ const CardsPage = () => {
                 <Animated.View style={[styles.searchBar, {
                     width: searchWidth.interpolate({
                         inputRange: [0, 1],
-                        outputRange: ['30%', '65%'], // Réduit la largeur de la barre de recherche
+                        outputRange: ['30%', '65%'],
                     }),
                     opacity: searchWidth.interpolate({
                         inputRange: [0, 1],
@@ -164,16 +164,16 @@ const CardsPage = () => {
                         onPress={() => navigation.navigate('DetailPoste', { annonce: item })}
                     >
                         <Card
-                            plantImage={item.photo} // URL de l'image de la plante
+                            plantImage={item.photo}
                             plantName={item.titre}
                             location={item.localisation}
                             userName={item.userName}
-                            userImage={item.userImage} // URL de l'image de l'utilisateur
-                            status={item.status} // Ajoutez le statut ici
+                            userImage={item.userImage}
+                            status={item.status}
                         />
                     </TouchableOpacity>
                 )}
-                contentContainerStyle={{ paddingBottom: 80 }} // Ajustez le padding en bas
+                contentContainerStyle={{ paddingBottom: 80 }}
                 onScroll={({ nativeEvent }) => handleScroll(nativeEvent)}
                 ListFooterComponent={isLoadingMore && (
                     <View style={styles.loadingContainer}>
@@ -201,18 +201,16 @@ const CardsPage = () => {
                                 <TouchableOpacity style={styles.closeButton} onPress={handleCloseModal}>
                                     <Icon name="close" size={30} color="#000" />
                                 </TouchableOpacity>
-                                {/* MapView */}
+                                {/* En mode la c'est des données en dur plus tard j'utiliserais l'aAPI de Google */}
                                 <MapView
                                     style={styles.map}
                                     initialRegion={{
-                                        latitude: 37.78825, // Latitude initiale
-                                        longitude: -122.4324, // Longitude initiale
+                                        latitude: 37.78825,
+                                        longitude: -122.4324,
                                         latitudeDelta: 0.0922,
                                         longitudeDelta: 0.0421,
                                     }}
                                 >
-                                    {/* Ajoutez ici des Marker si nécessaire */}
-                                    {/* <Marker coordinate={{ latitude: 37.78825, longitude: -122.4324 }} /> */}
                                 </MapView>
                             </View>
                         </View>
@@ -226,7 +224,7 @@ const CardsPage = () => {
 const styles = StyleSheet.create({
     mapButton: {
         position: 'absolute',
-        bottom: 70, // Réduit la valeur pour le remonter
+        bottom: 70,
         right: 30,
         backgroundColor: '#077B17',
         width: 60,
@@ -305,13 +303,13 @@ const styles = StyleSheet.create({
         top: 10,
         right: 10,
         padding: 10,
-        zIndex: 2, // S'assurer que le bouton est au-dessus du contenu
+        zIndex: 2, 
     },
     modalContainer: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: 'rgba(0, 0, 0, 0.5)', // Couleur de fond semi-transparente
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
     },
     modalContent: {
         width: '90%',
@@ -321,12 +319,12 @@ const styles = StyleSheet.create({
         padding: 20,
         justifyContent: 'center',
         alignItems: 'center',
-        position: 'relative', // Assurez-vous que le bouton est en position absolue
+        position: 'relative',
     },
     modalBackground: {
         ...StyleSheet.absoluteFillObject,
         backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        zIndex: 1, // Assurez-vous que le fond est derrière le contenu du modal
+        zIndex: 1,
     },
     map: {
         width: '100%',
