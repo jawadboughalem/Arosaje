@@ -19,6 +19,7 @@ describe('Test fonction signup avec axios', () => {
         if (server) {
             await new Promise((resolve) => server.close(resolve));
             console.log("Serveur de test arrêté");
+            db.run("DELETE FROM utilisateurs where nom = 'Test'")
         }
     });
     test('Inscription avec axios', async () => {
