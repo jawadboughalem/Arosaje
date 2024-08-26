@@ -143,10 +143,30 @@ const getUserProfilePic = (req, res) => {
   });
 };
 
+const getBotanists = (req, res) => {
+  console.log('Fetching botanists from the database');
+
+  getUserByBotanist((err, botanists) => {
+    if (err) {
+      console.error('Erreur lors de la récupération des utilisateurs botanistes:', err);
+      return res.status(500).json({ error: 'Erreur lors de la récupération des utilisateurs botanistes' });
+    }
+
+    if (!botanists || botanists.length === 0) {
+      console.warn('Aucun botaniste trouvé');
+      return res.status(404).json({ error: 'Aucun botaniste trouvé' });
+    }
+
+    console.log('Botanists retrieved:', botanists);
+    res.status(200).json(botanists);
+  });
+};
+
 module.exports = {
   getUserInfo,
   changePassword,
   verifyPassword,
   updateUserProfilePic,
   getUserProfilePic,
+  getBotanists,  // Exporter la nouvelle fonction
 };

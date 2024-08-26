@@ -50,10 +50,24 @@ const getUserPhoto = (id, callback) => {
   });
 };
 
+// New function to get users who are botanists
+const getUserByBotanist = (callback) => {
+  const query = 'SELECT * FROM utilisateurs WHERE botaniste = 1';
+  db.all(query, [], (err, rows) => {  
+    if (err) {
+      console.error('Erreur lors de la récupération des utilisateurs botanistes:', err);
+      return callback(err);
+    }
+    console.log('Utilisateurs botanistes récupérés:', rows);
+    callback(null, rows);
+  });
+};
+
 module.exports = {
   getUserById,
   updateUserPassword,
   getUserInfoFromDb,
   updateUserPhoto,
   getUserPhoto,
+  getUserByBotanist, 
 };
