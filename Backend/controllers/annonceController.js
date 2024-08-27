@@ -65,8 +65,21 @@ const getAnnonceImage = async (req, res) => {
   }
 };
 
+const getAnnoncesByUser = (req, res) => {
+  const userId = req.userId;
+
+  annonceModel.getAnnoncesByUser(userId, (err, rows) => {
+    if (err) {
+      console.error('Database error:', err.message);
+      return res.status(500).json({ error: 'Erreur lors de la récupération des annonces' });
+    }
+    res.status(200).json(rows);
+  });
+};
+
 module.exports = {
   addAnnonce,
   getAllAnnonces,
   getAnnonceImage,
+  getAnnoncesByUser,
 };

@@ -82,7 +82,34 @@ const getAllAnnonces = (callback) => {
   });
 };
 
+const getAnnoncesByUser = (userId, callback) => {
+  const sql = `
+    SELECT p.Code_Postes, p.titre, p.description, p.datePoste, p.localisation, ph.photo, g.DateDebut, g.DateFin
+    FROM postes p
+    LEFT JOIN photos ph ON p.Code_Postes = ph.code_Postes
+    LEFT JOIN Gardes g ON p.Code_Postes = g.Code_Postes
+    WHERE p.code_Utilisateurs = ?
+    ORDER BY p.datePoste DESC;
+  `;
+
+  db.all(sql, [userId], (err, rows) => {
+    if (err) {
+      return callback(err);
+    }
+
+    const annonces = rows.map(row => ({
+      ...row,
+      dateDebut: row.DateDebut ? new Date(row.DateDebut).toISOString() : null,
+      dateFin: row.DateFin ? new Date(row.DateFin).toISOString() : null,
+    }));
+
+    callback(null, annonces);
+  });
+};
+
+
 module.exports = {
   createAnnonce,
   getAllAnnonces,
+  getAnnoncesByUser,
 };

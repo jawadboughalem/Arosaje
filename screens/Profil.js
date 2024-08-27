@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, Text, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import ParametresProfil from './ParametresProfil';
+import CardProfil from '../components/CardProfil';
+import { useNavigation } from '@react-navigation/native';
 
 const { IPV4 } = require('../Backend/config/config');
 
@@ -9,9 +10,10 @@ const ProfileScreen = () => {
   const [showSettings, setShowSettings] = useState(false);
   const [activeTab, setActiveTab] = useState('mesPlantes');
   const [userInfo, setUserInfo] = useState({ nom: '', prenom: '' });
-  const [mesPlantes, setMesPlantes] = useState([]);
+  const [mesAnnonces, setMesAnnonces] = useState([]);
   const [mesGardes, setMesGardes] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const navigation = useNavigation();
 
   useEffect(() => {
     const fetchUserInfo = async () => {
@@ -39,10 +41,10 @@ const ProfileScreen = () => {
       }
     };
 
-    const fetchMesPlantes = async () => {
+    const fetchMesAnnonces = async () => {
       try {
         const token = await AsyncStorage.getItem('token');
-        const response = await fetch(`http://${IPV4}:3000/user/mes-plantes`, {
+        const response = await fetch(`http://${IPV4}:3000/annonces/myannonces`, {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -51,9 +53,9 @@ const ProfileScreen = () => {
 
         if (response.ok) {
           const data = await response.json();
-          setMesPlantes(data);
+          setMesAnnonces(data);
         } else {
-          Alert.alert('Erreur', 'Impossible de récupérer les plantes.');
+          Alert.alert('Erreur', 'Impossible de récupérer les annonces.');
         }
       } catch (error) {
         Alert.alert('Erreur', 'Problème de réseau.');
@@ -61,31 +63,15 @@ const ProfileScreen = () => {
     };
 
     const fetchMesGardes = async () => {
-      try {
-        const token = await AsyncStorage.getItem('token');
-        const response = await fetch(`http://${IPV4}:3000/user/mes-gardes`, {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          setMesGardes(data);
-        } else {
-          Alert.alert('Erreur', 'Impossible de récupérer les gardes.');
-        }
-      } catch (error) {
-        Alert.alert('Erreur', 'Problème de réseau.');
-      }
+      // Ici, plus tard j'implémenterais la logique pour récupérer les "gardes"
+      setMesGardes([]); // Placeholder pour le moment
     };
 
     const fetchData = async () => {
       setIsLoading(true);
       await fetchUserInfo();
-      await fetchMesPlantes();
-      await fetchMesGardes();
+      await fetchMesAnnonces();
+      await fetchMesGardes(); 
       setIsLoading(false);
     };
 
@@ -101,19 +87,25 @@ const ProfileScreen = () => {
       );
     }
 
-    if (mesPlantes.length === 0) {
+    if (mesAnnonces.length === 0) {
       return (
         <View style={styles.emptyContainer}>
-          <Text>Vous n'avez fait garder aucune de vos plantes pour le moment 🌱</Text>
+          <Text>Vous n'avez posté aucune annonce pour le moment 🌱</Text>
         </View>
       );
     }
 
-    return mesPlantes.map((plante, index) => (
-      <View key={index} style={styles.cardContainer}>
-        <Text>{plante.nom}</Text>
+    return (
+      <View style={styles.cardsWrapper}>
+        {mesAnnonces.map((annonce, index) => (
+          <CardProfil
+            key={index}
+            imageUrl={`http://${IPV4}:3000/annonces/image/${annonce.photo}`}
+            onPress={() => navigation.navigate('DetailPoste', { annonce })}
+          />
+        ))}
       </View>
-    ));
+    );
   };
 
   const renderMesGardes = () => {
@@ -133,51 +125,45 @@ const ProfileScreen = () => {
       );
     }
 
-    return mesGardes.map((garde, index) => (
-      <View key={index} style={styles.cardContainer}>
-        <Text>{garde.nom}</Text>
+    return (
+      <View style={styles.cardsWrapper}>
+        {/* Logique pour afficher les gardes une fois implémentée */}
       </View>
-    ));
+    );
   };
 
   return (
     <View style={styles.container}>
-      {!showSettings ? (
-        <View>
-          <View style={styles.headerContainer}>
-            <Text style={styles.headerText}>Bon retour, {userInfo.prenom}</Text>
-          </View>
-          <View style={styles.tabContainer}>
-            <TouchableOpacity
-              onPress={() => setActiveTab('mesPlantes')}
-              style={[
-                styles.tabButton,
-                activeTab === 'mesPlantes' && styles.activeTabButton,
-              ]}
-            >
-              <Text style={activeTab === 'mesPlantes' ? styles.activeTabText : styles.tabText}>
-                🌱 Mes plantes
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => setActiveTab('mesGardes')}
-              style={[
-                styles.tabButton,
-                activeTab === 'mesGardes' && styles.activeTabButton,
-              ]}
-            >
-              <Text style={activeTab === 'mesGardes' ? styles.activeTabText : styles.tabText}>
-                🌿 Mes gardes
-              </Text>
-            </TouchableOpacity>
-          </View>
-          <ScrollView style={styles.contentContainer}>
-            {activeTab === 'mesPlantes' ? renderMesPlantes() : renderMesGardes()}
-          </ScrollView>
-        </View>
-      ) : (
-        <ParametresProfil onBack={goBack} />
-      )}
+      <View style={styles.headerContainer}>
+        <Text style={styles.headerText}>Bon retour, {userInfo.prenom}</Text>
+      </View>
+      <View style={styles.tabContainer}>
+        <TouchableOpacity
+          onPress={() => setActiveTab('mesPlantes')}
+          style={[
+            styles.tabButton,
+            activeTab === 'mesPlantes' && styles.activeTabButton,
+          ]}
+        >
+          <Text style={activeTab === 'mesPlantes' ? styles.activeTabText : styles.tabText}>
+            🌱 Mes plantes
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => setActiveTab('mesGardes')}
+          style={[
+            styles.tabButton,
+            activeTab === 'mesGardes' && styles.activeTabButton,
+          ]}
+        >
+          <Text style={activeTab === 'mesGardes' ? styles.activeTabText : styles.tabText}>
+            🌿 Mes gardes
+          </Text>
+        </TouchableOpacity>
+      </View>
+      <ScrollView style={styles.contentContainer}>
+        {activeTab === 'mesPlantes' ? renderMesPlantes() : renderMesGardes()}
+      </ScrollView>
     </View>
   );
 };
@@ -186,7 +172,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
-    paddingTop: 110, // Espace ajouté pour compenser la hauteur du header
+    paddingTop: 110,
     paddingHorizontal: 20,
   },
   headerContainer: {
@@ -224,17 +210,12 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     flex: 1,
+    marginTop: 20,
   },
-  cardContainer: {
-    backgroundColor: '#fff',
-    padding: 20,
-    marginVertical: 10,
-    borderRadius: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 2,
+  cardsWrapper: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
   },
   emptyContainer: {
     paddingVertical: 50,

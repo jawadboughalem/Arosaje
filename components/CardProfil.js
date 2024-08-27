@@ -1,11 +1,11 @@
 import React from 'react';
-import { View, Image, StyleSheet } from 'react-native';
+import { View, Image, StyleSheet, TouchableOpacity } from 'react-native';
 
-const CardProfil = ({ imageUrl }) => {
+const CardProfil = ({ imageUrl, onPress }) => {
   return (
-    <View style={styles.photo}>
+    <TouchableOpacity style={styles.photo} onPress={onPress}>
       <Image source={{ uri: imageUrl }} style={styles.photoImage} />
-    </View>
+    </TouchableOpacity>
   );
 };
 
