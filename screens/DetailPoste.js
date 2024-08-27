@@ -9,7 +9,6 @@ const DetailPoste = ({ route }) => {
   const buttonAnimation = new Animated.Value(1);
 
   const handleJeGarde = () => {
-    console.log('Navigue vers Conversation avec ownerId:', annonce.code_Utilisateurs, 'annonceId:', annonce.id);
     navigation.navigate('MessagesStack', {
       screen: 'Conversation',
       params: { ownerId: annonce.code_Utilisateurs, annonceId: annonce.id },
@@ -56,7 +55,7 @@ const DetailPoste = ({ route }) => {
             style={styles.button}
             onPress={() => {
               handleJeGarde();
-              animateButton();
+              animateButton(); // Animation du bouton lors du clic
             }}
           >
             <Text style={styles.buttonText}>JE GARDE</Text>

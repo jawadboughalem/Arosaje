@@ -4,6 +4,9 @@ import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 const { IPV4 } = require('../Backend//config/config');
 
+// Remplacez la clé botaniste ici
+const BOTANIST_SECRET_KEY = '2468';
+
 export default function Sign() {
     const navigation = useNavigation();
 
@@ -13,6 +16,7 @@ export default function Sign() {
         email: '',
         password: '',
         isBotanist: false,
+        botanistKey: '', // Ajout du champ botanistKey
     });
     
     const [errors, setErrors] = useState({});
@@ -41,6 +45,7 @@ export default function Sign() {
                 email: '',
                 password: '',
                 isBotanist: false,
+                botanistKey: '', // Réinitialisation du champ botanistKey
             });
             setErrors({});
         }, [])
@@ -80,6 +85,10 @@ export default function Sign() {
             showAlert("L'email n'est pas valide.");
         }
         if (!formData.password.trim()) validationErrors.password = "Le mot de passe est requis.";
+        if (formData.isBotanist && formData.botanistKey !== BOTANIST_SECRET_KEY) {
+            validationErrors.botanistKey = "La clé botaniste est incorrecte.";
+            showAlert("La clé botaniste est incorrecte.");
+        }
         setErrors(validationErrors);
 
         if (Object.keys(validationErrors).length > 0) {
@@ -192,6 +201,8 @@ export default function Sign() {
                                 <TextInput 
                                     style={styles.botanistInput}
                                     placeholder="Code Botaniste" 
+                                    value={formData.botanistKey}
+                                    onChangeText={handleTextChange('botanistKey')} 
                                     keyboardType="numeric"
                                     maxLength={5}
                                 />

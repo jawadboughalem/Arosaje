@@ -7,7 +7,7 @@ const Carte = () => {
         <View style={styles.container}>
             <MapView
                 style={styles.map}
-                provider={MapView.PROVIDER_GOOGLE} // Utilisez Google Maps
+                provider={MapView.PROVIDER_GOOGLE} //Les données sont en dures pour l'instant pour le MSPR 2, il faudra ajouter la localisation 
                 initialRegion={{
                     latitude: 37.78825,
                     longitude: -122.4324,

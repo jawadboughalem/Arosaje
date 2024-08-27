@@ -1,37 +1,32 @@
 const bcrypt = require('bcrypt');
 const { createUser, getUserByEmail } = require('../models/authModel');
-const { generateToken } = require('../utils/jwt'); // Assurez-vous que le chemin est correct
+const { generateToken } = require('../utils/jwt'); 
 
 const signup = async (req, res) => {
     const { name, surname, email, password, isBotanist } = req.body;
     const botanistValue = isBotanist ? 1 : 0;
 
-    console.log('Starting signup process');
-    console.log(`Received data: name=${name}, surname=${surname}, email=${email}, botanist=${botanistValue}`);
-
     try {
-        const hashedPassword = await bcrypt.hash(password, 10);
-        console.log('Password hashed successfully');
-        
+        const hashedPassword = await bcrypt.hash(password, 10); // Je hash le mot de passe
+
         createUser(name, surname, email, hashedPassword, botanistValue, (err, userId) => {
             if (err) {
                 console.error('Database insertion error:', err.message);
                 return res.status(500).json({ error: 'Erreur lors de l\'insertion dans la base de données', details: err.message });
             }
-            console.log('User created successfully with ID:', userId);
             res.status(200).json({ message: 'Inscription réussie', userId });
         });
     } catch (err) {
-        console.error('Error during signup:', err.message);
+        console.error('Error during signup:', err.message); // Log important pour déboguer l'inscription
         res.status(500).json({ error: 'Erreur lors de l\'inscription', details: err.message });
     }
 };
 
 const login = async (req, res) => {
     const { email, password } = req.body;
-    console.log(`Attempting login for email: ${email}`);
 
     try {
+        // Je récupère l'utilisateur à partir de l'email
         getUserByEmail(email, async (err, user) => {
             if (err) {
                 console.error('Database error:', err.message);
@@ -39,28 +34,21 @@ const login = async (req, res) => {
             }
 
             if (!user) {
-                console.warn('No user found for email:', email);
-                return res.status(400).json({ error: 'Email ou mot de passe incorrect' });
+                return res.status(400).json({ error: 'Email ou mot de passe incorrect' }); // Email non trouvé
             }
 
-            console.log('User found:', user);
-            console.log('Comparing passwords:', password, user.password);
-
             try {
+                // Je compare les mots de passe
                 const isPasswordValid = await bcrypt.compare(password, user.password);
                 if (!isPasswordValid) {
-                    console.warn('Incorrect password for email:', email);
-                    return res.status(400).json({ error: 'Email ou mot de passe incorrect' });
+                    return res.status(400).json({ error: 'Email ou mot de passe incorrect' }); // Mot de passe incorrect
                 }
 
-                const token = generateToken(user.Code_Utilisateurs);
-                console.log('Token generated:', token);
-
-                console.log('Login successful for user:', user.Code_Utilisateurs);
+                const token = generateToken(user.Code_Utilisateurs); // Je génère un token
                 res.status(200).json({ token });
 
             } catch (error) {
-                console.error('Error during password comparison:', error.message);
+                console.error('Error during password comparison:', error.message); // Log en cas de problème avec bcrypt
                 return res.status(500).json({ error: 'Erreur lors de la comparaison du mot de passe', details: error.message });
             }
         });
@@ -72,7 +60,6 @@ const login = async (req, res) => {
 };
 
 const logout = (req, res) => {
-    // Pour la logique d'invalidation du token
     res.status(200).json({ message: 'Déconnexion réussie' });
 };
 

@@ -46,7 +46,6 @@ const Conseils = ({ route }) => {
     const checkBotanistStatus = async () => {
       try {
         const status = await AsyncStorage.getItem('isBotanist');
-        console.log('Botanist status from AsyncStorage:', status);
         if (status === '1') {
           setIsBotanist(true);
         } else {
@@ -65,18 +64,14 @@ const Conseils = ({ route }) => {
       const response = await fetch(`http://${IPV4}:3000/conseils/conseils`);
       
       const responseText = await response.text();
-      console.log('Response Status:', response.status);
-      console.log('Response Text:', responseText);
   
       if (response.ok) {
         const data = JSON.parse(responseText);
         setThemes((prevThemes) => {
-          return prevThemes.map((theme) => {
-            return {
-              ...theme,
-              conseils: data.filter((conseil) => conseil.Theme === theme.name),
-            };
-          });
+          return prevThemes.map((theme) => ({
+            ...theme,
+            conseils: data.filter((conseil) => conseil.Theme === theme.name),
+          }));
         });
       } else {
         console.error('Erreur lors de la récupération des conseils:', responseText);
@@ -87,7 +82,6 @@ const Conseils = ({ route }) => {
   };
   
   const deleteConseil = async (id) => {
-    console.log('Delete function called with id:', id);
     try {
       const response = await fetch(`http://${IPV4}:3000/conseils/delete/${id}`, {
         method: 'DELETE',
@@ -117,7 +111,6 @@ const Conseils = ({ route }) => {
 
       if (route.params?.newConseil) {
         const { newConseil } = route.params;
-        console.log('Nouveau conseil reçu:', newConseil);
         setThemes((prevThemes) =>
           prevThemes.map((theme) =>
             theme.name === newConseil.Theme && !theme.conseils.some(c => c.Titre === newConseil.Titre && c.Description === newConseil.Description)
@@ -168,13 +161,12 @@ const Conseils = ({ route }) => {
             {themes
               .find((theme) => theme.id === selectedTheme)
               .conseils.map((conseil, index) => {
-                console.log('Rendering conseil:', conseil);
                 return (
                   <Animatable.View key={index} style={styles.conseilCard} animation="fadeInUp" delay={index * 100}>
                     <CardConseil 
                       conseil={conseil} 
                       onDelete={deleteConseil} 
-                      onEdit={handleEditConseil}  // Passe la fonction ici
+                      onEdit={handleEditConseil}  
                     />
                   </Animatable.View>
                 );
