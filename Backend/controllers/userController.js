@@ -1,4 +1,4 @@
-const { getUserById, updateUserPassword, getUserInfoFromDb, updateUserPhoto, getUserPhoto } = require('../models/userModel');
+const { getUserById, updateUserPassword, getUserInfoFromDb, updateUserPhoto, getUserPhoto, getUserByBotanist } = require('../models/userModel');
 const bcrypt = require('bcrypt');
 const sharp = require('sharp');
 const path = require('path');
@@ -130,17 +130,20 @@ const getUserProfilePic = (req, res) => {
   });
 };
 
-const getBotanists = (req, res) => {
-  getUserByBotanist((err, botanists) => {
+// Vérification si l'utilisateur est un botaniste
+const checkIfBotanist = (req, res) => {
+  const userId = req.userId;
+
+  getUserByBotanist(userId, (err, isBotanist) => {
     if (err) {
-      return res.status(500).json({ error: 'Erreur lors de la récupération des utilisateurs botanistes' });
+      return res.status(500).json({ error: 'Erreur lors de la vérification du statut de botaniste' });
     }
 
-    if (!botanists || botanists.length === 0) {
-      return res.status(404).json({ error: 'Aucun botaniste trouvé' });
+    if (isBotanist === null) {
+      return res.status(404).json({ error: 'Utilisateur non trouvé' });
     }
 
-    res.status(200).json(botanists); // Retourne la liste des botanistes
+    res.status(200).json({ isBotanist: isBotanist === 1 }); // Retourne true si botaniste, sinon false
   });
 };
 
@@ -150,5 +153,5 @@ module.exports = {
   verifyPassword,
   updateUserProfilePic,
   getUserProfilePic,
-  getBotanists,
+  checkIfBotanist, 
 };

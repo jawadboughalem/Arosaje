@@ -4,8 +4,10 @@ const getUserById = (userId, callback) => {
   const query = 'SELECT * FROM utilisateurs WHERE Code_Utilisateurs = ?';
   db.get(query, [userId], (err, row) => {
     if (err) {
+      console.error('Erreur lors de la récupération de l\'utilisateur:', err);
       return callback(err);
     }
+    console.log('Utilisateur récupéré:', row);
     callback(null, row);
   });
 };
@@ -26,6 +28,9 @@ const getUserInfoFromDb = (userId, callback) => {
 const updateUserPassword = (userId, hashedPassword, callback) => {
   const query = 'UPDATE utilisateurs SET password = ? WHERE Code_Utilisateurs = ?';
   db.run(query, [hashedPassword, userId], (err) => {
+    if (err) {
+      console.error('Erreur lors de la mise à jour du mot de passe:', err);
+    }
     callback(err);
   });
 };
@@ -45,13 +50,15 @@ const getUserPhoto = (id, callback) => {
   });
 };
 
-const getUserByBotanist = (callback) => {
-  const query = 'SELECT * FROM utilisateurs WHERE botaniste = 1';
-  db.all(query, [], (err, rows) => {  
+
+const getUserByBotanist = (userId, callback) => {
+  const query = 'SELECT botaniste FROM utilisateurs WHERE Code_Utilisateurs = ?';
+  db.get(query, [userId], (err, row) => {
     if (err) {
+      console.error('Erreur lors de la récupération du statut de botaniste:', err);
       return callback(err);
     }
-    callback(null, rows);
+    callback(null, row ? row.botaniste : null); // Retourne le statut botaniste
   });
 };
 
