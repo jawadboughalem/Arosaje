@@ -1,11 +1,10 @@
-const { getUserById, updateUserPassword, getUserInfoFromDb, updateUserPhoto, getUserPhoto, getUserByBotanist } = require('../models/userModel');
+const { getUserById, updateUserPassword, getUserInfoFromDb, updateUserPhoto, getUserPhoto, isUserBotanist } = require('../models/userModel');
 const bcrypt = require('bcrypt');
 const sharp = require('sharp');
 const path = require('path');
 const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
 
-// Récupération des informations de l'utilisateur
 const getUserInfo = (req, res) => {
   const userId = req.userId;
 
@@ -22,7 +21,6 @@ const getUserInfo = (req, res) => {
   });
 };
 
-// Changement du mot de passe de l'utilisateur
 const changePassword = (req, res) => {
   const userId = req.userId;
   const { currentPassword, newPassword } = req.body;
@@ -57,7 +55,6 @@ const changePassword = (req, res) => {
   });
 };
 
-// Vérification du mot de passe actuel
 const verifyPassword = (req, res) => {
   const userId = req.userId;
   const { currentPassword } = req.body;
@@ -81,7 +78,6 @@ const verifyPassword = (req, res) => {
   });
 };
 
-// Mise à jour de la photo de profil de l'utilisateur
 const updateUserProfilePic = async (req, res) => {
   const userId = req.userId;
   const photoBuffer = req.file.buffer;
@@ -89,12 +85,10 @@ const updateUserProfilePic = async (req, res) => {
   const filePath = path.join(__dirname, '../uploads', fileName);
 
   try {
-    // Conversion de l'image en WebP
     await sharp(photoBuffer)
       .webp({ quality: 80 })
       .toFile(filePath);
 
-    // Mise à jour du nom de fichier dans la base de données
     updateUserPhoto(userId, fileName, (err) => {
       if (err) {
         return res.status(500).json({ error: 'Erreur lors de la mise à jour de la photo de profil' });
@@ -106,7 +100,6 @@ const updateUserProfilePic = async (req, res) => {
   }
 };
 
-// Récupération de la photo de profil de l'utilisateur
 const getUserProfilePic = (req, res) => {
   const userId = req.userId;
 
@@ -123,18 +116,17 @@ const getUserProfilePic = (req, res) => {
 
     if (fs.existsSync(filePath)) {
       res.setHeader('Content-Type', 'image/webp');
-      res.status(200).sendFile(filePath); // Retourne la photo de profil
+      res.status(200).sendFile(filePath);
     } else {
       res.status(404).json({ error: 'Photo de profil non trouvée' });
     }
   });
 };
 
-// Vérification si l'utilisateur est un botaniste
 const checkIfBotanist = (req, res) => {
   const userId = req.userId;
 
-  getUserByBotanist(userId, (err, isBotanist) => {
+  isUserBotanist(userId, (err, isBotanist) => {
     if (err) {
       return res.status(500).json({ error: 'Erreur lors de la vérification du statut de botaniste' });
     }
@@ -143,7 +135,7 @@ const checkIfBotanist = (req, res) => {
       return res.status(404).json({ error: 'Utilisateur non trouvé' });
     }
 
-    res.status(200).json({ isBotanist: isBotanist === 1 }); // Retourne true si botaniste, sinon false
+    res.status(200).json({ isBotanist: isBotanist === 1 });
   });
 };
 

@@ -90,7 +90,7 @@ const ProfileScreen = () => {
     if (mesAnnonces.length === 0) {
       return (
         <View style={styles.emptyContainer}>
-          <Text>Vous n'avez posté aucune annonce pour le moment 🌱</Text>
+          <Text>Vous n'avez encore posté aucune annonce 🌱</Text>
         </View>
       );
     }

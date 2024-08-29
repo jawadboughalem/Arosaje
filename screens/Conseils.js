@@ -45,33 +45,22 @@ const Conseils = ({ route }) => {
   useEffect(() => {
     const fetchUserInfo = async () => {
       const token = await AsyncStorage.getItem('token');
-      
-
       if (token) {
         try {
-          const response = await fetch(`http://${IPV4}:3000/botaniste/is-botanist`, {
+          const response = await fetch(`http://${IPV4}:3000/user/is-botanist`, {
             method: 'GET',
             headers: {
-              'Authorization': `Bearer ${token}`,
+              'Authorization': `Bearer ${token}`, 
             },
           });
 
-          console.log('Statut de la réponse:', response.status);
-          console.log('En-têtes de la réponse:', response.headers);
-
           if (response.ok) {
             const data = await response.json();
-            console.log('Données JSON reçues:', data);
-
-            // Déterminez si l'utilisateur est un botaniste
-            setIsBotanist(data.isBotanist); // Modifiez ici selon la structure des données
-            console.log('Statut botaniste:', data.isBotanist);
+            setIsBotanist(data.isBotanist);
           } else {
-            console.error('Erreur lors de la récupération des données:', response.statusText);
             Alert.alert('Erreur', 'Impossible de récupérer le statut botaniste.');
           }
         } catch (error) {
-          console.error('Erreur lors de la requête fetch:', error);
           Alert.alert('Erreur', 'Problème de réseau.');
         }
       } else {
@@ -83,54 +72,69 @@ const Conseils = ({ route }) => {
   }, []);
 
   const fetchConseils = async () => {
+    const token = await AsyncStorage.getItem('token');
+    if (!token) {
+      Alert.alert('Erreur', 'Aucun token disponible.');
+      return;
+    }
+
     try {
-      const response = await fetch(`http://${IPV4}:3000/conseils/conseils`);
-      const responseText = await response.text();
+      const response = await fetch(`http://${IPV4}:3000/conseils/conseils`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,  // Inclure le token ici
+        },
+      });
 
       if (response.ok) {
-        const data = JSON.parse(responseText);
+        const data = await response.json();
         setThemes((prevThemes) => {
-          return prevThemes.map((theme) => {
-            return {
-              ...theme,
-              conseils: data.filter((conseil) => conseil.Theme === theme.name),
-            };
-          });
+          return prevThemes.map((theme) => ({
+            ...theme,
+            conseils: data.filter((conseil) => conseil.Theme === theme.name),
+          }));
         });
       } else {
-        console.error('Erreur lors de la récupération des conseils:', responseText);
+        Alert.alert('Erreur', 'Impossible de récupérer les conseils.');
       }
     } catch (error) {
-      console.error('Erreur lors du chargement des conseils:', error);
+      Alert.alert('Erreur', 'Problème de réseau.');
     }
   };
 
   const deleteConseil = async (id) => {
-    console.log('Fonction de suppression appelée avec l\'id:', id);
+    const token = await AsyncStorage.getItem('token');
+    if (!token) {
+      Alert.alert('Erreur', 'Aucun token disponible.');
+      return;
+    }
+
     try {
       const response = await fetch(`http://${IPV4}:3000/conseils/delete/${id}`, {
         method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
       });
+
       if (response.ok) {
         setThemes((prevThemes) =>
-          prevThemes.map((theme) =>
-            ({
-              ...theme,
-              conseils: theme.conseils.filter((conseil) => conseil.Code_Conseils !== id),
-            })
-          )
+          prevThemes.map((theme) => ({
+            ...theme,
+            conseils: theme.conseils.filter((conseil) => conseil.Code_Conseils !== id),
+          }))
         );
       } else {
-        console.error('Erreur lors de la suppression du conseil');
+        Alert.alert('Erreur', 'Impossible de supprimer le conseil.');
       }
     } catch (error) {
-      console.error('Erreur lors de la suppression du conseil:', error);
+      Alert.alert('Erreur', 'Problème de réseau.');
     }
   };
 
   const handleEditConseil = (conseil) => {
-    if (isBotanist) {
-      Alert.alert('Modification interdite', 'Vous ne pouvez pas modifier les conseils en tant que botaniste.');
+    if (!isBotanist) {
+      Alert.alert('Modification interdite', 'Seuls les botanistes peuvent modifier les conseils.');
       return;
     }
     navigation.navigate('FormulaireBotaniste', { conseil });
@@ -139,10 +143,9 @@ const Conseils = ({ route }) => {
   useFocusEffect(
     useCallback(() => {
       fetchConseils();
-      
+
       if (route.params?.newConseil) {
         const { newConseil } = route.params;
-        console.log('Nouveau conseil reçu:', newConseil);
         setThemes((prevThemes) =>
           prevThemes.map((theme) =>
             theme.name === newConseil.Theme && !theme.conseils.some(c => c.Titre === newConseil.Titre && c.Description === newConseil.Description)
@@ -192,21 +195,19 @@ const Conseils = ({ route }) => {
           <View style={styles.conseilsContainer}>
             {themes
               .find((theme) => theme.id === selectedTheme)
-              .conseils.map((conseil, index) => {
-                console.log('Affichage du conseil:', conseil);
-                return (
-                  <Animatable.View key={index} style={styles.conseilCard} animation="fadeInUp" delay={index * 100}>
-                    <CardConseil 
-                      conseil={conseil} 
-                      onDelete={!isBotanist ? deleteConseil : undefined}  // Désactiver la suppression pour les botanistes
-                      onEdit={handleEditConseil}  // Désactiver la modification pour les botanistes
-                    />
-                  </Animatable.View>
-                );
-              })}
+              .conseils.map((conseil, index) => (
+                <Animatable.View key={index} style={styles.conseilCard} animation="fadeInUp" delay={index * 100}>
+                  <CardConseil 
+                    conseil={conseil} 
+                    onDelete={isBotanist ? () => deleteConseil(conseil.Code_Conseils) : undefined}  // Désactiver la suppression pour les non-botanistes
+                    onEdit={isBotanist ? () => handleEditConseil(conseil) : undefined}  // Désactiver la modification pour les non-botanistes
+                    isBotanist={isBotanist}  // Passer le statut botaniste comme prop
+                  />
+                </Animatable.View>
+              ))}
           </View>
         </ScrollView>
-        {!isBotanist && (
+        {isBotanist && (  // Afficher le bouton "Ajouter" uniquement si l'utilisateur est un botaniste
           <Animatable.View animation="bounceIn" style={styles.addButtonContainer}>
             <TouchableOpacity style={styles.addButton} onPress={() => navigation.navigate('FormulaireBotaniste', { themes })}>
               <Ionicons name="add" size={40} color="white" />
