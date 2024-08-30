@@ -131,6 +131,10 @@ function MessagesStack() {
         options={{
           header: () => <Header title="Messages" />,
         }}
+        listeners={{
+          // Pas besoin de cacher ou afficher la TabBar pour l'écran Messages
+          focus: () => setIsTabBarVisible(true),
+        }}
       />
       <Stack.Screen
         name="Conversation"

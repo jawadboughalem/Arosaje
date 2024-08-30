@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { View, TextInput, TouchableOpacity, FlatList, StyleSheet, KeyboardAvoidingView, Platform, Animated, Text, Image } from 'react-native';
+import { View, TextInput, TouchableOpacity, FlatList, StyleSheet, KeyboardAvoidingView, Platform, Animated, Text, Image, BackHandler } from 'react-native';
 import { MaterialIcons, FontAwesome, Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import io from 'socket.io-client';
 import { IPV4 } from '../Backend/config/config';
 import Header from '../components/HeaderMessage';
+import { CommonActions } from '@react-navigation/native';
 
 const socket = io(`http://${IPV4}:8000`);
 
@@ -14,6 +15,17 @@ const Conversation = ({ route, navigation }) => {
   const [text, setText] = useState('');
   const [showSendButton, setShowSendButton] = useState(false);
   const [buttonOpacity] = useState(new Animated.Value(0));
+
+  const handleBackPress = () => {
+    // Réinitialise la pile de navigation et redirige vers l'écran Messages
+    navigation.dispatch(
+      CommonActions.reset({
+        index: 0,
+        routes: [{ name: 'Messages' }],
+      })
+    );
+    return true;
+  };
 
   useEffect(() => {
     socket.on('SERVER_MSG', (msg) => {
@@ -25,13 +37,27 @@ const Conversation = ({ route, navigation }) => {
     };
   }, []);
 
+  useEffect(() => {
+    const backAction = () => {
+      navigation.navigate('Messages');
+      return true; // Empêche la fermeture automatique de l'écran
+    };
+
+    const backHandler = BackHandler.addEventListener(
+      'hardwareBackPress',
+      handleBackPress
+    );
+
+    return () => backHandler.remove();
+  }, [navigation]);
+
   const handleTextChange = (value) => {
     setText(value);
     if (value.length > 0) {
       setShowSendButton(true);
       Animated.timing(buttonOpacity, {
         toValue: 1,
-        duration: 150, // Animation plus rapide et fluide
+        duration: 150,
         useNativeDriver: true,
       }).start();
     } else {
@@ -90,8 +116,14 @@ const Conversation = ({ route, navigation }) => {
     >
       <Header
         userName="John Doe"
-        userImage="https://ih1.redbubble.net/image.1046392292.3346/st,large,507x507-pad,600x600,f8f8f8.jpg"
-        onBackPress={() => navigation.goBack()}
+        onBackPress={() => {
+          navigation.dispatch(
+            CommonActions.reset({
+              index: 0,
+              routes: [{ name: 'Messages' }],
+            })
+          );
+        }}
       />
 
       <FlatList
@@ -115,7 +147,7 @@ const Conversation = ({ route, navigation }) => {
         />
         <TouchableOpacity onPress={pickImage} style={styles.iconButton}>
           <Text>
-            <MaterialIcons name="photo-library" size={24} color="#fff" /> {/* Icône de galerie */}
+            <MaterialIcons name="photo-library" size={24} color="#fff" />
           </Text>
         </TouchableOpacity>
         {showSendButton && (
@@ -172,10 +204,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     padding: 10,
-    backgroundColor: '#075E54', // Même couleur que le header
+    backgroundColor: '#075E54',
     borderRadius: 30,
     margin: 10,
-    height: 50, // Réduction de la taille
+    height: 50,
   },
   input: {
     flex: 1,
