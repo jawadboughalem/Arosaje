@@ -1,5 +1,4 @@
-
-name : Arosaje CI
+name : Main
 
 on :
   push:

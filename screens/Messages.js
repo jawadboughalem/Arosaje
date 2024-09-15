@@ -22,10 +22,11 @@ export default function Messages() {
     const fetchMessages = async () => {
       try {
         const response = await fetch(`http://${IPV4}:3000/messages/${ownerId}/${annonceId}`);
-        const data = await response.json()
+        const data = await response.json();
         setMessages(data);
         setIsLoading(false);
 
+        // Si une nouvelle conversation est nécessaire, je la crée ici
         if (ownerId && annonceId) {
           const conversationExists = data.some(
             (msg) => msg.ownerId === ownerId && msg.annonceId === annonceId
@@ -35,7 +36,7 @@ export default function Messages() {
           }
         }
       } catch (error) {
-        console.error('Error fetching messages:', error);
+        console.error('Erreur lors de la récupération des messages:', error);
         setIsLoading(false);
       }
     };
@@ -44,6 +45,7 @@ export default function Messages() {
   }, [IPV4, ownerId, annonceId]);
 
   const createConversation = (ownerId, annonceId) => {
+    // Je crée une nouvelle conversation si elle n'existe pas
     const newConversation = { ownerId, annonceId, userName: 'New User', lastMessage: 'Start of conversation', profilePic: 'url_to_default_image' };
     setMessages((prevMessages) => [...prevMessages, newConversation]);
   };
@@ -75,6 +77,7 @@ export default function Messages() {
   };
 
   const handleConversationPress = (conversation) => {
+    // Je navigue vers la page de conversation avec les détails de la conversation sélectionnée
     navigation.navigate('Conversation', { ownerId: conversation.ownerId, annonceId: conversation.annonceId });
   };
 

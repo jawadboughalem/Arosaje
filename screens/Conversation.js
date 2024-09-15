@@ -1,19 +1,31 @@
 import React, { useState, useEffect } from 'react';
-import { View, TextInput, TouchableOpacity, FlatList, StyleSheet, KeyboardAvoidingView, Platform, Animated, Text } from 'react-native';
-import { MaterialIcons, MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
+import { View, TextInput, TouchableOpacity, FlatList, StyleSheet, KeyboardAvoidingView, Platform, Animated, Text, Image, BackHandler } from 'react-native';
+import { MaterialIcons, FontAwesome, Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import io from 'socket.io-client';
 import { IPV4 } from '../Backend/config/config';
-import HeaderConversation from '../components/HeaderConversation';
+import Header from '../components/HeaderMessage';
+import { CommonActions } from '@react-navigation/native';
 
 const socket = io(`http://${IPV4}:8000`);
 
-const Conversation = ({ route }) => {
-  const { ownerId, annonceId, userName } = route.params;
+const Conversation = ({ route, navigation }) => {
+  const { ownerId, annonceId } = route.params;
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState('');
   const [showSendButton, setShowSendButton] = useState(false);
   const [buttonOpacity] = useState(new Animated.Value(0));
+
+  const handleBackPress = () => {
+    // Réinitialise la pile de navigation et redirige vers l'écran Messages
+    navigation.dispatch(
+      CommonActions.reset({
+        index: 0,
+        routes: [{ name: 'Messages' }],
+      })
+    );
+    return true;
+  };
 
   useEffect(() => {
     socket.on('SERVER_MSG', (msg) => {
@@ -25,19 +37,33 @@ const Conversation = ({ route }) => {
     };
   }, []);
 
+  useEffect(() => {
+    const backAction = () => {
+      navigation.navigate('Messages');
+      return true; // Empêche la fermeture automatique de l'écran
+    };
+
+    const backHandler = BackHandler.addEventListener(
+      'hardwareBackPress',
+      handleBackPress
+    );
+
+    return () => backHandler.remove();
+  }, [navigation]);
+
   const handleTextChange = (value) => {
     setText(value);
     if (value.length > 0) {
       setShowSendButton(true);
       Animated.timing(buttonOpacity, {
         toValue: 1,
-        duration: 200,
+        duration: 150,
         useNativeDriver: true,
       }).start();
     } else {
       Animated.timing(buttonOpacity, {
         toValue: 0,
-        duration: 200,
+        duration: 150,
         useNativeDriver: true,
       }).start(() => setShowSendButton(false));
     }
@@ -51,7 +77,7 @@ const Conversation = ({ route }) => {
     };
     socket.emit('CLIENT_MSG', msg);
     setText('');
-    handleTextChange(''); // Réinitialiser l'état du texte
+    handleTextChange('');
   };
 
   const pickImage = async () => {
@@ -88,7 +114,17 @@ const Conversation = ({ route }) => {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       keyboardVerticalOffset={80}
     >
-      <HeaderConversation userName={userName} />
+      <Header
+        userName="John Doe"
+        onBackPress={() => {
+          navigation.dispatch(
+            CommonActions.reset({
+              index: 0,
+              routes: [{ name: 'Messages' }],
+            })
+          );
+        }}
+      />
 
       <FlatList
         data={messages}
@@ -99,29 +135,27 @@ const Conversation = ({ route }) => {
       />
 
       <View style={styles.inputContainer}>
-        <TouchableOpacity onPress={pickImage} style={styles.iconButton}>
-          <MaterialIcons name="photo-camera" size={24} color="#0091FF" />
+        <TouchableOpacity style={styles.iconButton}>
+          <FontAwesome name="smile-o" size={24} color="#fff" />
         </TouchableOpacity>
         <TextInput
           style={styles.input}
           placeholder="Votre message..."
           value={text}
           onChangeText={handleTextChange}
+          placeholderTextColor="#ddd"
         />
-        {!showSendButton && (
-          <View style={styles.iconsRight}>
-            <TouchableOpacity style={styles.iconButton}>
-              <MaterialCommunityIcons name="microphone" size={24} color="white" />
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.iconButton}>
-              <MaterialCommunityIcons name="image" size={24} color="white" />
-            </TouchableOpacity>
-          </View>
-        )}
+        <TouchableOpacity onPress={pickImage} style={styles.iconButton}>
+          <Text>
+            <MaterialIcons name="photo-library" size={24} color="#fff" />
+          </Text>
+        </TouchableOpacity>
         {showSendButton && (
           <Animated.View style={{ opacity: buttonOpacity }}>
             <TouchableOpacity onPress={sendMessage} style={styles.iconButton}>
-              <Ionicons name="send" size={24} color="#0091FF" />
+              <Text>
+                <Ionicons name="send" size={24} color="#fff" />
+              </Text>
             </TouchableOpacity>
           </Animated.View>
         )}
@@ -137,7 +171,7 @@ const styles = StyleSheet.create({
   },
   messages: {
     flex: 1,
-    marginBottom: 10, // Assure que la FlatList ne soit pas cachée par la barre de messages
+    marginBottom: 10,
   },
   messageList: {
     paddingVertical: 10,
@@ -170,19 +204,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     padding: 10,
-    backgroundColor: '#333333',
+    backgroundColor: '#075E54',
     borderRadius: 30,
     margin: 10,
+    height: 50,
   },
   input: {
     flex: 1,
     height: 40,
     paddingHorizontal: 10,
     color: 'white',
-  },
-  iconsRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
   },
   iconButton: {
     marginHorizontal: 5,

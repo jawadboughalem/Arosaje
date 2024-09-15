@@ -1,4 +1,3 @@
-// controllers/messageController.js
 const Message = require('../models/messageModel');
 
 const createMessage = (req, res) => {
@@ -6,7 +5,7 @@ const createMessage = (req, res) => {
     codeExpediteur: req.body.codeExpediteur,
     codeDestinataire: req.body.codeDestinataire,
     messageText: req.body.messageText,
-    dateEnvoi: new Date().toISOString()
+    dateEnvoi: new Date().toISOString() // Je fixe la date d'envoi à l'instant présent
   };
 
   Message.create(message, (err, newMessage) => {
@@ -18,7 +17,7 @@ const createMessage = (req, res) => {
 };
 
 const getAllMessages = (req, res) => {
-  const userId = req.params.userId;
+  const userId = req.params.userId; // Je récupère l'ID utilisateur
 
   Message.getAll(userId, (err, messages) => {
     if (err) {
@@ -30,9 +29,7 @@ const getAllMessages = (req, res) => {
 
 const getMessagesByConversation = (req, res) => {
   const userId = req.params.userId;
-  const annonceId = req.params.annonceId;
-
-  console.log(userId, annonceId)
+  const annonceId = req.params.annonceId; // Je récupère l'ID de l'annonce pour filtrer les messages
 
   Message.getByConversation(userId, annonceId, (err, messages) => {
     if (err) {

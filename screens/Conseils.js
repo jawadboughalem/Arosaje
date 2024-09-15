@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
@@ -43,55 +43,80 @@ const Conseils = ({ route }) => {
   const navigation = useNavigation();
 
   useEffect(() => {
-    const checkBotanistStatus = async () => {
-      try {
-        const status = await AsyncStorage.getItem('isBotanist');
-        console.log('Botanist status from AsyncStorage:', status);
-        if (status === '1') {
-          setIsBotanist(true);
-        } else {
-          setIsBotanist(true); // Correction ici
+    const fetchUserInfo = async () => {
+      const token = await AsyncStorage.getItem('token');
+      if (token) {
+        try {
+          const response = await fetch(`http://${IPV4}:3000/user/is-botanist`, {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${token}`, 
+            },
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            setIsBotanist(data.isBotanist);
+          } else {
+            Alert.alert('Erreur', 'Impossible de récupérer le statut botaniste.');
+          }
+        } catch (error) {
+          Alert.alert('Erreur', 'Problème de réseau.');
         }
-      } catch (error) {
-        console.error('Error retrieving botanist status:', error);
+      } else {
+        Alert.alert('Erreur', 'Aucun token disponible.');
       }
     };
 
-    checkBotanistStatus();
+    fetchUserInfo();
   }, []);
 
   const fetchConseils = async () => {
+    const token = await AsyncStorage.getItem('token');
+    if (!token) {
+      Alert.alert('Erreur', 'Aucun token disponible.');
+      return;
+    }
+
     try {
-      const response = await fetch(`http://${IPV4}:3000/conseils/conseils`);
-      
-      const responseText = await response.text();
-      console.log('Response Status:', response.status);
-      console.log('Response Text:', responseText);
-  
+      const response = await fetch(`http://${IPV4}:3000/conseils/conseils`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,  // Inclure le token ici
+        },
+      });
+
       if (response.ok) {
-        const data = JSON.parse(responseText);
+        const data = await response.json();
         setThemes((prevThemes) => {
-          return prevThemes.map((theme) => {
-            return {
-              ...theme,
-              conseils: data.filter((conseil) => conseil.Theme === theme.name),
-            };
-          });
+          return prevThemes.map((theme) => ({
+            ...theme,
+            conseils: data.filter((conseil) => conseil.Theme === theme.name),
+          }));
         });
       } else {
-        console.error('Erreur lors de la récupération des conseils:', responseText);
+        Alert.alert('Erreur', 'Impossible de récupérer les conseils.');
       }
     } catch (error) {
-      console.error('Erreur lors du chargement des conseils:', error);
+      Alert.alert('Erreur', 'Problème de réseau.');
     }
   };
-  
+
   const deleteConseil = async (id) => {
-    console.log('Delete function called with id:', id);
+    const token = await AsyncStorage.getItem('token');
+    if (!token) {
+      Alert.alert('Erreur', 'Aucun token disponible.');
+      return;
+    }
+
     try {
       const response = await fetch(`http://${IPV4}:3000/conseils/delete/${id}`, {
         method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
       });
+
       if (response.ok) {
         setThemes((prevThemes) =>
           prevThemes.map((theme) => ({
@@ -100,24 +125,27 @@ const Conseils = ({ route }) => {
           }))
         );
       } else {
-        console.error('Erreur lors de la suppression du conseil');
+        Alert.alert('Erreur', 'Impossible de supprimer le conseil.');
       }
     } catch (error) {
-      console.error('Erreur lors de la suppression du conseil:', error);
+      Alert.alert('Erreur', 'Problème de réseau.');
     }
   };
 
   const handleEditConseil = (conseil) => {
+    if (!isBotanist) {
+      Alert.alert('Modification interdite', 'Seuls les botanistes peuvent modifier les conseils.');
+      return;
+    }
     navigation.navigate('FormulaireBotaniste', { conseil });
   };
 
   useFocusEffect(
-    React.useCallback(() => {
+    useCallback(() => {
       fetchConseils();
 
       if (route.params?.newConseil) {
         const { newConseil } = route.params;
-        console.log('Nouveau conseil reçu:', newConseil);
         setThemes((prevThemes) =>
           prevThemes.map((theme) =>
             theme.name === newConseil.Theme && !theme.conseils.some(c => c.Titre === newConseil.Titre && c.Description === newConseil.Description)
@@ -167,21 +195,19 @@ const Conseils = ({ route }) => {
           <View style={styles.conseilsContainer}>
             {themes
               .find((theme) => theme.id === selectedTheme)
-              .conseils.map((conseil, index) => {
-                console.log('Rendering conseil:', conseil);
-                return (
-                  <Animatable.View key={index} style={styles.conseilCard} animation="fadeInUp" delay={index * 100}>
-                    <CardConseil 
-                      conseil={conseil} 
-                      onDelete={deleteConseil} 
-                      onEdit={handleEditConseil}  // Passe la fonction ici
-                    />
-                  </Animatable.View>
-                );
-              })}
+              .conseils.map((conseil, index) => (
+                <Animatable.View key={index} style={styles.conseilCard} animation="fadeInUp" delay={index * 100}>
+                  <CardConseil 
+                    conseil={conseil} 
+                    onDelete={isBotanist ? () => deleteConseil(conseil.Code_Conseils) : undefined}  // Désactiver la suppression pour les non-botanistes
+                    onEdit={isBotanist ? () => handleEditConseil(conseil) : undefined}  // Désactiver la modification pour les non-botanistes
+                    isBotanist={isBotanist}  // Passer le statut botaniste comme prop
+                  />
+                </Animatable.View>
+              ))}
           </View>
         </ScrollView>
-        {isBotanist && (
+        {isBotanist && (  // Afficher le bouton "Ajouter" uniquement si l'utilisateur est un botaniste
           <Animatable.View animation="bounceIn" style={styles.addButtonContainer}>
             <TouchableOpacity style={styles.addButton} onPress={() => navigation.navigate('FormulaireBotaniste', { themes })}>
               <Ionicons name="add" size={40} color="white" />

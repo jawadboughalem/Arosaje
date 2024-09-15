@@ -46,13 +46,19 @@ const ParametresProfil = () => {
           'Authorization': `Bearer ${token}`,
         },
       });
-
+  
+      if (response.status === 404) {
+        // Si le serveur répond avec un 404, cela signifie que l'utilisateur n'a pas de photo de profil
+        console.log('Aucune photo de profil trouvée pour cet utilisateur.'); 
+        return;
+      }
+  
       if (!response.ok) {
         throw new Error('Failed to fetch profile pic');
       }
-
+  
       const imageData = await response.blob();
-
+  
       // Convert Blob to Base64 string
       const reader = new FileReader();
       reader.readAsDataURL(imageData);
@@ -62,9 +68,9 @@ const ParametresProfil = () => {
       };
     } catch (error) {
       console.error('Erreur lors de la récupération de la photo de profil:', error);
-      Alert.alert('Une erreur est survenue lors de la récupération de la photo de profil.');
+      // Ne rien afficher si l'erreur est due à l'absence de photo de profil
     }
-  };
+  };  
 
   const handleVerifyCurrentPassword = async () => {
     if (!token) {

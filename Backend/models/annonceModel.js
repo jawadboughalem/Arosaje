@@ -2,7 +2,6 @@ const { db } = require('../config/db');
 
 const createAnnonce = (annonce, callback) => {
   const { nomPlante, description, localisation, dateDebut, dateFin, photo, userId } = annonce;
-  console.log('Paramètres pour l\'insertion SQL:', { userId, nomPlante, description, localisation, dateDebut, dateFin });
 
   const sql = `
     INSERT INTO postes (code_Utilisateurs, titre, description, datePoste, localisation) 
@@ -21,6 +20,8 @@ const createAnnonce = (annonce, callback) => {
       VALUES (?, ?, ?, ?);
     `;
     const photoParams = [new Date().getTime(), photo, userId, postId];
+    
+    // Insertion de la photo liée à l'annonce
     db.run(photoSql, photoParams, function(err) {
       if (err) {
         return callback(err);
@@ -31,6 +32,8 @@ const createAnnonce = (annonce, callback) => {
         UPDATE postes SET code_Photos = ? WHERE Code_Postes = ?;
       `;
       const updatePostParams = [photoId, postId];
+      
+      // Mise à jour de l'annonce avec l'ID de la photo
       db.run(updatePostSql, updatePostParams, function(err) {
         if (err) {
           return callback(err);
@@ -41,6 +44,8 @@ const createAnnonce = (annonce, callback) => {
           VALUES (?, ?, ?, ?, ?);
         `;
         const gardeParams = [postId, userId, 'Disponible', dateDebut, dateFin];
+        
+        // Insertion des détails de garde associés à l'annonce
         db.run(gardeSql, gardeParams, function(err) {
           if (err) {
             return callback(err);
@@ -55,16 +60,17 @@ const createAnnonce = (annonce, callback) => {
 const getAllAnnonces = (callback) => {
   const sql = `
     SELECT p.Code_Postes, p.titre, p.description, p.datePoste, p.localisation, ph.photo, g.DateDebut, g.DateFin
-FROM postes p
-LEFT JOIN photos ph ON p.Code_Postes = ph.code_Postes
-LEFT JOIN Gardes g ON p.Code_Postes = g.Code_Postes
-ORDER BY p.datePoste DESC;
+    FROM postes p
+    LEFT JOIN photos ph ON p.Code_Postes = ph.code_Postes
+    LEFT JOIN Gardes g ON p.Code_Postes = g.Code_Postes
+    ORDER BY p.datePoste DESC;
   `;
+  
+  // Récupération de toutes les annonces avec leurs détails
   db.all(sql, [], (err, rows) => {
     if (err) {
       return callback(err);
     }
-    console.log('Données récupérées de la base de données:', rows);
 
     const annonces = rows.map(row => ({
       ...row,
@@ -76,7 +82,34 @@ ORDER BY p.datePoste DESC;
   });
 };
 
+const getAnnoncesByUser = (userId, callback) => {
+  const sql = `
+    SELECT p.Code_Postes, p.titre, p.description, p.datePoste, p.localisation, ph.photo, g.DateDebut, g.DateFin
+    FROM postes p
+    LEFT JOIN photos ph ON p.Code_Postes = ph.code_Postes
+    LEFT JOIN Gardes g ON p.Code_Postes = g.Code_Postes
+    WHERE p.code_Utilisateurs = ?
+    ORDER BY p.datePoste DESC;
+  `;
+
+  db.all(sql, [userId], (err, rows) => {
+    if (err) {
+      return callback(err);
+    }
+
+    const annonces = rows.map(row => ({
+      ...row,
+      dateDebut: row.DateDebut ? new Date(row.DateDebut).toISOString() : null,
+      dateFin: row.DateFin ? new Date(row.DateFin).toISOString() : null,
+    }));
+
+    callback(null, annonces);
+  });
+};
+
+
 module.exports = {
   createAnnonce,
   getAllAnnonces,
+  getAnnoncesByUser,
 };

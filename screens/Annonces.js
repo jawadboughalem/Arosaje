@@ -7,7 +7,7 @@ import Card from '../components/Card';
 import { IPV4 } from '../Backend/config/config';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
-import MapView, { Marker } from 'react-native-maps';
+import MapView from 'react-native-maps';
 
 const CardsPage = () => {
     const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -34,10 +34,7 @@ const CardsPage = () => {
                 throw new Error('Erreur lors de la récupération des annonces');
             }
             let data = await response.json();
-
-            // Trier les annonces par datePoste, de la plus récente à la plus ancienne
             data.sort((a, b) => new Date(b.datePoste) - new Date(a.datePoste));
-
             setAnnonces(data);
         } catch (error) {
             console.error('Erreur lors de la récupération des annonces:', error);
@@ -58,7 +55,6 @@ const CardsPage = () => {
 
     const handleSearchPress = () => {
         setIsSearchOpen(true);
-
         Animated.timing(searchWidth, {
             toValue: 1,
             duration: 300,
@@ -72,7 +68,6 @@ const CardsPage = () => {
         Keyboard.dismiss();
         setIsSearchOpen(false);
         setSearchText('');
-
         Animated.timing(searchWidth, {
             toValue: 0,
             duration: 300,
@@ -102,7 +97,6 @@ const CardsPage = () => {
         const paddingToBottom = 20;
         const isCloseToBottom = layoutMeasurement.height + contentOffset.y >= contentSize.height - paddingToBottom;
         if (isCloseToBottom && visibleAnnonces < annonces.length && !isLoadingMore) {
-            console.log('Chargement des annonces supplémentaires...');
             handleLoadMore();
         }
     };
@@ -170,7 +164,7 @@ const CardsPage = () => {
                             userName={item.userName}
                             userImage={item.userImage}
                             status={item.status}
-                            datePoste={item.datePoste} // Passing the datePoste to Card
+                            datePoste={item.datePoste}
                         />
                     </TouchableOpacity>
                 )}
@@ -209,8 +203,7 @@ const CardsPage = () => {
                                         latitudeDelta: 0.0922,
                                         longitudeDelta: 0.0421,
                                     }}
-                                >
-                                </MapView>
+                                />
                             </View>
                         </View>
                     </Modal>

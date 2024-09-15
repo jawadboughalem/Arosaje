@@ -1,4 +1,3 @@
-// models/messageModel.js
 const { db } = require('../config/db');
 
 const Message = {
