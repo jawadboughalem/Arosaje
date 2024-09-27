@@ -6,7 +6,8 @@ import * as Animatable from 'react-native-animatable';
 import { Ionicons, FontAwesome5, MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
 import CardConseil from '../components/CardConseil';
 
-const { IPV4 } = require('../Backend/config/config');
+//import { IPV4 } from '../Backend/config/config';
+
 
 const getIcon = (iconName, selected) => {
   const iconColor = selected ? '#fff' : '#333';
@@ -47,7 +48,7 @@ const Conseils = ({ route }) => {
       const token = await AsyncStorage.getItem('token');
       if (token) {
         try {
-          const response = await fetch(`http://${IPV4}:3000/user/is-botanist`, {
+          const response = await fetch(`http://${process.env.EXPO_PUBLIC_API_KEY_IPV4}3000/user/is-botanist`, {
             method: 'GET',
             headers: {
               'Authorization': `Bearer ${token}`, 
@@ -79,7 +80,7 @@ const Conseils = ({ route }) => {
     }
 
     try {
-      const response = await fetch(`http://${IPV4}:3000/conseils/conseils`, {
+      const response = await fetch(`http://${process.env.EXPO_PUBLIC_API_KEY_IPV4}3000/conseils/conseils`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,  // Inclure le token ici
@@ -110,7 +111,7 @@ const Conseils = ({ route }) => {
     }
 
     try {
-      const response = await fetch(`http://${IPV4}:3000/conseils/delete/${id}`, {
+      const response = await fetch(`http://${process.env.EXPO_PUBLIC_API_KEY_IPV4}3000/conseils/delete/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,

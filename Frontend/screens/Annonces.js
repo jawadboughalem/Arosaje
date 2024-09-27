@@ -4,10 +4,12 @@ import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import Spinner from 'react-native-loading-spinner-overlay';
 import Card from '../components/Card';
-import { IPV4 } from '../Backend/config/config';
+//import { IPV4 } from '../Backend/config/config';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import MapView from 'react-native-maps';
+import 'dotenv/config';
+
 
 const CardsPage = () => {
     const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -25,7 +27,7 @@ const CardsPage = () => {
         try {
             setLoading(true);
             const token = await AsyncStorage.getItem('token');
-            const response = await fetch(`http://${IPV4}:3000/annonces/all`, {
+            const response = await fetch(`http://${process.env.EXPO_PUBLIC_API_KEY_IPV4}3000/annonces/all`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                 }

@@ -3,11 +3,10 @@ import { View, TextInput, TouchableOpacity, FlatList, StyleSheet, KeyboardAvoidi
 import { MaterialIcons, FontAwesome, Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import io from 'socket.io-client';
-import { IPV4 } from '../Backend/config/config';
+
 import Header from '../components/HeaderMessage';
 import { CommonActions } from '@react-navigation/native';
 
-const socket = io(`http://${IPV4}:8000`);
 
 const Conversation = ({ route, navigation }) => {
   const { ownerId, annonceId } = route.params;

@@ -2,7 +2,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Platform, ScrollView, KeyboardAvoidingView, Alert, Animated } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-const { IPV4 } = require('../Backend/config/config');
+//import { IPV4 } = require('../Backend/config/config');
+
 
 export default function Login({ navigation, setIsLoggedIn }) {
     const [formData, setFormData] = useState({
@@ -57,7 +58,7 @@ export default function Login({ navigation, setIsLoggedIn }) {
 
         if (Object.keys(validationErrors).length === 0) {
             try {
-                const response = await fetch(`http://${IPV4}:3000/auth/login`, {
+                const response = await fetch(`http://${process.env.EXPO_PUBLIC_API_KEY_IPV4}3000/auth/login`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

@@ -6,7 +6,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import moment from 'moment';
 
-const { IPV4 } = require('../Backend/config/config');
+//const { IPV4 } = require('../Backend/config/config');
 
 const FormulaireBotaniste = () => {
   const route = useRoute();
@@ -66,7 +66,7 @@ const FormulaireBotaniste = () => {
       console.log('Données soumises:', data);
 
       const response = route.params.conseil
-        ? await fetch(`http://${IPV4}:3000/conseils/update/${route.params.conseil.Code_Conseils}`, {
+        ? await fetch(`http://${process.env.EXPO_PUBLIC_API_KEY_IPV4}3000/conseils/update/${route.params.conseil.Code_Conseils}`, {
             method: 'PUT',
             headers: {
               'Content-Type': 'application/json',
@@ -74,7 +74,7 @@ const FormulaireBotaniste = () => {
             },
             body: JSON.stringify(data),
           })
-        : await fetch(`http://${IPV4}:3000/conseils/create`, {
+        : await fetch(`http://${process.env.EXPO_PUBLIC_API_KEY_IPV4}3000/conseils/create`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',

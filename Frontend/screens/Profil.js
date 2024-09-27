@@ -4,7 +4,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import CardProfil from '../components/CardProfil'; // Assurez-vous que le chemin est correct
 import { useNavigation } from '@react-navigation/native';
 
-const { IPV4 } = require('../Backend/config/config');
+
+//const { IPV4 } = require('../Backend/config/config');
 
 const ProfileScreen = () => {
   const [showSettings, setShowSettings] = useState(false);
@@ -20,7 +21,7 @@ const ProfileScreen = () => {
       const token = await AsyncStorage.getItem('token');
       if (token) {
         try {
-          const response = await fetch(`http://${IPV4}:3000/user/user-info`, {
+          const response = await fetch(`http://${process.env.EXPO_PUBLIC_API_KEY_IPV4}3000/user/user-info`, {
             method: 'GET',
             headers: {
               'Authorization': `Bearer ${token}`,
@@ -44,7 +45,7 @@ const ProfileScreen = () => {
     const fetchMesAnnonces = async () => {
       try {
         const token = await AsyncStorage.getItem('token');
-        const response = await fetch(`http://${IPV4}:3000/annonces/myannonces`, {
+        const response = await fetch(`http://${process.env.EXPO_PUBLIC_API_KEY_IPV4}3000/annonces/myannonces`, {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -100,7 +101,7 @@ const ProfileScreen = () => {
         {mesAnnonces.map((annonce, index) => (
           <CardProfil
             key={index}
-            imageUrl={`http://${IPV4}:3000/annonces/image/${annonce.photo}`}
+            imageUrl={`http://${process.env.EXPO_PUBLIC_API_KEY_IPV4}3000/annonces/image/${annonce.photo}`}
             onPress={() => navigation.navigate('DetailPoste', { annonce })}
           />
         ))}

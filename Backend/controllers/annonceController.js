@@ -4,6 +4,7 @@ const annonceModel = require('../models/annonceModel');
 const sharp = require('sharp');
 const { v4: uuidv4 } = require('uuid');
 
+
 const addAnnonce = async (req, res) => {
   const annonce = req.body;
   annonce.userId = req.userId; // J'associe l'annonce à l'utilisateur

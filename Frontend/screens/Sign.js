@@ -2,7 +2,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Platform, ScrollView, KeyboardAvoidingView, Switch, Alert, Animated } from 'react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-const { IPV4 } = require('../Backend//config/config');
+//import { IPV4 } = require('../../Backend/config/config');
+
 
 // Remplacez la clé botaniste ici
 const BOTANIST_SECRET_KEY = '2468';
@@ -96,7 +97,7 @@ export default function Sign() {
         }
 
         try {
-            const response = await fetch(`http://${IPV4}:3000/auth/signup`, {
+            const response = await fetch(`http://${process.env.EXPO_PUBLIC_API_KEY_IPV4}3000/auth/signup`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

@@ -4,13 +4,12 @@ import { createStackNavigator } from '@react-navigation/stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import jwt_decode from 'jwt-decode';
 import { Alert } from 'react-native';
-
-
 import { TabBarProvider } from './components/TabBarContext';
 import Bienvenue from './screens/Bienvenue';
 import Sign from './screens/Sign';
 import Login from './screens/Login';
-import MainNavigator from './MainNavigator';
+//import MainNavigator from './MainNavigator';
+
 
 
 const Stack = createStackNavigator();

@@ -9,7 +9,7 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import Toast from 'react-native-toast-message';
 import Spinner from 'react-native-loading-spinner-overlay';
 
-const { IPV4 } = require('../Backend/config/config');
+//const { IPV4 } = require('../Backend/config/config');
 
 const Formulaire = () => {
   const route = useRoute();
@@ -204,7 +204,7 @@ const Formulaire = () => {
       console.log('Données soumises:', formData);
       console.log('Utilisation du token:', token);
 
-      const response = await fetch(`http://${IPV4}:3000/annonces/addannonce`, {
+      const response = await fetch(`http://${process.env.EXPO_PUBLIC_API_KEY_IPV4}3000/annonces/addannonce`, {
         method: 'POST',
         headers: {
           'Content-Type': 'multipart/form-data',
