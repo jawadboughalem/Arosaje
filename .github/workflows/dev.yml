@@ -24,6 +24,6 @@ jobs:
         cache: 'npm'
     - name: Installation des dépendances
     # --legacy-peer-deps pour éviter les problèmes de dépendances
-      run: npm ci --legacy-peer-deps
+      run: npm ci
     - name: execution des tests
       run: npm run test --if-present
