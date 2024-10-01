@@ -9,13 +9,13 @@ moment.locale('fr');
 const Card = ({ plantImage, plantName, location, userName, userImage, status, datePoste }) => {
     return (
         <View style={styles.card}>
-            <Image source={{ uri: `http://${IPV4}:3000/annonces/image/${plantImage}` }} style={styles.plantImage} />
+            <Image source={{ uri: `http://${IPV4}:3000/annonces/image/${plantImage}` }} style={styles.plantImage} testID='plantImage' />
             <View style={styles.textContainer}>
                 <Text style={styles.plantName}>{plantName}</Text>
                 <Text style={styles.location}>{location}</Text>
                 <Text style={styles.status}>{status}</Text>
                 <View style={styles.userInfo}>
-                    <Image source={{ uri: userImage }} style={styles.userImage} />
+                    <Image source={{ uri: userImage }} style={styles.userImage} testID='userImage' />
                     <Text style={styles.userName}>{userName}</Text>
                 </View>
                 <Text style={styles.dateText}>{moment(datePoste).fromNow()}</Text>
