@@ -22,6 +22,8 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
+    - name: Installations dépendances
+      run: npm ci
     - name: execution des tests
       run: npm run test --if-present
     
