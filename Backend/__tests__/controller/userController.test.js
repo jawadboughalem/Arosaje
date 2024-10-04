@@ -36,6 +36,8 @@ describe('Test de la fonction getUserInfo', () => {
 })
 
 describe('Test de la fonction changePassword', () => {
+  let req;
+  let res;
   beforeEach(() => {
     req = {
           userId: 1,
