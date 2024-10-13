@@ -2,10 +2,12 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Platform, ScrollView, KeyboardAvoidingView, Switch, Alert, Animated } from 'react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import CryptoJS from 'crypto-js';
 const { IPV4 } = require('../Backend//config/config');
 
 // Remplacez la clé botaniste ici
 const BOTANIST_SECRET_KEY = '2468';
+const SECRET_KEY = 'votre_clé_secrète'; // Clé secrète pour le chiffrement
 
 export default function Sign() {
     const navigation = useNavigation();
@@ -16,7 +18,7 @@ export default function Sign() {
         email: '',
         password: '',
         isBotanist: false,
-        botanistKey: '', // Ajout du champ botanistKey
+        botanistKey: '',
     });
     
     const [errors, setErrors] = useState({});
@@ -45,7 +47,7 @@ export default function Sign() {
                 email: '',
                 password: '',
                 isBotanist: false,
-                botanistKey: '', // Réinitialisation du champ botanistKey
+                botanistKey: '',
             });
             setErrors({});
         }, [])
@@ -65,6 +67,13 @@ export default function Sign() {
         return re.test(String(email).toLowerCase());
     }, []);
 
+    // Fonction de validation du mot de passe
+    const validatePassword = useCallback((password) => {
+        const hasNumber = /\d/;
+        const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/;
+        return password.length >= 8 && hasNumber.test(password) && hasSpecialChar.test(password);
+    }, []);
+
     const showAlert = (message) => {
         Alert.alert(
             "Erreur",
@@ -72,6 +81,11 @@ export default function Sign() {
             [{ text: "OK", onPress: () => console.log("OK Pressed") }],
             { cancelable: false }
         );
+    };
+
+    // Fonction de chiffrement
+    const encryptData = (data) => {
+        return CryptoJS.AES.encrypt(data, SECRET_KEY).toString();
     };
 
     const handleSignUp = async () => {
@@ -84,7 +98,15 @@ export default function Sign() {
             validationErrors.email = "L'email n'est pas valide.";
             showAlert("L'email n'est pas valide.");
         }
-        if (!formData.password.trim()) validationErrors.password = "Le mot de passe est requis.";
+
+        // Validation du mot de passe
+        if (!formData.password.trim()) {
+            validationErrors.password = "Le mot de passe est requis.";
+        } else if (!validatePassword(formData.password)) {
+            validationErrors.password = "Le mot de passe doit contenir au moins 8 caractères, un chiffre et un caractère spécial.";
+            showAlert("Le mot de passe doit contenir au moins 8 caractères, un chiffre et un caractère spécial.");
+        }
+
         if (formData.isBotanist && formData.botanistKey !== BOTANIST_SECRET_KEY) {
             validationErrors.botanistKey = "La clé botaniste est incorrecte.";
             showAlert("La clé botaniste est incorrecte.");
@@ -96,15 +118,19 @@ export default function Sign() {
         }
 
         try {
+            // Chiffrement de l'email et du pseudo
+            const encryptedEmail = encryptData(formData.email);
+            const encryptedName = encryptData(formData.name);
+
             const response = await fetch(`http://${IPV4}:3000/auth/signup`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    name: formData.name,
+                    name: encryptedName, // Envoyer le pseudo chiffré
                     surname: formData.surname,
-                    email: formData.email,
+                    email: encryptedEmail, // Envoyer l'email chiffré
                     password: formData.password,
                     isBotanist: formData.isBotanist,
                 }),
