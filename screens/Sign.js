@@ -1,13 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Platform, ScrollView, KeyboardAvoidingView, Switch, Alert, Animated } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Platform, ScrollView, KeyboardAvoidingView, Switch, Alert, Modal } from 'react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import CryptoJS from 'crypto-js';
-const { IPV4 } = require('../Backend//config/config');
+const { IPV4 } = require('../Backend/config/config');
 
 // Remplacez la clé botaniste ici
 const BOTANIST_SECRET_KEY = '2468';
-const SECRET_KEY = 'votre_clé_secrète'; // Clé secrète pour le chiffrement
 
 export default function Sign() {
     const navigation = useNavigation();
@@ -22,22 +20,8 @@ export default function Sign() {
     });
     
     const [errors, setErrors] = useState({});
-    const [errorShakeAnimation] = useState(new Animated.Value(0));
-    const [botanistAnimation] = useState(new Animated.Value(0));
-
-    useEffect(() => {
-        if (Object.keys(errors).length > 0) {
-            startShakeAnimation();
-        }
-    }, [errors]);
-
-    useEffect(() => {
-        Animated.timing(botanistAnimation, {
-            toValue: formData.isBotanist ? 1 : 0,
-            duration: 300,
-            useNativeDriver: false
-        }).start();
-    }, [formData.isBotanist]);
+    const [showPrivacyModal, setShowPrivacyModal] = useState(false); // Etat pour le modal de la charte de confidentialité
+    const [isPrivacyAccepted, setIsPrivacyAccepted] = useState(false); // Etat pour savoir si l'utilisateur a accepté la charte
 
     useFocusEffect(
         React.useCallback(() => {
@@ -53,21 +37,11 @@ export default function Sign() {
         }, [])
     );
 
-    const startShakeAnimation = useCallback(() => {
-        Animated.sequence([
-            Animated.timing(errorShakeAnimation, { toValue: 10, duration: 50, useNativeDriver: true }),
-            Animated.timing(errorShakeAnimation, { toValue: -10, duration: 50, useNativeDriver: true }),
-            Animated.timing(errorShakeAnimation, { toValue: 10, duration: 50, useNativeDriver: true }),
-            Animated.timing(errorShakeAnimation, { toValue: 0, duration: 50, useNativeDriver: true })
-        ]).start();
-    }, [errorShakeAnimation]);
-
     const validateEmail = useCallback((email) => {
         const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         return re.test(String(email).toLowerCase());
     }, []);
 
-    // Fonction de validation du mot de passe
     const validatePassword = useCallback((password) => {
         const hasNumber = /\d/;
         const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/;
@@ -83,11 +57,6 @@ export default function Sign() {
         );
     };
 
-    // Fonction de chiffrement
-    const encryptData = (data) => {
-        return CryptoJS.AES.encrypt(data, SECRET_KEY).toString();
-    };
-
     const handleSignUp = async () => {
         const validationErrors = {};
         if (!formData.name.trim()) validationErrors.name = "Le nom est requis.";
@@ -99,7 +68,6 @@ export default function Sign() {
             showAlert("L'email n'est pas valide.");
         }
 
-        // Validation du mot de passe
         if (!formData.password.trim()) {
             validationErrors.password = "Le mot de passe est requis.";
         } else if (!validatePassword(formData.password)) {
@@ -117,63 +85,50 @@ export default function Sign() {
             return;
         }
 
-        try {
-            // Chiffrement de l'email et du pseudo
-            const encryptedEmail = encryptData(formData.email);
-            const encryptedName = encryptData(formData.name);
+        // Ouvrir la charte de confidentialité avant de continuer
+        setShowPrivacyModal(true);
+    };
 
+    const handlePrivacyAccept = async () => {
+        setShowPrivacyModal(false);
+        setIsPrivacyAccepted(true);
+    
+        // Procéder à l'inscription après l'acceptation de la charte
+        try {
             const response = await fetch(`http://${IPV4}:3000/auth/signup`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    name: encryptedName, // Envoyer le pseudo chiffré
+                    name: formData.name, 
                     surname: formData.surname,
-                    email: encryptedEmail, // Envoyer l'email chiffré
+                    email: formData.email,
                     password: formData.password,
                     isBotanist: formData.isBotanist,
                 }),
             });
+    
             if (!response.ok) {
                 console.error('Erreur lors de l\'inscription:', response.statusText);
                 throw new Error('Erreur lors de l\'inscription');
             }
+    
             const data = await response.json();
             console.log('Inscription réussie. ID utilisateur:', data.userId);
             Alert.alert("Inscription réussie", "Votre compte a été créé avec succès.", [
-                { text: "OK", onPress: () => navigation.navigate('Login') } // Rediriger vers l'écran de connexion après inscription réussie
+                { text: "OK", onPress: () => navigation.navigate('Login') } 
             ]);
         } catch (error) {
             console.error('Erreur lors de l\'inscription:', error);
             Alert.alert("Erreur", "Une erreur s'est produite lors de l'inscription.");
         }
-    };
+    };    
 
-    const handleTextChange = (field) => (text) => {
-        setFormData((prevData) => ({
-            ...prevData,
-            [field]: text,
-        }));
-        if (errors[field]) {
-            setErrors((prevErrors) => {
-                const newErrors = { ...prevErrors };
-                delete newErrors[field];
-                return newErrors;
-            });
-        }
-    };
-
-    const getTextInputStyle = (errorField) => {
-        return [
-            styles.input,
-            errors[errorField] && styles.inputError,
-            {
-                transform: [
-                    { translateX: errors[errorField] ? errorShakeAnimation : 0 }
-                ]
-            }
-        ];
+    const handlePrivacyDecline = () => {
+        setShowPrivacyModal(false);
+        setIsPrivacyAccepted(false);
+        Alert.alert("Inscription annulée", "Vous devez accepter la charte de confidentialité pour continuer.");
     };
 
     return (
@@ -186,62 +141,54 @@ export default function Sign() {
                     </View>
                     <View style={styles.formContainer}>
                         <Text style={styles.formTitle}>Inscription</Text>
-                        <Animated.View style={getTextInputStyle('name')}>
+                        <TextInput 
+                            placeholder="Nom" 
+                            style={styles.input} 
+                            value={formData.name} 
+                            onChangeText={(text) => setFormData({ ...formData, name: text })} 
+                        />
+                        <TextInput 
+                            placeholder="Prénom" 
+                            style={styles.input} 
+                            value={formData.surname} 
+                            onChangeText={(text) => setFormData({ ...formData, surname: text })} 
+                        />
+                        <TextInput 
+                            placeholder="Email" 
+                            style={styles.input} 
+                            value={formData.email} 
+                            onChangeText={(text) => setFormData({ ...formData, email: text })} 
+                            keyboardType="email-address" 
+                            autoCapitalize="none" 
+                        />
+                        <TextInput 
+                            placeholder="Mot de passe" 
+                            style={styles.input} 
+                            value={formData.password} 
+                            onChangeText={(text) => setFormData({ ...formData, password: text })} 
+                            secureTextEntry 
+                            autoCapitalize="none" 
+                        />
+
+                        {formData.isBotanist && (
                             <TextInput 
-                                placeholder="Nom" 
-                                placeholderTextColor={errors.name ? 'red' : '#ccc'}
-                                value={formData.name} 
-                                onChangeText={handleTextChange('name')} 
+                                placeholder="Code Botaniste" 
+                                style={styles.input} 
+                                value={formData.botanistKey} 
+                                onChangeText={(text) => setFormData({ ...formData, botanistKey: text })} 
+                                keyboardType="numeric" 
+                                maxLength={5} 
                             />
-                        </Animated.View>
-                        <Animated.View style={getTextInputStyle('surname')}>
-                            <TextInput 
-                                placeholder="Prénom" 
-                                placeholderTextColor={errors.surname ? 'red' : '#ccc'}
-                                value={formData.surname} 
-                                onChangeText={handleTextChange('surname')} 
-                            />
-                        </Animated.View>
-                        <Animated.View style={getTextInputStyle('email')}>
-                            <TextInput 
-                                placeholder="Email" 
-                                placeholderTextColor={errors.email ? 'red' : '#ccc'}
-                                value={formData.email} 
-                                onChangeText={handleTextChange('email')} 
-                                keyboardType="email-address" 
-                                autoCapitalize="none" 
-                            />
-                        </Animated.View>
-                        <Animated.View style={getTextInputStyle('password')}>
-                            <TextInput 
-                                placeholder="Mot de passe" 
-                                placeholderTextColor={errors.password ? 'red' : '#ccc'}
-                                value={formData.password} 
-                                onChangeText={handleTextChange('password')} 
-                                secureTextEntry 
-                                autoCapitalize="none" 
-                            />
-                        </Animated.View>
-                        {formData.isBotanist ? (
-                            <Animated.View style={[styles.botanistContainer, { opacity: botanistAnimation, transform: [{ scale: botanistAnimation }] }]}>
-                                <TextInput 
-                                    style={styles.botanistInput}
-                                    placeholder="Code Botaniste" 
-                                    value={formData.botanistKey}
-                                    onChangeText={handleTextChange('botanistKey')} 
-                                    keyboardType="numeric"
-                                    maxLength={5}
-                                />
-                                <TouchableOpacity onPress={() => setFormData((prevData) => ({ ...prevData, isBotanist: false }))} style={styles.closeButton}>
-                                    <MaterialCommunityIcons name="close-circle" size={20} color="black" />
-                                </TouchableOpacity>
-                            </Animated.View>
-                        ) : (
-                            <View style={styles.switchContainer}>
-                                <Text style={styles.switchLabel}>Êtes-vous un botaniste?</Text>
-                                <Switch value={formData.isBotanist} onValueChange={(value) => setFormData((prevData) => ({ ...prevData, isBotanist: value }))} />
-                            </View>
                         )}
+
+                        <View style={styles.switchContainer}>
+                            <Text>Êtes-vous un botaniste?</Text>
+                            <Switch 
+                                value={formData.isBotanist} 
+                                onValueChange={(value) => setFormData({ ...formData, isBotanist: value })} 
+                            />
+                        </View>
+
                         <TouchableOpacity style={styles.button} onPress={handleSignUp}>
                             <Text style={styles.buttonText}>Inscription</Text>
                         </TouchableOpacity>
@@ -252,6 +199,32 @@ export default function Sign() {
                             </Text>
                         </Text>
                     </View>
+
+                    {/* Modal de la charte de confidentialité */}
+                    <Modal
+                        visible={showPrivacyModal}
+                        transparent={true}
+                        animationType="slide"
+                    >
+                        <View style={styles.modalContainer}>
+                            <View style={styles.modalContent}>
+                                <Text style={styles.modalTitle}>Charte de Confidentialité</Text>
+                                <ScrollView style={styles.modalBody}>
+                                    <Text>Nous récupérons certaines données pour améliorer votre expérience utilisateur, comme l'email et d'autres informations.</Text>
+                                    <Text>Ces informations ne seront pas partagées sans votre consentement, et vous pouvez refuser à tout moment.</Text>
+                                    <Text>En acceptant, vous permettez à l'application d'utiliser ces données pour personnaliser les services.</Text>
+                                </ScrollView>
+                                <View style={styles.modalButtons}>
+                                    <TouchableOpacity style={styles.modalButtonAccept} onPress={handlePrivacyAccept}>
+                                        <Text style={styles.modalButtonText}>Accepter</Text>
+                                    </TouchableOpacity>
+                                    <TouchableOpacity style={styles.modalButtonDecline} onPress={handlePrivacyDecline}>
+                                        <Text style={styles.modalButtonText}>Refuser</Text>
+                                    </TouchableOpacity>
+                                </View>
+                            </View>
+                        </View>
+                    </Modal>
                 </View>
             </ScrollView>
         </KeyboardAvoidingView>
@@ -361,5 +334,54 @@ const styles = StyleSheet.create({
         right: 5,
         top: '50%',
         marginTop: -10, 
+    },
+    modalContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'rgba(0, 0, 0, 0.7)', // Ajoute un fond sombre semi-transparent
+    },
+    modalContent: {
+        width: '85%',
+        backgroundColor: 'white',
+        borderRadius: 20,
+        padding: 20,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.8,
+        shadowRadius: 3,
+        elevation: 5, // Pour ajouter une ombre sur Android
+    },
+    modalTitle: {
+        fontSize: 22,
+        fontWeight: 'bold',
+        textAlign: 'center',
+        marginBottom: 15,
+        color: '#077B17',
+    },
+    modalBody: {
+        maxHeight: 300, // Limite la hauteur du corps pour un défilement
+        marginBottom: 20,
+    },
+    modalButtons: {
+        flexDirection: 'row',
+        justifyContent: 'space-around',
+    },
+    modalButtonAccept: {
+        backgroundColor: '#077B17',
+        paddingVertical: 12,
+        paddingHorizontal: 25,
+        borderRadius: 25,
+    },
+    modalButtonDecline: {
+        backgroundColor: '#FF6347',
+        paddingVertical: 12,
+        paddingHorizontal: 25,
+        borderRadius: 25,
+    },
+    modalButtonText: {
+        color: 'white',
+        fontWeight: 'bold',
+        fontSize: 16,
     },
 });
