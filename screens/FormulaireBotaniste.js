@@ -69,7 +69,7 @@ const FormulaireBotaniste = () => {
         ? await fetch(`http://${IPV4}:3000/conseils/update/${route.params.conseil.Code_Conseils}`, {
             method: 'PUT',
             headers: {
-              'Content-Type': 'application/json',
+              'Content-Type': 'application/jsonz',
               'Authorization': `Bearer ${token}`
             },
             body: JSON.stringify(data),

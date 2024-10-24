@@ -4,9 +4,6 @@ import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 const { IPV4 } = require('../Backend/config/config');
 
-// Remplacez la clé botaniste ici
-const BOTANIST_SECRET_KEY = '2468';
-
 export default function Sign() {
     const navigation = useNavigation();
 
@@ -215,11 +212,11 @@ export default function Sign() {
                                     <Text>En acceptant, vous permettez à l'application d'utiliser ces données pour personnaliser les services.</Text>
                                 </ScrollView>
                                 <View style={styles.modalButtons}>
-                                    <TouchableOpacity style={styles.modalButtonAccept} onPress={handlePrivacyAccept}>
-                                        <Text style={styles.modalButtonText}>Accepter</Text>
-                                    </TouchableOpacity>
                                     <TouchableOpacity style={styles.modalButtonDecline} onPress={handlePrivacyDecline}>
                                         <Text style={styles.modalButtonText}>Refuser</Text>
+                                    </TouchableOpacity>
+                                    <TouchableOpacity style={styles.modalButtonAccept} onPress={handlePrivacyAccept}>
+                                        <Text style={styles.modalButtonText}>Accepter</Text>
                                     </TouchableOpacity>
                                 </View>
                             </View>

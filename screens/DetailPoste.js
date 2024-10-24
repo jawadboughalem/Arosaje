@@ -8,11 +8,36 @@ const DetailPoste = ({ route }) => {
   const navigation = useNavigation();
   const buttonAnimation = new Animated.Value(1);
 
-  const handleJeGarde = () => {
-    navigation.navigate('MessagesStack', {
-      screen: 'Conversation',
-      params: { ownerId: annonce.code_Utilisateurs, annonceId: annonce.id },
-    });
+  const handleJeGarde = async () => {
+    const connectedUserId = 1; // Remplace par l'ID de l'utilisateur connecté (si tu utilises un ID dynamique)
+  
+    try {
+      const response = await fetch(`http://${IPV4}:4000/api/conversation`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ownerId: annonce.code_Utilisateurs, // Utilisateur qui a posté l'annonce
+          expediteurId: connectedUserId, // Utilisateur connecté (gardien)
+        }),
+      });
+  
+      const data = await response.json();
+  
+      // Vérifie si la conversation a bien été créée ou récupérée
+      if (data.conversationId) {
+        // Naviguer vers l'écran de conversation avec l'ID de la conversation
+        navigation.navigate('MessagesStack', {
+          screen: 'Conversation',
+          params: { ownerId: annonce.code_Utilisateurs, annonceId: annonce.id, conversationId: data.conversationId },
+        });
+      } else {
+        console.error('Conversation ID not received');
+      }
+    } catch (error) {
+      console.error('Erreur lors de la gestion de la conversation :', error);
+    }
   };  
 
   const formatDate = (dateString) => {

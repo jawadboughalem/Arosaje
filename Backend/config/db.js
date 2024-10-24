@@ -15,7 +15,7 @@ const initialize = () => {
       photo VARCHAR(255),
       botaniste INTEGER NOT NULL CHECK (botaniste IN (0, 1)),
       numero VARCHAR(10),
-      adresse VARCHAR(255),
+      adresse VARCHAR(255)
     )`);
 
     db.run(`CREATE TABLE IF NOT EXISTS photos (

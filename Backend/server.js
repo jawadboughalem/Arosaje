@@ -8,7 +8,7 @@ const authRoutes = require('./routes/authRoutes');
 const annonceRoutes = require('./routes/annonceRoutes');
 const userRoutes = require('./routes/userRoutes');
 const conseilRoutes = require('./routes/conseilRoutes');
-const messageRoutes = require('./routes/messageRoutes');
+const conversationRoutes = require('./routes/conversationRoutes');
 const multer = require('multer');
 
 const app = express();
@@ -44,7 +44,7 @@ app.use('/annonces', annonceRoutes);
 app.use('/user', userRoutes);
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/conseils', conseilRoutes);
-app.use('/messages', messageRoutes);
+app.use('/api', conversationRoutes);
 
 app.listen(port, () => {
   console.log(`Serveur démarré sur le port ${port}`);
