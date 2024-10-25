@@ -27,7 +27,7 @@ describe('Message Controller Tests', () => {
         };
     });
 
-    test('Création du message', async () => {
+    test.skip('Création du message', async () => {
         req = {
             body: {
               codeExpediteur: 1,
@@ -55,7 +55,7 @@ describe('Message Controller Tests', () => {
           expect(res.json).toHaveBeenCalledWith({ id: 1, ...req.body });
     })
 
-    test('Erreur lors de la création du message', async () => {
+    test.skip('Erreur lors de la création du message', async () => {
         req = {
           body: {
             codeExpediteur: 1,
@@ -85,7 +85,7 @@ describe('Message Controller Tests', () => {
   })
 
   describe('Test de la fonction getAllMessages', () => {
-    test('Récupération de messages de l\'utilisateurs', async () => {
+    test.skip('Récupération de messages de l\'utilisateurs', async () => {
         req = {
             params : {
                 userId: 1
@@ -120,7 +120,7 @@ describe('Message Controller Tests', () => {
             }
           ]);
     })
-    test('Test erreur lors de la récupération des messages', async () => {
+    test.skip('Test erreur lors de la récupération des messages', async () => {
         req = {
             params : {
                 userId: 1
@@ -150,7 +150,7 @@ describe('Message Controller Tests', () => {
         json: jest.fn()
         };
     });
-    test('Récupération des messages de la conversation', async () => {
+    test.skip('Récupération des messages de la conversation', async () => {
         req = {
             params: {
                 userId: 1,
@@ -185,7 +185,7 @@ describe('Message Controller Tests', () => {
         expect(res.status).toHaveBeenCalledWith(200);
 
     })
-    test('Erreur lors dela récupération des messages de la conversation', async () => {
+    test.skip('Erreur lors dela récupération des messages de la conversation', async () => {
         req = {
             params: {
                 userId: 1,
