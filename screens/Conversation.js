@@ -7,7 +7,7 @@ import { IPV4 } from '../Backend/config/config';
 import Header from '../components/HeaderMessage';
 import { CommonActions } from '@react-navigation/native';
 
-const socket = io(`http://${IPV4}:8000`);
+const socket = io(`http://${IPV4}:4000`);
 
 const Conversation = ({ route, navigation }) => {
   const { ownerId, annonceId } = route.params;
@@ -28,14 +28,9 @@ const Conversation = ({ route, navigation }) => {
   };
 
   useEffect(() => {
-    socket.on('SERVER_MSG', (msg) => {
-      setMessages((prevMessages) => [...prevMessages, msg]);
-    });
-
-    return () => {
-      socket.off('SERVER_MSG');
-    };
-  }, []);
+    socket.emit('joinConversation', conversationId); // conversationId transmis en paramètre
+    return () => socket.off('SERVER_MSG');
+  }, [conversationId]);  
 
   useEffect(() => {
     const backAction = () => {
@@ -74,8 +69,9 @@ const Conversation = ({ route, navigation }) => {
       text,
       ownerId,
       annonceId,
+      conversationId,
     };
-    socket.emit('CLIENT_MSG', msg);
+    socket.emit('sendMessage', msg);
     setText('');
     handleTextChange('');
   };

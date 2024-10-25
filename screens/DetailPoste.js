@@ -2,6 +2,8 @@ import React from 'react';
 import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, Animated } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { IPV4 } from '../Backend/config/config';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import jwt_decode from 'jwt-decode';
 
 const DetailPoste = ({ route }) => {
   const { annonce } = route.params;
@@ -9,28 +11,50 @@ const DetailPoste = ({ route }) => {
   const buttonAnimation = new Animated.Value(1);
 
   const handleJeGarde = async () => {
-    const connectedUserId = 1; // Remplace par l'ID de l'utilisateur connecté (si tu utilises un ID dynamique)
-  
     try {
-      const response = await fetch(`http://${IPV4}:4000/api/conversation`, {
+      const token = await AsyncStorage.getItem('token');
+      if (!token) {
+        console.error("Token utilisateur manquant");
+        return;
+      }
+  
+      const decodedToken = jwt_decode(token);
+      const connectedUserId = decodedToken.userId;
+      const ownerId = annonce.Code_Postes;
+  
+      if (!connectedUserId || !ownerId) {
+        console.error("L'ID utilisateur connecté ou l'ID de l'annonce est manquant");
+        return;
+      }
+  
+      const response = await fetch(`http://${IPV4}:3000/api/conversation`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify({
-          ownerId: annonce.code_Utilisateurs, // Utilisateur qui a posté l'annonce
-          expediteurId: connectedUserId, // Utilisateur connecté (gardien)
+          ownerId: ownerId,
+          expediteurId: connectedUserId,
         }),
       });
   
-      const data = await response.json();
+      // Log la réponse brute pour diagnostiquer le contenu
+      const text = await response.text();
+      console.log("Réponse brute : ", text);
   
-      // Vérifie si la conversation a bien été créée ou récupérée
+      // Si la réponse n'est pas un JSON, affiche une erreur
+      if (!response.ok) {
+        console.error("Erreur du serveur : ", text);
+        return;
+      }
+  
+      // Analyse en JSON seulement si la réponse est correcte
+      const data = JSON.parse(text);
       if (data.conversationId) {
-        // Naviguer vers l'écran de conversation avec l'ID de la conversation
         navigation.navigate('MessagesStack', {
           screen: 'Conversation',
-          params: { ownerId: annonce.code_Utilisateurs, annonceId: annonce.id, conversationId: data.conversationId },
+          params: { ownerId: ownerId, annonceId: annonce.Code_Postes, conversationId: data.conversationId },
         });
       } else {
         console.error('Conversation ID not received');
@@ -38,8 +62,8 @@ const DetailPoste = ({ route }) => {
     } catch (error) {
       console.error('Erreur lors de la gestion de la conversation :', error);
     }
-  };  
-
+  };    
+  
   const formatDate = (dateString) => {
     if (!dateString) return "Date invalide";
     const date = new Date(dateString);

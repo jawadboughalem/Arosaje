@@ -1,4 +1,4 @@
-const db = require('../config/db');
+const { db } = require('../config/db');
 
 const Conversation = {
   findOrCreateConversation: (ownerId, expediteurId, callback) => {
@@ -14,8 +14,8 @@ const Conversation = {
       }
       
       if (row) {
-        // La conversation existe déjà
-        return callback(null, row);
+        // La conversation existe déjà, renvoie uniquement conversationId
+        return callback(null, { conversationId: row.Code_Conversation });
       } else {
         // Créer une nouvelle conversation
         const queryInsert = `
@@ -26,7 +26,8 @@ const Conversation = {
           if (err) {
             return callback(err);
           }
-          callback(null, { Code_Conversation: this.lastID });
+          // Renvoie conversationId avec l'ID de la nouvelle conversation
+          callback(null, { conversationId: this.lastID });
         });
       }
     });
