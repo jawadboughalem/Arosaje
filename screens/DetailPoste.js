@@ -2,41 +2,58 @@ import React from 'react';
 import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, Animated } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { IPV4 } from '../Backend/config/config';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import jwt_decode from 'jwt-decode';
 
 const DetailPoste = ({ route }) => {
   const { annonce } = route.params;
   const navigation = useNavigation();
   const buttonAnimation = new Animated.Value(1);
 
-  const handleJeGarde = () => {
-    navigation.navigate('MessagesStack', {
-      screen: 'Conversation',
-      params: { ownerId: annonce.code_Utilisateurs, annonceId: annonce.id },
-    });
-  };  
+  const handleJeGarde = async () => {
+    try {
+      const token = await AsyncStorage.getItem('token');
+      if (!token) {
+        console.error("Token utilisateur manquant");
+        return;
+      }
 
-  const formatDate = (dateString) => {
-    if (!dateString) return "Date invalide";
-    const date = new Date(dateString);
-    if (isNaN(date)) {
-      return "Date invalide";
+      const decodedToken = jwt_decode(token);
+      const connectedUserId = decodedToken.userId;
+      const ownerId = annonce.Code_Postes;
+
+      if (!connectedUserId || !ownerId) {
+        console.error("L'ID utilisateur connecté ou l'ID de l'annonce est manquant");
+        return;
+      }
+
+      const response = await fetch(`http://${IPV4}:3000/api/conversation`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          ownerId: ownerId,
+          expediteurId: connectedUserId,
+        }),
+      });
+
+      // Lecture de la réponse en JSON et log pour vérification
+      const data = await response.json();
+      console.log("Réponse JSON reçue dans DetailPoste :", data);
+
+      if (data.conversationId) {
+        navigation.navigate('MessagesStack', {
+          screen: 'Conversation',
+          params: { ownerId: ownerId, annonceId: annonce.Code_Postes, conversationId: data.conversationId },
+        });
+      } else {
+        console.error('Conversation ID not received');
+      }
+    } catch (error) {
+      console.error('Erreur lors de la gestion de la conversation :', error);
     }
-    return date.toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' });
-  };
-
-  const animateButton = () => {
-    Animated.sequence([
-      Animated.timing(buttonAnimation, {
-        toValue: 1.1,
-        duration: 200,
-        useNativeDriver: true,
-      }),
-      Animated.timing(buttonAnimation, {
-        toValue: 1,
-        duration: 200,
-        useNativeDriver: true,
-      }),
-    ]).start();
   };
 
   return (
@@ -48,14 +65,11 @@ const DetailPoste = ({ route }) => {
         <Text style={styles.title}>🌿 {annonce.titre}</Text>
         <Text style={styles.sectionTitle}>Description</Text>
         <Text style={styles.description}>📝 {annonce.description}</Text>
-        <Text style={styles.sectionTitle}>Période de garde</Text>
-        <Text style={styles.period}>📅 {formatDate(annonce.dateDebut)} - {formatDate(annonce.dateFin)}</Text>
         <Animated.View style={[styles.buttonContainer, { transform: [{ scale: buttonAnimation }] }]}>
           <TouchableOpacity
             style={styles.button}
             onPress={() => {
               handleJeGarde();
-              animateButton(); // Animation du bouton lors du clic
             }}
           >
             <Text style={styles.buttonText}>JE GARDE</Text>

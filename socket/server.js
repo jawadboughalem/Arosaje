@@ -1,29 +1,41 @@
 const express = require('express');
+const http = require('http');
 const socketIo = require('socket.io');
 const cors = require('cors');
 
 const app = express();
-const PORT = 8000;
-
-// Utilisation de CORS
 app.use(cors());
 
-const server = app.listen(PORT, () => {
-    console.log('server is running on port ' + PORT);
-});
-
+const server = http.createServer(app);
 const io = socketIo(server, {
-    cors: {
-        origin: "http://localhost:3000",
-        methods: ["GET", "POST"]
-    }
+  cors: {
+    origin: '*',
+  },
 });
 
 io.on('connection', (socket) => {
-    console.log('socket=', socket.id);
+  console.log(`New client connected, socket id: ${socket.id}`);
 
-    socket.on('CLIENT_MSG', (data) => {
-        console.log('msg=', data);
-        io.emit('SERVER_MSG', data);
-    });
+  socket.on('joinConversation', (conversationId) => {
+    if (conversationId) {
+      socket.join(conversationId);
+      console.log(`Client with socket id ${socket.id} joined conversation: ${conversationId}`);
+    } else {
+      console.error("joinConversation reçu sans conversationId");
+    }
+  });
+
+  socket.on('sendMessage', (data) => {
+    const { conversationId, message, idUser } = data;
+    console.log(`Message received from ${socket.id} in conversation ${conversationId}: ${message}`);
+
+    io.to(conversationId).emit('receiveMessage', { ...message, idUser });
+  });
+
+  socket.on('disconnect', () => {
+    console.log(`Client disconnected, socket id: ${socket.id}`);
+  });
 });
+
+const PORT = 4000;
+server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
