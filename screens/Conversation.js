@@ -10,58 +10,24 @@ import { CommonActions } from '@react-navigation/native';
 const socket = io(`http://${IPV4}:4000`);
 
 const Conversation = ({ route, navigation }) => {
-  const { ownerId, annonceId } = route.params;
+  const { ownerId, annonceId, conversationId } = route.params;
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState('');
   const [showSendButton, setShowSendButton] = useState(false);
   const [buttonOpacity] = useState(new Animated.Value(0));
 
-  const handleBackPress = () => {
-    // Réinitialise la pile de navigation et redirige vers l'écran Messages
-    navigation.dispatch(
-      CommonActions.reset({
-        index: 0,
-        routes: [{ name: 'Messages' }],
-      })
-    );
-    return true;
-  };
-
   useEffect(() => {
-    socket.emit('joinConversation', conversationId); // conversationId transmis en paramètre
+    if (conversationId) {
+      socket.emit('joinConversation', conversationId);
+    } else {
+      console.error("conversationId non défini dans les paramètres");
+    }
     return () => socket.off('SERVER_MSG');
-  }, [conversationId]);  
-
-  useEffect(() => {
-    const backAction = () => {
-      navigation.navigate('Messages');
-      return true; // Empêche la fermeture automatique de l'écran
-    };
-
-    const backHandler = BackHandler.addEventListener(
-      'hardwareBackPress',
-      handleBackPress
-    );
-
-    return () => backHandler.remove();
-  }, [navigation]);
+  }, [conversationId]);
 
   const handleTextChange = (value) => {
     setText(value);
-    if (value.length > 0) {
-      setShowSendButton(true);
-      Animated.timing(buttonOpacity, {
-        toValue: 1,
-        duration: 150,
-        useNativeDriver: true,
-      }).start();
-    } else {
-      Animated.timing(buttonOpacity, {
-        toValue: 0,
-        duration: 150,
-        useNativeDriver: true,
-      }).start(() => setShowSendButton(false));
-    }
+    setShowSendButton(value.length > 0);
   };
 
   const sendMessage = () => {
@@ -76,8 +42,9 @@ const Conversation = ({ route, navigation }) => {
     handleTextChange('');
   };
 
+  // Définition de la fonction pickImage pour choisir une image et l'envoyer via le socket
   const pickImage = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
+    const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [4, 3],
@@ -89,8 +56,9 @@ const Conversation = ({ route, navigation }) => {
         image: result.uri,
         ownerId,
         annonceId,
+        conversationId,
       };
-      socket.emit('CLIENT_MSG', msg);
+      socket.emit('sendMessage', msg);
     }
   };
 

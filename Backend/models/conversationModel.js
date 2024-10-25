@@ -3,7 +3,7 @@ const { db } = require('../config/db');
 const Conversation = {
   findOrCreateConversation: (ownerId, expediteurId, callback) => {
     const queryCheck = `
-      SELECT * FROM Conversation 
+      SELECT Code_Conversation FROM Conversation 
       WHERE (Code_Expediteur = ? AND Code_Destinataire = ?) 
       OR (Code_Expediteur = ? AND Code_Destinataire = ?)
     `;
@@ -12,10 +12,10 @@ const Conversation = {
       if (err) {
         return callback(err);
       }
-      
+
       if (row) {
-        // La conversation existe déjà, renvoie uniquement conversationId
-        return callback(null, { conversationId: row.Code_Conversation });
+        // Renvoie la conversation existante avec Code_Conversation
+        return callback(null, { Code_Conversation: row.Code_Conversation });
       } else {
         // Créer une nouvelle conversation
         const queryInsert = `
@@ -26,8 +26,8 @@ const Conversation = {
           if (err) {
             return callback(err);
           }
-          // Renvoie conversationId avec l'ID de la nouvelle conversation
-          callback(null, { conversationId: this.lastID });
+          // Renvoie le nouvel ID de conversation
+          callback(null, { Code_Conversation: this.lastID });
         });
       }
     });

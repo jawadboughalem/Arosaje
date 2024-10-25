@@ -17,15 +17,18 @@ io.on('connection', (socket) => {
   console.log(`New client connected, socket id: ${socket.id}`);
 
   socket.on('joinConversation', (conversationId) => {
-    socket.join(conversationId);
-    console.log(`Client with socket id ${socket.id} joined conversation: ${conversationId}`);
+    if (conversationId) {
+      socket.join(conversationId);
+      console.log(`Client with socket id ${socket.id} joined conversation: ${conversationId}`);
+    } else {
+      console.error("joinConversation reçu sans conversationId");
+    }
   });
 
   socket.on('sendMessage', (data) => {
-    const { conversationId, message, idUser } = data;  // Notez l'ajout de idUser
+    const { conversationId, message, idUser } = data;
     console.log(`Message received from ${socket.id} in conversation ${conversationId}: ${message}`);
 
-    // Retransmettre le message avec idUser
     io.to(conversationId).emit('receiveMessage', { ...message, idUser });
   });
 
