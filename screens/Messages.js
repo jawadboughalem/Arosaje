@@ -10,45 +10,38 @@ export default function Messages() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchText, setSearchText] = useState('');
   const [selectedTab, setSelectedTab] = useState('Messages');
-  const [messages, setMessages] = useState([]);
+  const [conversations, setConversations] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const searchWidth = useRef(new Animated.Value(0)).current;
   const textInputRef = useRef(null);
   const navigation = useNavigation();
   const route = useRoute();
-  const { ownerId, annonceId } = route.params || {};
+  const { ownerId } = route.params || {};
 
   useEffect(() => {
-    const fetchMessages = async () => {
-      try {
-        const response = await fetch(`http://${IPV4}:3000/messages/${ownerId}/${annonceId}`);
-        const data = await response.json();
-        setMessages(data);
-        setIsLoading(false);
+    if (!ownerId) {
+      console.error("ownerId est undefined. Assurez-vous de passer ownerId dans les paramètres de navigation.");
+      setIsLoading(false);
+      return;
+    }
 
-        // Si une nouvelle conversation est nécessaire, je la crée ici
-        if (ownerId && annonceId) {
-          const conversationExists = data.some(
-            (msg) => msg.ownerId === ownerId && msg.annonceId === annonceId
-          );
-          if (!conversationExists) {
-            createConversation(ownerId, annonceId);
-          }
-        }
+    const fetchConversations = async () => {
+      try {
+        const response = await fetch(`http://${IPV4}:3000/api/conversations/${ownerId}`);
+        const responseText = await response.text();
+        console.log("Réponse brute reçue :", responseText);
+
+        const data = JSON.parse(responseText);
+        setConversations(data);
+        setIsLoading(false);
       } catch (error) {
-        console.error('Erreur lors de la récupération des messages:', error);
+        console.error('Erreur lors de la récupération des conversations:', error);
         setIsLoading(false);
       }
     };
 
-    fetchMessages();
-  }, [IPV4, ownerId, annonceId]);
-
-  const createConversation = (ownerId, annonceId) => {
-    // Je crée une nouvelle conversation si elle n'existe pas
-    const newConversation = { ownerId, annonceId, userName: 'New User', lastMessage: 'Start of conversation', profilePic: 'url_to_default_image' };
-    setMessages((prevMessages) => [...prevMessages, newConversation]);
-  };
+    fetchConversations();
+  }, [IPV4, ownerId]);
 
   const handleSearchPress = () => {
     setIsSearchOpen(true);
@@ -72,17 +65,12 @@ export default function Messages() {
     }).start();
   };
 
-  const handleFilterPress = () => {
-    console.log('Filtre pressé');
-  };
-
   const handleConversationPress = (conversation) => {
-    // Je navigue vers la page de conversation avec les détails de la conversation sélectionnée
-    navigation.navigate('Conversation', { ownerId: conversation.ownerId, annonceId: conversation.annonceId });
+    navigation.navigate('Conversation', { conversationId: conversation.Code_Conversation, ownerId });
   };
 
-  const filteredMessages = messages.filter(message =>
-    message.userName.toLowerCase().includes(searchText.toLowerCase())
+  const filteredConversations = conversations.filter(conversation =>
+    conversation.userName && conversation.userName.toLowerCase().includes(searchText.toLowerCase())
   );
 
   return (
@@ -117,7 +105,7 @@ export default function Messages() {
         </TouchableOpacity>
       </Animated.View>
       {isSearchOpen && (
-        <TouchableOpacity style={styles.filterButton} onPress={handleFilterPress}>
+        <TouchableOpacity style={styles.filterButton} onPress={() => {}}>
           <Icon name="filter-outline" size={30} color="#000" />
         </TouchableOpacity>
       )}
@@ -147,8 +135,8 @@ export default function Messages() {
             <Text>Chargement...</Text>
           ) : (
             <FlatList
-              data={filteredMessages}
-              keyExtractor={item => item.id.toString()}
+              data={filteredConversations}
+              keyExtractor={item => item.Code_Conversation.toString()}
               renderItem={({ item }) => <ConversationItem conversation={item} onPress={handleConversationPress} />}
               contentContainerStyle={{ paddingBottom: 80 }}
             />

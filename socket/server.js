@@ -29,7 +29,8 @@ io.on('connection', (socket) => {
     const { conversationId, message, idUser } = data;
     console.log(`Message received from ${socket.id} in conversation ${conversationId}: ${message}`);
 
-    io.to(conversationId).emit('receiveMessage', { ...message, idUser });
+    // Diffusion du message dans la conversation
+    io.to(conversationId).emit('newMessage', { message, idUser, conversationId });
   });
 
   socket.on('disconnect', () => {

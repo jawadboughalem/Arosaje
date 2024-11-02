@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, TextInput, TouchableOpacity, FlatList, StyleSheet, KeyboardAvoidingView, Platform, Animated, Text, Image, BackHandler } from 'react-native';
+import { View, TextInput, TouchableOpacity, FlatList, StyleSheet, KeyboardAvoidingView, Platform, Animated, Text, Image } from 'react-native';
 import { MaterialIcons, FontAwesome, Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import io from 'socket.io-client';
@@ -22,27 +22,62 @@ const Conversation = ({ route, navigation }) => {
     } else {
       console.error("conversationId non défini dans les paramètres");
     }
-    return () => socket.off('SERVER_MSG');
-  }, [conversationId]);
+
+    // Écouter les messages entrants uniquement pour les autres utilisateurs
+    socket.on('newMessage', (msg) => {
+      if (msg.idUser !== ownerId) {
+        setMessages((prevMessages) => [...prevMessages, msg]);
+      }
+    });
+
+    return () => {
+      socket.off('newMessage');
+      socket.off('SERVER_MSG');
+    };
+  }, [conversationId, ownerId]);
 
   const handleTextChange = (value) => {
     setText(value);
     setShowSendButton(value.length > 0);
   };
 
-  const sendMessage = () => {
+  const sendMessage = async () => {
+    if (!text.trim()) return; // Vérifie que le message n'est pas vide
+  
     const msg = {
-      text,
-      ownerId,
+      message: text,
+      idUser: ownerId,
       annonceId,
       conversationId,
     };
+  
     socket.emit('sendMessage', msg);
+  
+    setMessages((prevMessages) => [...prevMessages, msg]);
     setText('');
-    handleTextChange('');
+  
+    try {
+      const response = await fetch(`http://${IPV4}:3000/api/conversation/message`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message: text,
+          conversationId: conversationId,
+          userId: ownerId,
+        }),
+      });
+  
+      const data = await response.json();
+      console.log("Message sauvegardé avec l'ID :", data.messageId);
+  
+    } catch (error) {
+      console.error("Erreur lors de la sauvegarde du message :", error);
+    }
   };
-
-  // Définition de la fonction pickImage pour choisir une image et l'envoyer via le socket
+    
+  // Fonction pour choisir une image et l'envoyer
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -54,19 +89,23 @@ const Conversation = ({ route, navigation }) => {
     if (!result.canceled) {
       const msg = {
         image: result.uri,
-        ownerId,
+        idUser: ownerId,
         annonceId,
         conversationId,
       };
+      // Envoyer l'image via Socket.io
       socket.emit('sendMessage', msg);
+
+      // Ajouter l'image localement pour affichage immédiat
+      setMessages((prevMessages) => [...prevMessages, msg]);
     }
   };
 
   const renderMessageItem = ({ item }) => {
-    const isOwnMessage = item.ownerId === ownerId;
+    const isOwnMessage = item.idUser === ownerId;
     return (
       <View style={[styles.messageBubble, isOwnMessage ? styles.myMessage : styles.theirMessage]}>
-        {item.text && <Text style={styles.messageText}>{item.text}</Text>}
+        {item.message && <Text style={styles.messageText}>{item.message}</Text>}
         {item.image && <Image source={{ uri: item.image }} style={styles.messageImage} />}
       </View>
     );
