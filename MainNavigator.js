@@ -288,7 +288,7 @@ const styles = StyleSheet.create({
   },
   floatingCameraButtonContainer: {
     bottom: 20,
-    left: '50%',
+    left: '8%',
     transform: [{ translateX: -28 }],
     height: 56,
     width: 56,
