@@ -1,115 +1,148 @@
-const { db } = require('../config/db');
+const { supabase } = require('../config/supabaseClient');
 
-const createAnnonce = (annonce, callback) => {
-  const { nomPlante, description, localisation, dateDebut, dateFin, photo, userId } = annonce;
+const createAnnonce = async (annonce) => {
+    try {
+        const { nomPlante, description, localisation, dateDebut, dateFin, photo, userId } = annonce;
 
-  const sql = `
-    INSERT INTO postes (code_Utilisateurs, titre, description, datePoste, localisation) 
-    VALUES (?, ?, ?, ?, ?);
-  `;
-  const params = [userId, nomPlante, description, new Date(), localisation];
-  
-  db.run(sql, params, function(err) {
-    if (err) {
-      return callback(err);
-    }
-    const postId = this.lastID;
+        // Insertion dans la table "postes"
+        const { data: postData, error: postError } = await supabase
+            .from('postes')
+            .insert({
+                code_Utilisateurs: userId,
+                titre: nomPlante,
+                description,
+                datePoste: new Date(),
+                localisation
+            })
+            .select();
 
-    const photoSql = `
-      INSERT INTO photos (date, photo, code_Utilisateurs, code_Postes) 
-      VALUES (?, ?, ?, ?);
-    `;
-    const photoParams = [new Date().getTime(), photo, userId, postId];
-    
-    // Insertion de la photo liée à l'annonce
-    db.run(photoSql, photoParams, function(err) {
-      if (err) {
-        return callback(err);
-      }
-      const photoId = this.lastID;
-
-      const updatePostSql = `
-        UPDATE postes SET code_Photos = ? WHERE Code_Postes = ?;
-      `;
-      const updatePostParams = [photoId, postId];
-      
-      // Mise à jour de l'annonce avec l'ID de la photo
-      db.run(updatePostSql, updatePostParams, function(err) {
-        if (err) {
-          return callback(err);
+        if (postError) {
+            throw new Error(`Erreur lors de la création de l'annonce: ${postError.message}`);
         }
 
-        const gardeSql = `
-          INSERT INTO Gardes (Code_Postes, Code_Gardien, Statut, DateDebut, DateFin) 
-          VALUES (?, ?, ?, ?, ?);
-        `;
-        const gardeParams = [postId, userId, 'Disponible', dateDebut, dateFin];
-        
+        const postId = postData[0].Code_Postes;
+
+        // Insertion de la photo liée à l'annonce
+        const { data: photoData, error: photoError } = await supabase
+            .from('photos')
+            .insert({
+                date: new Date().getTime(),
+                photo,
+                code_Utilisateurs: userId,
+                code_Postes: postId
+            })
+            .select();
+
+        if (photoError) {
+            throw new Error(`Erreur lors de l'ajout de la photo: ${photoError.message}`);
+        }
+
+        const photoId = photoData[0].code_Photos;
+
+        // Mise à jour de l'annonce avec l'ID de la photo
+        const { error: updatePostError } = await supabase
+            .from('postes')
+            .update({ code_Photos: photoId })
+            .eq('Code_Postes', postId);
+
+        if (updatePostError) {
+            throw new Error(`Erreur lors de la mise à jour de l'annonce: ${updatePostError.message}`);
+        }
+
         // Insertion des détails de garde associés à l'annonce
-        db.run(gardeSql, gardeParams, function(err) {
-          if (err) {
-            return callback(err);
-          }
-          callback(null, postId);
-        });
-      });
-    });
-  });
+        const { error: gardeError } = await supabase
+            .from('Gardes')
+            .insert({
+                Code_Postes: postId,
+                Code_Gardien: userId,
+                Statut: 'Disponible',
+                DateDebut: dateDebut,
+                DateFin: dateFin
+            });
+
+        if (gardeError) {
+            throw new Error(`Erreur lors de l'ajout des détails de garde: ${gardeError.message}`);
+        }
+
+        return postId;
+    } catch (err) {
+        console.error(err.message);
+        throw err;
+    }
 };
 
-const getAllAnnonces = (callback) => {
-  const sql = `
-    SELECT p.Code_Postes, p.titre, p.description, p.datePoste, p.localisation, ph.photo, g.DateDebut, g.DateFin
-    FROM postes p
-    LEFT JOIN photos ph ON p.Code_Postes = ph.code_Postes
-    LEFT JOIN Gardes g ON p.Code_Postes = g.Code_Postes
-    ORDER BY p.datePoste DESC;
-  `;
+const getAllAnnonces = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('postes')
+        .select(`
+          code_postes,
+          titre,
+          description,
+          dateposte,
+          localisation,
+          photos (photo),
+          gardes (datedebut, datefin, statut)
+        `)
+        .order('dateposte', { ascending: false });
   
-  // Récupération de toutes les annonces avec leurs détails
-  db.all(sql, [], (err, rows) => {
-    if (err) {
-      return callback(err);
+      if (error) {
+        console.error('Erreur lors de la récupération des annonces:', error.message);
+        throw new Error(`Erreur lors de la récupération des annonces: ${error.message}`);
+      }
+  
+      // Adapter la structure pour refléter les résultats aplatis
+      return data.map(row => ({
+        codePostes: row.code_postes,
+        titre: row.titre,
+        description: row.description,
+        datePoste: row.dateposte,
+        localisation: row.localisation,
+        photo: row.photo || null, // Photo associée, ou null si absente
+        garde: {
+          statut: row.gardes?.statut || null,
+          dateDebut: row.gardes?.datedebut ? new Date(row.gardes.datedebut) : null,
+          dateFin: row.gardes?.datefin ? new Date(row.gardes.datefin) : null,
+        },
+      }));
+    } catch (err) {
+      console.error(err.message);
+      throw err;
     }
+  };
+  
+  
+  
 
-    const annonces = rows.map(row => ({
-      ...row,
-      dateDebut: row.DateDebut ? new Date(row.DateDebut).toISOString() : null,
-      dateFin: row.DateFin ? new Date(row.DateFin).toISOString() : null,
-    }));
+const getAnnoncesByUser = async (userId) => {
+    try {
+        const { data, error } = await supabase
+            .from('postes')
+            .select(`
+                Code_Postes, titre, description, datePoste, localisation,
+                photos(photo),
+                Gardes(DateDebut, DateFin)
+            `)
+            .eq('code_Utilisateurs', userId)
+            .order('datePoste', { ascending: false });
 
-    callback(null, annonces);
-  });
-};
+        if (error) {
+            throw new Error(`Erreur lors de la récupération des annonces par utilisateur: ${error.message}`);
+        }
 
-const getAnnoncesByUser = (userId, callback) => {
-  const sql = `
-    SELECT p.Code_Postes, p.titre, p.description, p.datePoste, p.localisation, ph.photo, g.DateDebut, g.DateFin
-    FROM postes p
-    LEFT JOIN photos ph ON p.Code_Postes = ph.code_Postes
-    LEFT JOIN Gardes g ON p.Code_Postes = g.Code_Postes
-    WHERE p.code_Utilisateurs = ?
-    ORDER BY p.datePoste DESC;
-  `;
-
-  db.all(sql, [userId], (err, rows) => {
-    if (err) {
-      return callback(err);
+        return data.map(row => ({
+            ...row,
+            DateDebut: row.Gardes?.DateDebut ? new Date(row.Gardes.DateDebut) : null,
+            DateFin: row.Gardes?.DateFin ? new Date(row.Gardes.DateFin) : null,
+        }));
+    } catch (err) {
+        console.error(err.message);
+        throw err;
     }
-
-    const annonces = rows.map(row => ({
-      ...row,
-      dateDebut: row.DateDebut ? new Date(row.DateDebut).toISOString() : null,
-      dateFin: row.DateFin ? new Date(row.DateFin).toISOString() : null,
-    }));
-
-    callback(null, annonces);
-  });
 };
-
 
 module.exports = {
-  createAnnonce,
-  getAllAnnonces,
-  getAnnoncesByUser,
+    createAnnonce,
+    getAllAnnonces,
+    getAnnoncesByUser,
 };

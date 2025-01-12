@@ -15,10 +15,10 @@ export default function Sign() {
         isBotanist: false,
         botanistKey: '',
     });
-    
+
     const [errors, setErrors] = useState({});
-    const [showPrivacyModal, setShowPrivacyModal] = useState(false); // Etat pour le modal de la charte de confidentialité
-    const [isPrivacyAccepted, setIsPrivacyAccepted] = useState(false); // Etat pour savoir si l'utilisateur a accepté la charte
+    const [showPrivacyModal, setShowPrivacyModal] = useState(false);
+    const [isPrivacyAccepted, setIsPrivacyAccepted] = useState(false);
 
     useFocusEffect(
         React.useCallback(() => {
@@ -46,12 +46,7 @@ export default function Sign() {
     }, []);
 
     const showAlert = (message) => {
-        Alert.alert(
-            "Erreur",
-            message,
-            [{ text: "OK", onPress: () => console.log("OK Pressed") }],
-            { cancelable: false }
-        );
+        Alert.alert("Erreur", message, [{ text: "OK" }], { cancelable: false });
     };
 
     const handleSignUp = async () => {
@@ -72,25 +67,20 @@ export default function Sign() {
             showAlert("Le mot de passe doit contenir au moins 8 caractères, un chiffre et un caractère spécial.");
         }
 
-        if (formData.isBotanist && formData.botanistKey !== BOTANIST_SECRET_KEY) {
-            validationErrors.botanistKey = "La clé botaniste est incorrecte.";
-            showAlert("La clé botaniste est incorrecte.");
-        }
         setErrors(validationErrors);
 
         if (Object.keys(validationErrors).length > 0) {
             return;
         }
 
-        // Ouvrir la charte de confidentialité avant de continuer
         setShowPrivacyModal(true);
     };
-
     const handlePrivacyAccept = async () => {
         setShowPrivacyModal(false);
         setIsPrivacyAccepted(true);
     
-        // Procéder à l'inscription après l'acceptation de la charte
+        console.log('Début de handlePrivacyAccept');
+    
         try {
             const response = await fetch(`http://${IPV4}:3000/auth/signup`, {
                 method: 'POST',
@@ -98,13 +88,15 @@ export default function Sign() {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    name: formData.name, 
+                    name: formData.name,
                     surname: formData.surname,
                     email: formData.email,
                     password: formData.password,
                     isBotanist: formData.isBotanist,
                 }),
             });
+    
+            console.log('Requête envoyée au serveur.');
     
             if (!response.ok) {
                 console.error('Erreur lors de l\'inscription:', response.statusText);
@@ -113,14 +105,31 @@ export default function Sign() {
     
             const data = await response.json();
             console.log('Inscription réussie. ID utilisateur:', data.userId);
-            Alert.alert("Inscription réussie", "Votre compte a été créé avec succès.", [
-                { text: "OK", onPress: () => navigation.navigate('Login') } 
-            ]);
+    
+            // Alerte en cas de succès
+            Alert.alert(
+                "Inscription réussie",
+                "Votre compte a été créé avec succès.",
+                [
+                    {
+                        text: "OK",
+                        onPress: () => {
+                            console.log('Utilisateur appuie sur OK, redirection...');
+                            navigation.navigate('Login');
+                        },
+                    },
+                ]
+            );
         } catch (error) {
             console.error('Erreur lors de l\'inscription:', error);
-            Alert.alert("Erreur", "Une erreur s'est produite lors de l'inscription.");
+    
+            // Alerte en cas d'erreur
+            Alert.alert(
+                "Erreur",
+                "Une erreur s'est produite lors de l'inscription. Veuillez réessayer."
+            );
         }
-    };    
+    };
 
     const handlePrivacyDecline = () => {
         setShowPrivacyModal(false);
@@ -132,58 +141,35 @@ export default function Sign() {
         <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
             <ScrollView contentContainerStyle={styles.scrollContainer}>
                 <View style={styles.container}>
+                    {/* Header */}
                     <View style={styles.header}>
                         <Text style={styles.title}>A’rosa-je</Text>
                         <MaterialCommunityIcons name="flower" size={100} color="black" style={styles.icon} />
                     </View>
+
+                    {/* Form */}
                     <View style={styles.formContainer}>
                         <Text style={styles.formTitle}>Inscription</Text>
-                        <TextInput 
-                            placeholder="Nom" 
-                            style={styles.input} 
-                            value={formData.name} 
-                            onChangeText={(text) => setFormData({ ...formData, name: text })} 
-                        />
-                        <TextInput 
-                            placeholder="Prénom" 
-                            style={styles.input} 
-                            value={formData.surname} 
-                            onChangeText={(text) => setFormData({ ...formData, surname: text })} 
-                        />
-                        <TextInput 
-                            placeholder="Email" 
-                            style={styles.input} 
-                            value={formData.email} 
-                            onChangeText={(text) => setFormData({ ...formData, email: text })} 
-                            keyboardType="email-address" 
-                            autoCapitalize="none" 
-                        />
-                        <TextInput 
-                            placeholder="Mot de passe" 
-                            style={styles.input} 
-                            value={formData.password} 
-                            onChangeText={(text) => setFormData({ ...formData, password: text })} 
-                            secureTextEntry 
-                            autoCapitalize="none" 
-                        />
+                        <TextInput placeholder="Nom" style={styles.input} value={formData.name} onChangeText={(text) => setFormData({ ...formData, name: text })} />
+                        <TextInput placeholder="Prénom" style={styles.input} value={formData.surname} onChangeText={(text) => setFormData({ ...formData, surname: text })} />
+                        <TextInput placeholder="Email" style={styles.input} value={formData.email} onChangeText={(text) => setFormData({ ...formData, email: text })} keyboardType="email-address" autoCapitalize="none" />
+                        <TextInput placeholder="Mot de passe" style={styles.input} value={formData.password} onChangeText={(text) => setFormData({ ...formData, password: text })} secureTextEntry autoCapitalize="none" />
 
+                        {/* Botanist Section */}
                         {formData.isBotanist && (
-                            <TextInput 
-                                placeholder="Code Botaniste" 
-                                style={styles.input} 
-                                value={formData.botanistKey} 
-                                onChangeText={(text) => setFormData({ ...formData, botanistKey: text })} 
-                                keyboardType="numeric" 
-                                maxLength={5} 
+                            <TextInput
+                                placeholder="Code Botaniste"
+                                style={styles.input}
+                                value={formData.botanistKey}
+                                onChangeText={(text) => setFormData({ ...formData, botanistKey: text })}
+                                keyboardType="numeric"
+                                maxLength={5}
                             />
                         )}
 
                         <View style={styles.switchContainer}>
                             <Text>Êtes-vous un botaniste?</Text>
-                            <Switch 
-                                value={formData.isBotanist} 
-                                onValueChange={(value) => setFormData({ ...formData, isBotanist: value })} 
-                            />
+                            <Switch value={formData.isBotanist} onValueChange={(value) => setFormData({ ...formData, isBotanist: value })} />
                         </View>
 
                         <TouchableOpacity style={styles.button} onPress={handleSignUp}>
@@ -197,19 +183,13 @@ export default function Sign() {
                         </Text>
                     </View>
 
-                    {/* Modal de la charte de confidentialité */}
-                    <Modal
-                        visible={showPrivacyModal}
-                        transparent={true}
-                        animationType="slide"
-                    >
+                    {/* Privacy Modal */}
+                    <Modal visible={showPrivacyModal} transparent={true} animationType="slide">
                         <View style={styles.modalContainer}>
                             <View style={styles.modalContent}>
                                 <Text style={styles.modalTitle}>Charte de Confidentialité</Text>
                                 <ScrollView style={styles.modalBody}>
-                                    <Text>Nous récupérons certaines données pour améliorer votre expérience utilisateur, comme l'email et d'autres informations.</Text>
-                                    <Text>Ces informations ne seront pas partagées sans votre consentement, et vous pouvez refuser à tout moment.</Text>
-                                    <Text>En acceptant, vous permettez à l'application d'utiliser ces données pour personnaliser les services.</Text>
+                                    <Text>Nous récupérons certaines données pour améliorer votre expérience utilisateur...</Text>
                                 </ScrollView>
                                 <View style={styles.modalButtons}>
                                     <TouchableOpacity style={styles.modalButtonDecline} onPress={handlePrivacyDecline}>
@@ -227,7 +207,6 @@ export default function Sign() {
         </KeyboardAvoidingView>
     );
 }
-
 const styles = StyleSheet.create({
     scrollContainer: {
         flexGrow: 1,

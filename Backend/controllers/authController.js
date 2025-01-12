@@ -7,55 +7,50 @@ const signup = async (req, res) => {
     const botanistValue = isBotanist ? 1 : 0;
 
     try {
-        const hashedPassword = await bcrypt.hash(password, 10); // Je hash le mot de passe
+        // Validation des données
+        if (!name || !surname || !email || !password) {
+            return res.status(400).json({ error: 'Tous les champs sont obligatoires.' });
+        }
 
-        createUser(name, surname, email, hashedPassword, botanistValue, (err, userId) => {
-            if (err) {
-                console.error('Database insertion error:', err.message);
-                return res.status(500).json({ error: 'Erreur lors de l\'insertion dans la base de données', details: err.message });
-            }
-            res.status(200).json({ message: 'Inscription réussie', userId });
-        });
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        // Création de l'utilisateur
+        const userId = await createUser(name, surname, email, hashedPassword, botanistValue);
+
+        return res.status(201).json({ message: 'Inscription réussie', userId });
     } catch (err) {
-        console.error('Error during signup:', err.message); // Log important pour déboguer l'inscription
-        res.status(500).json({ error: 'Erreur lors de l\'inscription', details: err.message });
+        console.error('Erreur lors de l\'inscription:', err.message);
+        return res.status(500).json({ error: 'Une erreur est survenue lors de l\'inscription.' });
     }
 };
-
 const login = async (req, res) => {
     const { email, password } = req.body;
 
     try {
-        // Je récupère l'utilisateur à partir de l'email
-        getUserByEmail(email, async (err, user) => {
-            if (err) {
-                console.error('Database error:', err.message);
-                return res.status(500).json({ error: 'Erreur lors de la connexion à la base de données', details: err.message });
-            }
+        // Validation des données
+        if (!email || !password) {
+            return res.status(400).json({ error: 'Email et mot de passe requis.' });
+        }
 
-            if (!user) {
-                return res.status(400).json({ error: 'Email ou mot de passe incorrect' }); // Email non trouvé
-            }
+        // Recherche de l'utilisateur
+        const user = await getUserByEmail(email);
+        if (!user) {
+            return res.status(400).json({ error: 'Email ou mot de passe incorrect.' });
+        }
 
-            try {
-                // Je compare les mots de passe
-                const isPasswordValid = await bcrypt.compare(password, user.password);
-                if (!isPasswordValid) {
-                    return res.status(400).json({ error: 'Email ou mot de passe incorrect' }); // Mot de passe incorrect
-                }
+        // Comparaison des mots de passe
+        const isPasswordValid = await bcrypt.compare(password, user.password);
+        if (!isPasswordValid) {
+            return res.status(400).json({ error: 'Email ou mot de passe incorrect.' });
+        }
 
-                const token = generateToken(user.Code_Utilisateurs); // Je génère un token
-                res.status(200).json({ token });
+        // Génération du token
+        const token = generateToken(user.code_utilisateurs); // Assurez-vous que la clé est correcte
+        return res.status(200).json({ token });
 
-            } catch (error) {
-                console.error('Error during password comparison:', error.message); // Log en cas de problème avec bcrypt
-                return res.status(500).json({ error: 'Erreur lors de la comparaison du mot de passe', details: error.message });
-            }
-        });
-
-    } catch (error) {
-        console.error('Error during login:', error.message);
-        return res.status(500).json({ error: 'Erreur lors de la connexion', details: error.message });
+    } catch (err) {
+        console.error('Erreur lors de la connexion:', err.message);
+        return res.status(500).json({ error: 'Une erreur est survenue lors de la connexion.' });
     }
 };
 

@@ -1,7 +1,10 @@
-const IPV4 = '172.17.72.1'; // Remplace par ton adresse IPV4
-const secretKey = 'clesecrete'; 
+const supabase = require('./supabaseClient');
+
+const IPV4 = '192.168.1.25'; // Adresse IP de ton serveur
+const secretKey = 'clesecrete';
 
 module.exports = {
     IPV4,
-    secretKey
+    secretKey,
+    supabase, // Ajout de Supabase pour une utilisation centralisée
 };

@@ -1,62 +1,118 @@
-const { db } = require('../config/db');
+const { supabase } = require('../config/supabaseClient');
 
-const getUserById = (userId, callback) => {
-  const query = 'SELECT * FROM utilisateurs WHERE Code_Utilisateurs = ?';
-  db.get(query, [userId], (err, row) => {
-    if (err) {
-      console.error('Erreur lors de la récupération de l\'utilisateur:', err);
-      return callback(err);
+const getUserById = async (userId) => {
+    try {
+        const { data, error } = await supabase
+            .from('utilisateurs')
+            .select('*')
+            .eq('Code_Utilisateurs', userId)
+            .single();
+
+        if (error) {
+            throw new Error(`Erreur lors de la récupération de l'utilisateur: ${error.message}`);
+        }
+
+        return data;
+    } catch (err) {
+        console.error(err.message);
+        throw err;
     }
-    callback(null, row);
-  });
 };
 
-const getUserInfoFromDb = (userId, callback) => {
-  const query = 'SELECT nom, prenom FROM utilisateurs WHERE Code_Utilisateurs = ?';
-  db.get(query, [userId], (err, row) => {
-    if (err) {
-      return callback(err);
+const getUserInfoFromDb = async (userId) => {
+    try {
+        const { data, error } = await supabase
+            .from('utilisateurs')
+            .select('nom, prenom')
+            .eq('Code_Utilisateurs', userId)
+            .single();
+
+        if (error) {
+            throw new Error(`Erreur lors de la récupération des informations utilisateur: ${error.message}`);
+        }
+
+        return data || null;
+    } catch (err) {
+        console.error(err.message);
+        throw err;
     }
-    return callback(null, row || null);
-  });
 };
 
-const updateUserPassword = (userId, hashedPassword, callback) => {
-  const query = 'UPDATE utilisateurs SET password = ? WHERE Code_Utilisateurs = ?';
-  db.run(query, [hashedPassword, userId], callback);
-};
+const updateUserPassword = async (userId, hashedPassword) => {
+    try {
+        const { error } = await supabase
+            .from('utilisateurs')
+            .update({ password: hashedPassword })
+            .eq('Code_Utilisateurs', userId);
 
-const updateUserPhoto = (id, fileName, callback) => {
-  const query = 'UPDATE utilisateurs SET photo = ? WHERE Code_Utilisateurs = ?';
-  db.run(query, [fileName, id], callback);
-};
-
-const getUserPhoto = (id, callback) => {
-  const query = 'SELECT photo FROM utilisateurs WHERE Code_Utilisateurs = ?';
-  db.get(query, [id], (err, row) => {
-    if (err) {
-      return callback(err);
+        if (error) {
+            throw new Error(`Erreur lors de la mise à jour du mot de passe: ${error.message}`);
+        }
+    } catch (err) {
+        console.error(err.message);
+        throw err;
     }
-    callback(null, row ? row.photo : null);
-  });
 };
 
-const isUserBotanist = (userId, callback) => {
-  const query = 'SELECT botaniste FROM utilisateurs WHERE Code_Utilisateurs = ?';
-  db.get(query, [userId], (err, row) => {
-    if (err) {
-      console.error('Erreur lors de la récupération du statut de botaniste:', err);
-      return callback(err);
+const updateUserPhoto = async (id, fileName) => {
+    try {
+        const { error } = await supabase
+            .from('utilisateurs')
+            .update({ photo: fileName })
+            .eq('Code_Utilisateurs', id);
+
+        if (error) {
+            throw new Error(`Erreur lors de la mise à jour de la photo: ${error.message}`);
+        }
+    } catch (err) {
+        console.error(err.message);
+        throw err;
     }
-    callback(null, row ? row.botaniste : null); // Retourne le statut botaniste
-  });
+};
+
+const getUserPhoto = async (id) => {
+    try {
+        const { data, error } = await supabase
+            .from('utilisateurs')
+            .select('photo')
+            .eq('Code_Utilisateurs', id)
+            .single();
+
+        if (error) {
+            throw new Error(`Erreur lors de la récupération de la photo: ${error.message}`);
+        }
+
+        return data ? data.photo : null;
+    } catch (err) {
+        console.error(err.message);
+        throw err;
+    }
+};
+
+const isUserBotanist = async (userId) => {
+    try {
+        const { data, error } = await supabase
+            .from('utilisateurs')
+            .select('botaniste')
+            .eq('Code_Utilisateurs', userId)
+            .single();
+
+        if (error) {
+            throw new Error(`Erreur lors de la récupération du statut de botaniste: ${error.message}`);
+        }
+
+        return data ? data.botaniste : null;
+    } catch (err) {
+        console.error(err.message);
+        throw err;
+    }
 };
 
 module.exports = {
-  getUserById,
-  updateUserPassword,
-  getUserInfoFromDb,
-  updateUserPhoto,
-  getUserPhoto,
-  isUserBotanist,  // Renommé pour plus de clarté
+    getUserById,
+    updateUserPassword,
+    getUserInfoFromDb,
+    updateUserPhoto,
+    getUserPhoto,
+    isUserBotanist,
 };

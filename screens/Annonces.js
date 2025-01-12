@@ -152,7 +152,7 @@ const CardsPage = () => {
             </View>
             <FlatList
                 data={annonces.slice(0, visibleAnnonces)}
-                keyExtractor={(item) => item.Code_Postes.toString()}
+                keyExtractor={(item) => item.Code_Postes}
                 renderItem={({ item }) => (
                     <TouchableOpacity
                         onPress={() => navigation.navigate('DetailPoste', { annonce: item })}

@@ -3,19 +3,14 @@ const bodyParser = require('body-parser');
 const morgan = require('morgan');
 const cors = require('cors');
 const path = require('path');
-const { initialize } = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
 const annonceRoutes = require('./routes/annonceRoutes');
 const userRoutes = require('./routes/userRoutes');
 const conseilRoutes = require('./routes/conseilRoutes');
-const conversationRoutes = require('./routes/conversationRoutes');
 const multer = require('multer');
 
 const app = express();
 const port = 3000;
-
-// Initialisation de la base de données
-initialize();
 
 // Configuration CORS
 const corsOptions = {
@@ -44,7 +39,7 @@ app.use('/annonces', annonceRoutes);
 app.use('/user', userRoutes);
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/conseils', conseilRoutes);
-app.use('/api', conversationRoutes);
+
 
 app.listen(port, () => {
   console.log(`Serveur API démarré sur le port ${port}`);
