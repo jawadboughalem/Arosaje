@@ -94,14 +94,13 @@ const isUserBotanist = async (userId) => {
         const { data, error } = await supabase
             .from('utilisateurs')
             .select('botaniste')
-            .eq('Code_Utilisateurs', userId)
-            .single();
+            .eq('code_utilisateurs', userId); // Utilisation de 'code_utilisateurs' en minuscules
 
         if (error) {
             throw new Error(`Erreur lors de la récupération du statut de botaniste: ${error.message}`);
         }
 
-        return data ? data.botaniste : null;
+        return data.length > 0 && data[0].botaniste === true; // Vérifie le statut de botaniste
     } catch (err) {
         console.error(err.message);
         throw err;

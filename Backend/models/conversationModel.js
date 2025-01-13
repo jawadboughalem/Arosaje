@@ -1,4 +1,4 @@
-const { db } = require('../config/db');
+
 
 const Conversation = {
   findOrCreateConversation: (ownerId, expediteurId, callback) => {

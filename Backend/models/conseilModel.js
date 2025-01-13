@@ -29,7 +29,7 @@ const createConseil = async (conseil) => {
 const getAllConseils = async () => {
     try {
         const { data, error } = await supabase
-            .from('Conseils')
+            .from('conseils') // En minuscules
             .select('*');
 
         if (error) {
@@ -42,6 +42,8 @@ const getAllConseils = async () => {
         throw err;
     }
 };
+
+
 
 const deleteConseil = async (conseilId) => {
     try {
