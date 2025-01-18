@@ -2,12 +2,12 @@ const { supabase } = require('../config/supabaseClient');
 
 const createConseil = async (conseil) => {
     try {
-        const { Code_Utilisateurs, Titre, Description, Theme } = conseil;
+        const { Code_utilisateurs, Titre, Description, Theme } = conseil;
 
         const { data, error } = await supabase
             .from('Conseils')
             .insert({
-                Code_Utilisateurs,
+                Code_utilisateurs,
                 Titre,
                 Description,
                 Date: new Date().toISOString(),

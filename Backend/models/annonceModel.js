@@ -8,7 +8,7 @@ const createAnnonce = async (annonce) => {
         const { data: postData, error: postError } = await supabase
             .from('postes')
             .insert({
-                code_Utilisateurs: userId,
+                code_utilisateurs: userId,
                 titre: nomPlante,
                 description,
                 datePoste: new Date(),
@@ -28,7 +28,7 @@ const createAnnonce = async (annonce) => {
             .insert({
                 date: new Date().getTime(),
                 photo,
-                code_Utilisateurs: userId,
+                code_utilisateurs: userId,
                 code_Postes: postId
             })
             .select();
@@ -114,32 +114,45 @@ const getAllAnnonces = async () => {
   
   
 
-const getAnnoncesByUser = async (userId) => {
+  const getAnnoncesByUser = async (userId) => {
     try {
         const { data, error } = await supabase
             .from('postes')
             .select(`
-                Code_Postes, titre, description, datePoste, localisation,
-                photos(photo),
-                Gardes(DateDebut, DateFin)
+                code_postes, 
+                titre, 
+                description, 
+                dateposte, 
+                localisation, 
+                photos:code_photos(photo), 
+                gardes:code_postes(datedebut, datefin)
             `)
-            .eq('code_Utilisateurs', userId)
-            .order('datePoste', { ascending: false });
+            .eq('code_utilisateurs', userId)
+            .order('dateposte', { ascending: false });
 
         if (error) {
             throw new Error(`Erreur lors de la récupération des annonces par utilisateur: ${error.message}`);
         }
 
+        // Format des dates et structure du résultat
         return data.map(row => ({
-            ...row,
-            DateDebut: row.Gardes?.DateDebut ? new Date(row.Gardes.DateDebut) : null,
-            DateFin: row.Gardes?.DateFin ? new Date(row.Gardes.DateFin) : null,
+            code_postes: row.code_postes,
+            titre: row.titre,
+            description: row.description,
+            dateposte: row.dateposte ? new Date(row.dateposte) : null,
+            localisation: row.localisation,
+            photos: row.photos ? row.photos.map(photo => photo.photo) : [],
+            gardes: row.gardes ? row.gardes.map(guard => ({
+                datedebut: guard.datedebut ? new Date(guard.datedebut) : null,
+                datefin: guard.datefin ? new Date(guard.datefin) : null,
+            })) : [],
         }));
     } catch (err) {
         console.error(err.message);
         throw err;
     }
 };
+
 
 module.exports = {
     createAnnonce,

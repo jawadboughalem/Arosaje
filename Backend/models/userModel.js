@@ -5,7 +5,7 @@ const getUserById = async (userId) => {
         const { data, error } = await supabase
             .from('utilisateurs')
             .select('*')
-            .eq('Code_Utilisateurs', userId)
+            .eq('Code_utilisateurs', userId)
             .single();
 
         if (error) {
@@ -24,7 +24,7 @@ const getUserInfoFromDb = async (userId) => {
         const { data, error } = await supabase
             .from('utilisateurs')
             .select('nom, prenom')
-            .eq('Code_Utilisateurs', userId)
+            .eq('Code_utilisateurs', userId)
             .single();
 
         if (error) {
@@ -43,7 +43,7 @@ const updateUserPassword = async (userId, hashedPassword) => {
         const { error } = await supabase
             .from('utilisateurs')
             .update({ password: hashedPassword })
-            .eq('Code_Utilisateurs', userId);
+            .eq('Code_utilisateurs', userId);
 
         if (error) {
             throw new Error(`Erreur lors de la mise à jour du mot de passe: ${error.message}`);
@@ -59,7 +59,7 @@ const updateUserPhoto = async (id, fileName) => {
         const { error } = await supabase
             .from('utilisateurs')
             .update({ photo: fileName })
-            .eq('Code_Utilisateurs', id);
+            .eq('Code_utilisateurs', id);
 
         if (error) {
             throw new Error(`Erreur lors de la mise à jour de la photo: ${error.message}`);
@@ -75,7 +75,7 @@ const getUserPhoto = async (id) => {
         const { data, error } = await supabase
             .from('utilisateurs')
             .select('photo')
-            .eq('Code_Utilisateurs', id)
+            .eq('Code_utilisateurs', id)
             .single();
 
         if (error) {
