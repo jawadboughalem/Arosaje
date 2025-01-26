@@ -1,4 +1,4 @@
-const IPV4 = '172.17.72.1'; // Remplace par ton adresse IPV4
+const IPV4 = '138.195.42.47'; // Remplace par ton adresse IPV4
 const secretKey = 'clesecrete'; 
 
 module.exports = {

@@ -56,7 +56,7 @@ export default function App() {
   };
 
   if (isLoading) {
-    return null; // ou une vue de chargement si vous préférez
+    return null;
   }
 
   return (

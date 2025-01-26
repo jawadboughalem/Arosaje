@@ -8,7 +8,6 @@ const authRoutes = require('./routes/authRoutes');
 const annonceRoutes = require('./routes/annonceRoutes');
 const userRoutes = require('./routes/userRoutes');
 const conseilRoutes = require('./routes/conseilRoutes');
-const conversationRoutes = require('./routes/conversationRoutes');
 const multer = require('multer');
 
 const app = express();
@@ -19,7 +18,7 @@ initialize();
 
 // Configuration CORS
 const corsOptions = {
-  origin: 'http://localhost:8081', // Remplace par l'origine de ton frontend
+  origin: 'http://localhost:8081',
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
   allowedHeaders: 'Origin, X-Requested-With, Content-Type, Accept, Authorization'
 };
@@ -44,7 +43,6 @@ app.use('/annonces', annonceRoutes);
 app.use('/user', userRoutes);
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/conseils', conseilRoutes);
-app.use('/api', conversationRoutes);
 
 app.listen(port, () => {
   console.log(`Serveur API démarré sur le port ${port}`);
