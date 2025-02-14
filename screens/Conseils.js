@@ -49,9 +49,7 @@ const Conseils = ({ route }) => {
         try {
           const response = await fetch(`http://${IPV4}:3000/user/is-botanist`, {
             method: 'GET',
-            headers: {
-              'Authorization': `Bearer ${token}`, 
-            },
+            headers: { 'Authorization': `Bearer ${token}` },
           });
 
           if (response.ok) {
@@ -81,19 +79,17 @@ const Conseils = ({ route }) => {
     try {
       const response = await fetch(`http://${IPV4}:3000/conseils/conseils`, {
         method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,  // Inclure le token ici
-        },
+        headers: { 'Authorization': `Bearer ${token}` },
       });
 
       if (response.ok) {
         const data = await response.json();
-        setThemes((prevThemes) => {
-          return prevThemes.map((theme) => ({
+        setThemes((prevThemes) =>
+          prevThemes.map((theme) => ({
             ...theme,
             conseils: data.filter((conseil) => conseil.Theme === theme.name),
-          }));
-        });
+          }))
+        );
       } else {
         Alert.alert('Erreur', 'Impossible de récupérer les conseils.');
       }
@@ -112,9 +108,7 @@ const Conseils = ({ route }) => {
     try {
       const response = await fetch(`http://${IPV4}:3000/conseils/delete/${id}`, {
         method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
+        headers: { 'Authorization': `Bearer ${token}` },
       });
 
       if (response.ok) {
@@ -137,7 +131,7 @@ const Conseils = ({ route }) => {
       Alert.alert('Modification interdite', 'Seuls les botanistes peuvent modifier les conseils.');
       return;
     }
-    navigation.navigate('FormulaireBotaniste', { conseil });
+    navigation.navigate('FormulaireBotaniste', { conseil, themes });
   };
 
   useFocusEffect(
@@ -148,12 +142,18 @@ const Conseils = ({ route }) => {
         const { newConseil } = route.params;
         setThemes((prevThemes) =>
           prevThemes.map((theme) =>
-            theme.name === newConseil.Theme && !theme.conseils.some(c => c.Titre === newConseil.Titre && c.Description === newConseil.Description)
+            theme.name === newConseil.Theme && !theme.conseils.some(c => c.Code_Conseils === newConseil.Code_Conseils)
               ? {
                   ...theme,
                   conseils: [
                     ...theme.conseils,
-                    { Titre: newConseil.Titre, Description: newConseil.Description, Theme: newConseil.Theme },
+                    { 
+                      Code_Conseils: newConseil.Code_Conseils, 
+                      Titre: newConseil.Titre, 
+                      Description: newConseil.Description, 
+                      Theme: newConseil.Theme,
+                      Date: newConseil.Date
+                    },
                   ],
                 }
               : theme
@@ -196,18 +196,18 @@ const Conseils = ({ route }) => {
             {themes
               .find((theme) => theme.id === selectedTheme)
               .conseils.map((conseil, index) => (
-                <Animatable.View key={index} style={styles.conseilCard} animation="fadeInUp" delay={index * 100}>
+                <Animatable.View key={conseil.Code_Conseils || index} style={styles.conseilCard} animation="fadeInUp" delay={index * 100}>
                   <CardConseil 
                     conseil={conseil} 
-                    onDelete={isBotanist ? () => deleteConseil(conseil.Code_Conseils) : undefined}  // Désactiver la suppression pour les non-botanistes
-                    onEdit={isBotanist ? () => handleEditConseil(conseil) : undefined}  // Désactiver la modification pour les non-botanistes
-                    isBotanist={isBotanist}  // Passer le statut botaniste comme prop
+                    onDelete={isBotanist ? () => deleteConseil(conseil.Code_Conseils) : undefined}
+                    onEdit={isBotanist ? () => handleEditConseil(conseil) : undefined}
+                    isBotanist={isBotanist}
                   />
                 </Animatable.View>
               ))}
           </View>
         </ScrollView>
-        {isBotanist && (  // Afficher le bouton "Ajouter" uniquement si l'utilisateur est un botaniste
+        {isBotanist && (
           <Animatable.View animation="bounceIn" style={styles.addButtonContainer}>
             <TouchableOpacity style={styles.addButton} onPress={() => navigation.navigate('FormulaireBotaniste', { themes })}>
               <Ionicons name="add" size={40} color="white" />
@@ -220,22 +220,10 @@ const Conseils = ({ route }) => {
 };
 
 const styles = StyleSheet.create({
-  wrapper: {
-    flex: 1,
-    backgroundColor: '#f0f0f0',
-  },
-  overlay: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
-  themesContainer: {
-    height: 50,
-    marginTop: 100,
-    marginBottom: 20,
-  },
-  themesScrollContainer: {
-    paddingHorizontal: 10,
-  },
+  wrapper: { flex: 1, backgroundColor: '#f0f0f0' },
+  overlay: { flex: 1, backgroundColor: '#fff' },
+  themesContainer: { height: 50, marginTop: 100, marginBottom: 20 },
+  themesScrollContainer: { paddingHorizontal: 10 },
   themeButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -244,30 +232,14 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     backgroundColor: '#e0e0e0',
     marginRight: 10,
-    alignItems: 'center',
     justifyContent: 'center',
     minWidth: 100,
   },
-  selectedThemeButton: {
-    backgroundColor: '#077B17',
-  },
-  themeButtonText: {
-    fontSize: 16,
-    color: '#333',
-    fontWeight: '600',
-    marginLeft: 5,
-  },
-  selectedThemeButtonText: {
-    color: '#fff',
-  },
-  scrollContainer: {
-    flexGrow: 1,
-    padding: 20,
-    paddingTop: 10,
-  },
-  conseilsContainer: {
-    marginBottom: 20,
-  },
+  selectedThemeButton: { backgroundColor: '#077B17' },
+  themeButtonText: { fontSize: 16, color: '#333', fontWeight: '600', marginLeft: 5 },
+  selectedThemeButtonText: { color: '#fff' },
+  scrollContainer: { flexGrow: 1, padding: 20, paddingTop: 10 },
+  conseilsContainer: { marginBottom: 20 },
   conseilCard: {
     backgroundColor: '#fff',
     padding: 15,
@@ -283,19 +255,8 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 2,
   },
-  addButtonContainer: {
-    position: 'absolute',
-    bottom: 100,
-    right: 20,
-  },
-  addButton: {
-    backgroundColor: '#077B17',
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+  addButtonContainer: { position: 'absolute', bottom: 100, right: 20 },
+  addButton: { backgroundColor: '#077B17', width: 60, height: 60, borderRadius: 30, alignItems: 'center', justifyContent: 'center' },
 });
 
 export default Conseils;

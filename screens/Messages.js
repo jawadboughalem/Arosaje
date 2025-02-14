@@ -3,7 +3,6 @@ import { View, StyleSheet, TouchableOpacity, Animated, TextInput, Keyboard, Text
 import { useNavigation, useRoute } from '@react-navigation/native';
 import Header from '../components/header'; 
 import Icon from 'react-native-vector-icons/Ionicons';
-import ConversationItem from '../components/ConversationItem';
 import { IPV4 } from '../Backend/config/config';
 
 export default function Messages() {

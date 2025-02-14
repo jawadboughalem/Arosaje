@@ -16,7 +16,7 @@ const getAllConseils = (req, res) => {
     if (err) {
       res.status(500).json({ error: err.message });
     } else {
-      res.json(conseils); // Renvoie la liste des conseils
+      res.json(conseils);
     }
   });
 };
@@ -36,11 +36,11 @@ const updateConseil = (req, res) => {
   const { id } = req.params;
   const updatedConseil = req.body;
 
-  Conseil.updateConseil(id, updatedConseil, (err) => {
+  Conseil.updateConseil(id, updatedConseil, (err, updatedRow) => {
     if (err) {
       res.status(500).json({ error: err.message }); 
     } else {
-      res.status(200).json({ message: 'Conseil mis à jour avec succès' });
+      res.status(200).json(updatedRow);
     }
   });
 };

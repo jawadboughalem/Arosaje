@@ -13,7 +13,7 @@ const initialize = () => {
       email VARCHAR(50) UNIQUE NOT NULL,
       password VARCHAR(20) NOT NULL,
       photo VARCHAR(255),
-      botaniste INTEGER NOT NULL CHECK (botaniste IN (0, 1)),
+      botaniste INTEGER NOT NULL CHECK (botaniste IN (0, 1))
     )`);
 
     db.run(`CREATE TABLE IF NOT EXISTS photos (

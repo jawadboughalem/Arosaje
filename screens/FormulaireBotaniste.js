@@ -30,11 +30,9 @@ const FormulaireBotaniste = () => {
         console.error('Erreur lors de la récupération du token:', error);
       }
     };
-
     fetchToken();
   }, []);
 
-  // Utiliser les données du conseil si on est en mode modification
   useEffect(() => {
     if (route.params && route.params.conseil) {
       const { Titre, Description, Theme } = route.params.conseil;
@@ -50,12 +48,18 @@ const FormulaireBotaniste = () => {
       return;
     }
 
+    const currentDate = moment().toISOString();
     const data = {
       Titre: nomPlante,
       Description: description,
       Theme: selectedTheme,
-      Date: moment().toISOString()  // Met à jour la date lors de la modification
+      Date: currentDate
     };
+
+    // Pour la création, j'ajoute Code_Utilisateurs (à récupérer réellement depuis le token)
+    if (!route.params?.conseil) {
+      data.Code_Utilisateurs = 1;
+    }
 
     try {
       if (!token) {
@@ -63,31 +67,23 @@ const FormulaireBotaniste = () => {
         return;
       }
 
-      console.log('Données soumises:', data);
+      const url = route.params && route.params.conseil
+        ? `http://${IPV4}:3000/conseils/update/${route.params.conseil.Code_Conseils}`
+        : `http://${IPV4}:3000/conseils/create`;
 
-      const response = route.params.conseil
-        ? await fetch(`http://${IPV4}:3000/conseils/update/${route.params.conseil.Code_Conseils}`, {
-            method: 'PUT',
-            headers: {
-              'Content-Type': 'application/jsonz',
-              'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify(data),
-          })
-        : await fetch(`http://${IPV4}:3000/conseils/create`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify(data),
-          });
+      const method = route.params && route.params.conseil ? 'PUT' : 'POST';
 
-      console.log('Statut de la réponse:', response.status);
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(data),
+      });
 
       if (response.ok) {
         const responseData = await response.json();
-        console.log('Données de la réponse:', responseData);
         navigation.navigate('Conseils', { newConseil: responseData });
       } else {
         const errorData = await response.json();
@@ -125,10 +121,7 @@ const FormulaireBotaniste = () => {
               <Picker
                 selectedValue={selectedTheme}
                 style={styles.picker}
-                onValueChange={(itemValue) => {
-                  console.log('Theme selected:', itemValue);
-                  setSelectedTheme(itemValue);
-                }}
+                onValueChange={(itemValue) => setSelectedTheme(itemValue)}
               >
                 <Picker.Item label="Sélectionner un thème" value="" />
                 {themes.map((theme) => (
@@ -156,25 +149,10 @@ const FormulaireBotaniste = () => {
 };
 
 const styles = StyleSheet.create({
-  wrapper: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
-  scrollContainer: {
-    flexGrow: 1,
-    justifyContent: 'center',
-    padding: 20,
-  },
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-  },
-  label: {
-    fontSize: 15,
-    marginBottom: 15,
-    color: '#333',
-    fontWeight: '500',
-  },
+  wrapper: { flex: 1, backgroundColor: '#fff' },
+  scrollContainer: { flexGrow: 1, justifyContent: 'center', padding: 20 },
+  container: { flex: 1, justifyContent: 'center' },
+  label: { fontSize: 15, marginBottom: 15, color: '#333', fontWeight: '500' },
   input: {
     height: 50,
     borderColor: '#ccc',
@@ -185,9 +163,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     fontSize: 16,
   },
-  textArea: {
-    height: 150,
-  },
+  textArea: { height: 150 },
   pickerContainer: {
     borderWidth: 1,
     borderColor: '#ccc',
@@ -195,10 +171,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     backgroundColor: '#fff',
   },
-  picker: {
-    height: 50,
-    width: '100%',
-  },
+  picker: { height: 50, width: '100%' },
   submitButton: {
     backgroundColor: '#077B17',
     paddingVertical: 15,
@@ -206,11 +179,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 20,
   },
-  submitButtonText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
+  submitButtonText: { color: '#fff', fontSize: 18, fontWeight: 'bold' },
 });
 
 export default FormulaireBotaniste;

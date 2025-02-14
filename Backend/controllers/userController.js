@@ -80,9 +80,21 @@ const verifyPassword = (req, res) => {
 
 const updateUserProfilePic = async (req, res) => {
   const userId = req.userId;
+
+  // Vérification de la présence du fichier dans la requête
+  if (!req.file || !req.file.buffer) {
+    return res.status(400).json({ error: 'Aucun fichier reçu' });
+  }
   const photoBuffer = req.file.buffer;
   const fileName = `${uuidv4()}.webp`;
-  const filePath = path.join(__dirname, '../uploads', fileName);
+  
+  // Définir le dossier d'upload et vérifier son existence
+  const uploadsDir = path.join(__dirname, '../uploads');
+  if (!fs.existsSync(uploadsDir)) {
+    // Crée le dossier s'il n'existe pas (avec récursivité pour être sûr)
+    fs.mkdirSync(uploadsDir, { recursive: true });
+  }
+  const filePath = path.join(uploadsDir, fileName);
 
   try {
     await sharp(photoBuffer)
@@ -91,11 +103,13 @@ const updateUserProfilePic = async (req, res) => {
 
     updateUserPhoto(userId, fileName, (err) => {
       if (err) {
+        console.error('Erreur lors de la mise à jour dans la base de données :', err);
         return res.status(500).json({ error: 'Erreur lors de la mise à jour de la photo de profil' });
       }
       res.status(200).json({ message: 'Photo de profil mise à jour avec succès', fileName });
     });
   } catch (error) {
+    console.error('Erreur lors de la conversion de l’image :', error);
     res.status(500).json({ error: 'Erreur lors de la conversion de l\'image' });
   }
 };

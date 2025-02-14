@@ -58,5 +58,5 @@ module.exports = {
   getUserInfoFromDb,
   updateUserPhoto,
   getUserPhoto,
-  isUserBotanist,  // Renommé pour plus de clarté
+  isUserBotanist,
 };

@@ -15,7 +15,6 @@ import CameraPreview from './screens/CameraPreview';
 import Formulaire from './screens/Formulaire';
 import FormulaireBotaniste from './screens/FormulaireBotaniste';
 import DetailPoste from './screens/DetailPoste';
-import Conversation from './screens/Conversation';
 import Header from './components/header';
 
 const Tab = createBottomTabNavigator();
@@ -134,15 +133,6 @@ function MessagesStack() {
         listeners={{
           // Pas besoin de cacher ou afficher la TabBar pour l'écran Messages
           focus: () => setIsTabBarVisible(true),
-        }}
-      />
-      <Stack.Screen
-        name="Conversation"
-        component={Conversation}
-        options={{ headerShown: false }}
-        listeners={{
-          focus: () => setIsTabBarVisible(false),
-          blur: () => setIsTabBarVisible(true),
         }}
       />
     </Stack.Navigator>

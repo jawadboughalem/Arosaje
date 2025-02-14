@@ -1,19 +1,24 @@
 const { db } = require('../config/db');
 
 const createConseil = (conseil, callback) => {
-  const { Code_Utilisateurs, Titre, Description, Theme } = conseil;
+  let { Code_Utilisateurs, Titre, Description, Theme } = conseil;
+  // Si Code_Utilisateurs n'est pas fourni, on le définit (à remplacer par la récupération réelle depuis le token)
+  if (!Code_Utilisateurs) {
+    Code_Utilisateurs = 1;
+  }
+  const currentDate = new Date().toISOString();
   const sql = `
     INSERT INTO Conseils (Code_Utilisateurs, Titre, Description, Date, Theme) 
     VALUES (?, ?, ?, ?, ?);
   `;
-  const params = [Code_Utilisateurs, Titre, Description, new Date().toISOString(), Theme];
+  const params = [Code_Utilisateurs, Titre, Description, currentDate, Theme];
 
   db.run(sql, params, function(err) {
     if (err) {
       return callback(err);
     }
     const conseilId = this.lastID;
-    callback(null, { Code_Conseils: conseilId, ...conseil, Date: new Date().toISOString() });
+    callback(null, { Code_Conseils: conseilId, Code_Utilisateurs, Titre, Description, Date: currentDate, Theme });
   });
 };
 
@@ -38,19 +43,19 @@ const deleteConseil = (conseilId, callback) => {
 };
 
 const updateConseil = (conseilId, updatedConseil, callback) => {
-  const { Titre, Description, Theme } = updatedConseil;
+  const { Titre, Description, Theme, Date } = updatedConseil;
   const sql = `
     UPDATE Conseils
-    SET Titre = ?, Description = ?, Theme = ?
+    SET Titre = ?, Description = ?, Theme = ?, Date = ?
     WHERE Code_Conseils = ?;
   `;
-  const params = [Titre, Description, Theme, conseilId];
+  const params = [Titre, Description, Theme, Date, conseilId];
 
   db.run(sql, params, function(err) {
     if (err) {
       return callback(err);
     }
-    callback(null);
+    callback(null, { Code_Conseils: conseilId, Titre, Description, Theme, Date });
   });
 };
 

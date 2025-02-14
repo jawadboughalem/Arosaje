@@ -11,10 +11,10 @@ const authenticateToken = (req, res, next) => {
 
     jwt.verify(token, secretKey, (err, decoded) => {
         if (err) {
-            return res.status(403).json({ error: 'Token invalide.' }); // Token invalide
+            return res.status(403).json({ error: 'Token invalide.' });
         }
         req.userId = decoded.userId; // J'associe l'ID utilisateur au token validé
-        next(); // Je passe au middleware suivant
+        next();
     });
 };
 
