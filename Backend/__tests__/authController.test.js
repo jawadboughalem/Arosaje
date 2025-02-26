@@ -1,6 +1,6 @@
-import { createUser, getUserByEmail } from '../../models/authModel';
-import { generateToken } from '../../utils/jwt';
-import { signup, login, logout } from '../../controllers/authController';
+import { createUser, getUserByEmail } from '../models/authModel';
+import { generateToken } from '../utils/jwt';
+import { signup, login, logout } from '../controllers/authController';
 import { jest, expect, describe, test, it, beforeAll, beforeEach } from '@jest/globals';
 //import { dbTest, setupDatabase, teardownDatabase } from '../../config/dbTest';
 import axios from 'axios';

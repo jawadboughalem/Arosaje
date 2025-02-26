@@ -1,5 +1,5 @@
-import { getUserInfo, changePassword, verifyPassword, updateUserProfilePic, getUserProfilePic, } from "../../controllers/userController";
-import { getUserById, updateUserPassword, getUserInfoFromDb, updateUserPhoto, getUserPhoto, } from "../../models/userModel";
+import { getUserInfo, changePassword, verifyPassword, updateUserProfilePic, getUserProfilePic, } from "../controllers/userController";
+import { getUserById, updateUserPassword, getUserInfoFromDb, updateUserPhoto, getUserPhoto, } from "../models/userModel";
 import { jest, expect, describe, test, it, beforeAll, beforeEach, mockImplementation } from '@jest/globals';
 
 const bcrypt = require('bcrypt')
